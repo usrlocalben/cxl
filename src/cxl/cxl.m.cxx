@@ -22,7 +22,7 @@ namespace rqdq {
 namespace {
 
 const double kTestRunTime = 6.0;
-const int kNumVoices = 6;
+const int kNumVoices = 16;
 
 // channels
 int numInputChannels = 0;
@@ -74,44 +74,22 @@ class FooMachine {
 public:
 	FooMachine() :d_waveTable(16) {
 		d_gridSequencer.SetTempo(800);
-		d_voices.reserve(6);
+		d_voices.reserve(kNumVoices);
 		for (int i=0; i<kNumVoices; i++) {
 			d_voices.emplace_back(d_waveTable);
 			d_mixer.AddChannel(d_voices.back(), 1.0f);
 			d_gridSequencer.AddTrack(d_voices.back()); }
 
-		d_voices[1].d_params.waveId = 1;
-		d_voices[2].d_params.waveId = 1;
-
-		// clear all grids
-		for (int ti=0; ti<kNumVoices; ti++) {
-			for (int i=0; i<16; i++) {
-				d_gridSequencer.SetTrackGridNote(ti, i, 0); }}
+		d_gridSequencer.InitializePattern();
 
 		d_voices[0].d_params.waveId = 1;
 		d_waveTable.Get(1) = ralw::MPCWave::Load("c:\\var\\lib\\cxl\\samples\\808 Kick_short.wav", "bd", false);
-		d_gridSequencer.SetTrackGridNote(0, 0, 1);
-		d_gridSequencer.SetTrackGridNote(0, 6, 1);
-		//d_gridSequencer.SetTrackGridNote(0, 8, 1);
-		//d_gridSequencer.SetTrackGridNote(0, 12, 1);
 
 		d_voices[1].d_params.waveId = 2;
 		d_waveTable.Get(2) = ralw::MPCWave::Load("c:\\var\\lib\\cxl\\samples\\808 Snare_lo1.wav", "sd", false);
-		d_gridSequencer.SetTrackGridNote(1, 4, 1);
-		d_gridSequencer.SetTrackGridNote(1, 12, 1);
 
 		d_voices[2].d_params.waveId = 3;
 		d_waveTable.Get(3) = ralw::MPCWave::Load("c:\\var\\lib\\cxl\\samples\\808 Hat_closed.wav", "ch", false);
-		d_gridSequencer.SetTrackGridNote(2, 0, 1);
-		d_gridSequencer.SetTrackGridNote(2, 2, 1);
-		d_gridSequencer.SetTrackGridNote(2, 4, 1);
-		d_gridSequencer.SetTrackGridNote(2, 6, 1);
-		d_gridSequencer.SetTrackGridNote(2, 8, 1);
-		d_gridSequencer.SetTrackGridNote(2, 10, 1);
-		d_gridSequencer.SetTrackGridNote(2, 12, 1);
-		//d_gridSequencer.SetTrackGridNote(2, 13, 1);
-		d_gridSequencer.SetTrackGridNote(2, 14, 1);
-		d_gridSequencer.SetTrackGridNote(2, 15, 1);
 	}
 
 	rqdq::ralio::ASIOCallbacks MakeASIOCallbacks() {
@@ -364,34 +342,46 @@ public:
 		console
 			.Position(1,0).Write("cxl 0.1.0")
 			.Position(79-10,0).Write("anix/rqdq");
+		DrawTrackSelection(console, 0, 2);
+		DrawGrid(console, 1, 21);
+		DrawKeyHistory(console, 60, 10);
+		DrawTransportIndicator(console); }
 
+	void DrawTrackSelection(rclw::Console& console, int x, int y) {
 		console
-			.Position(2, 2)
-			.LeftEdge(2);
+			.Position(x, y)
+			.LeftEdge(x);
+		console.Write("  ");
 		for (int i = 0; i < 8; i++) {
 			console.Write(tolower(kTrackNames[i]) + " ");}
 		console.CR();
+		console.Write("  ");
 		for (int i = 8; i <16; i++) {
 			console.Write(tolower(kTrackNames[i]) + " ");}
 
-		int selY = d_selectedTrack / 8       + 2;
-		int selX = (d_selectedTrack % 8) * 3 + 2;
+		int selY = d_selectedTrack / 8       +  y;
+		int selX = (d_selectedTrack % 8) * 3 + (x+2);
 		console.Position(selX, selY).Write(kTrackNames[d_selectedTrack]);
 		console.Position(selX-1, selY).Write("[");
-		console.Position(selX+2, selY).Write("]");
+		console.Position(selX+2, selY).Write("]"); }
 
-		console.Position(0, 21);
-		console.Write(" | .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
-		console.Position(0, 22);
-		console.Write(" | ");
+	void DrawGrid(rclw::Console& console, int x, int y) {
+		console.Position(x, y);
+		console.Write("| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
+		console.Position(1, y+1);
+		console.Write("| ");
 		for (int i = 0; i < 16; i++) {
 			auto value = d_fooMachine.d_gridSequencer.GetTrackGridNote(d_selectedTrack, i);
 			console.Write(value ? "X" : " ");
-			console.Write(" | "); }
+			console.Write(" | "); }}
 
-		console.Position(60, 10).LeftEdge(60);
+	void DrawKeyHistory(rclw::Console& console, int x, int y) {
+		console.Position(x, y).LeftEdge(x);
 		for (const auto& item : d_keyHistory) {
 			console.Write(item).CR(); }}
+
+	void DrawTransportIndicator(rclw::Console& console) {
+		console.Position(79-8, 24).Write(d_fooMachine.d_gridSequencer.IsPlaying() ? "PLAYING" : "STOPPED"); }
 
 	int d_selectedTrack = 0;
 	std::deque<std::string>& d_keyHistory;
@@ -403,6 +393,67 @@ constexpr uint32_t kCKLeftAlt = 0x02;
 constexpr uint32_t kCKRightCtrl = 0x04;
 constexpr uint32_t kCKLeftCtrl = 0x08;
 constexpr uint32_t kCKShift = 0x10;
+
+enum ScanCode {
+	Esc = 1,
+	Key1 = 2,
+	Key2 = 3,
+	Key3 = 4,
+	Key4 = 5,
+	Key5 = 6,
+	Key6 = 7,
+	Key7 = 8,
+	Key8 = 9,
+	Key9 = 10,
+	Key0 = 11,
+	Minus = 12,
+	Equals = 13,
+	Backspace = 14,
+	Tab = 15,
+	Q = 16,
+	W = 17,
+	E = 18,
+	R = 19,
+	T = 20,
+	Y = 21,
+	U = 22,
+	I = 23,
+	O = 24,
+	P = 25,
+	OpenBracket = 26,
+	CloseBracket = 27,
+	Enter = 28,
+	LeftCtrl = 29,
+	A = 30,
+	S = 31,
+	D = 32,
+	F = 33,
+	G = 34,
+	H = 35,
+	J = 36,
+	K = 37,
+	L = 38,
+	Semicolon = 39,
+	Quote = 40,
+	Tilde = 41,
+	LeftShift = 42,
+	Backslash = 43,
+	Z = 44,
+	X = 45,
+	C = 46,
+	V = 47,
+	B = 48,
+	N = 49,
+	M = 50,
+	Comma = 51,
+	Period = 52,
+	ForwardSlash = 53,
+	RightShift = 54,
+	// 55 ?
+	Alt = 56,  // same scancode for left&right? but flags are different... strange
+	Space = 57,
+    /// ...
+	LeftWindows = 91, };
 
 
 
@@ -511,12 +562,12 @@ int main(int argc, char **argv) {
 
 	std::vector<HANDLE> pendingEvents;
 
-	fooMachine.Play();
 
 	bool done = false;
 
 	int selectedTrack = 0;
 	std::deque<std::string> keyHistory;
+	std::vector<bool> downKeys(256, false);
 
 	while (!done) {
 		FooMachineView(fooMachine, selectedTrack, keyHistory).Draw(console);
@@ -544,24 +595,37 @@ int main(int argc, char **argv) {
 					ss << " " << e.uChar.AsciiChar;
 					ss << " " << e.wRepeatCount;
 					ss << " " << e.wVirtualKeyCode;
-					ss << " " << e.wVirtualScanCode;
+					ss << " " << e.wVirtualScanCode << "  ";
 					keyHistory.emplace_back(ss.str());
 					if (keyHistory.size() > 8) {
 						keyHistory.pop_front(); }}
 
-					if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==16) {
-						// Ctrl+Q
+					if (e.wVirtualScanCode<256) {
+						downKeys[e.wVirtualScanCode] = e.bKeyDown; }
+
+					if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
 						done = true; }
-					else if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && (2<=e.wVirtualScanCode && e.wVirtualScanCode<=7)) {
-						// Ctrl+1...Ctrl+6
-						selectedTrack = e.wVirtualScanCode - 2; }
+					else if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
+						// Ctrl+1...Ctrl+8
+						selectedTrack = e.wVirtualScanCode - ScanCode::Key1; }
 					else if (e.bKeyDown && e.dwControlKeyState==0) {
-						if (e.wVirtualScanCode == 39) {
-							// semicolon
-							fooMachine.Stop(); }
-						else if (e.wVirtualScanCode == 40) {
-							// single-quote
-							fooMachine.Play(); }
+						if (e.wVirtualScanCode == ScanCode::Semicolon) { fooMachine.Stop(); }
+						else if (e.wVirtualScanCode == ScanCode::Quote) { fooMachine.Play(); }
+						else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+
+							int adj = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
+							if (e.dwControlKeyState & kCKShift) adj *= 10;
+
+							if (downKeys[ScanCode::T]) {
+								fooMachine.d_voices[selectedTrack].d_params.cutoff += adj; }
+							else if (downKeys[ScanCode::Y]) {
+								fooMachine.d_voices[selectedTrack].d_params.resonance += adj; }
+							else if (downKeys[ScanCode::U]) {
+								fooMachine.d_voices[selectedTrack].d_params.attackPct += adj; }
+							else if (downKeys[ScanCode::I]) {
+								fooMachine.d_voices[selectedTrack].d_params.decayPct += adj; }
+							else if (downKeys[ScanCode::Equals]) {
+								fooMachine.d_gridSequencer.SetTempo(fooMachine.d_gridSequencer.GetTempo() + adj); }}
 						else {
 							const array<int, 16> gridscan = { 2, 3, 4, 5, 16, 17, 18, 19, 30, 31, 32, 33, 44, 45, 46, 47 };
 							int i;

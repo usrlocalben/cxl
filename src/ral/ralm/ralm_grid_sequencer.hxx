@@ -1,6 +1,7 @@
 #pragma once
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <stdexcept>
@@ -9,9 +10,14 @@
 namespace rqdq {
 namespace ralm {
 
+constexpr int kPPQ = 96;
+constexpr int kBeatsPerBar = 4;
+
 struct GridTrack {
-	raldsp::SingleSampler* voice;
-	std::array<int, 16> grid = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}; };
+	raldsp::SingleSampler* voice = nullptr;
+	std::array<int, 16*4> grid;
+	GridTrack(raldsp::SingleSampler* voice) :voice(voice) {
+		std::fill(begin(grid), end(grid), 0); } };
 
 
 class PlayerState {
@@ -43,8 +49,12 @@ public:
 	void Update();
 	void Tick();
 
+	bool IsPlaying() { return d_state == PlayerState::Playing; }
+
 	void SetTempo(int bpm);
+	int GetTempo();
 	void AddTrack(raldsp::SingleSampler& voice);
+
 	void SetTrackGridNote(int tn, int pos, int value) {
 		if (!(0<=tn && tn<d_tracks.size())) {
 			throw std::runtime_error("invalid track"); }
@@ -58,6 +68,11 @@ public:
 			throw std::runtime_error("invalid track"); }
 		auto& cell = d_tracks[tn].grid[pos];
 		cell = (cell==1?0:1); }
+	void ClearTrackGrid(int tn) {
+		std::fill(d_tracks[tn].grid.begin(), d_tracks[tn].grid.end(), 0);}
+	void InitializePattern() {
+		for (auto& track : d_tracks) {
+			std::fill(track.grid.begin(), track.grid.end(), 0); }}
 
 private:
 	void IncrementT();
@@ -71,6 +86,7 @@ private:
 	bool d_tracksWillUpdate = false;
 	int d_t = 0;
 	int d_ppqStamp = 0;
+	const int d_patternLengthInBars = 1;
 	std::array<int, 96> d_ppqLUT; };
 
 

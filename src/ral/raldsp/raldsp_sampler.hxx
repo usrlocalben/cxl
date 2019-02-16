@@ -67,7 +67,7 @@ private:
 
 
 struct VoiceParameters {
-	int waveId;
+	int waveId = 0;
 	int tuning = 0;     // pitch fine-tune in cents
 	int cutoff = 127;   // 0-127, 127=filter off
 	int resonance = 0;  // 0-127
