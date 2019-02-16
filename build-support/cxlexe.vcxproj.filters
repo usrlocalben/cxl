@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cxx">
+      <UniqueIdentifier>{c1b71232-3764-46b7-b5fe-2891a86882e8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_idspoutput.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_sampler.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralio\ralio_asio.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralm\ralm_grid_sequencer.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_mpcwave.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
