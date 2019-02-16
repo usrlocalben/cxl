@@ -7,6 +7,8 @@
 #include "src/rcl/rclw/rclw_console.hxx"
 
 #include <algorithm>
+#include <array>
+#include <deque>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -335,6 +337,67 @@ public:
 	std::vector<raldsp::SingleSampler> d_voices; };
 
 
+const std::array<const std::string, 16> kTrackNames = {
+	"BD", "SD", "HT", "MD", "LT", "CP", "RS", "CB",
+	"CH", "OH", "RC", "CC", "M1", "M2", "M3", "M4" };
+
+
+char tolower(char ch) {
+	if ('A' <= ch && ch <= 'Z') {
+		return ch - 'A' + 'a'; }
+	return ch; }
+
+
+const string& tolower(const string& s) {
+	thread_local std::string tmp;
+	tmp.clear();
+	for (auto ch : s) {
+		tmp.push_back(tolower(ch)); }
+	return tmp; }
+
+
+class FooMachineView {
+public:
+	FooMachineView(FooMachine& fooMachine, int selectedTrack, std::deque<std::string>& keyHistory) :d_fooMachine(fooMachine), d_selectedTrack(selectedTrack), d_keyHistory(keyHistory) {}
+
+	void Draw(rclw::Console& console) {
+		console
+			.Position(1,0).Write("cxl 0.1.0")
+			.Position(79-10,0).Write("anix/rqdq");
+
+		console
+			.Position(2, 2)
+			.LeftEdge(2);
+		for (int i = 0; i < 8; i++) {
+			console.Write(tolower(kTrackNames[i]) + " ");}
+		console.CR();
+		for (int i = 8; i <16; i++) {
+			console.Write(tolower(kTrackNames[i]) + " ");}
+
+		int selY = d_selectedTrack / 8       + 2;
+		int selX = (d_selectedTrack % 8) * 3 + 2;
+		console.Position(selX, selY).Write(kTrackNames[d_selectedTrack]);
+		console.Position(selX-1, selY).Write("[");
+		console.Position(selX+2, selY).Write("]");
+
+		console.Position(0, 21);
+		console.Write(" | .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
+		console.Position(0, 22);
+		console.Write(" | ");
+		for (int i = 0; i < 16; i++) {
+			auto value = d_fooMachine.d_gridSequencer.GetTrackGridNote(d_selectedTrack, i);
+			console.Write(value ? "X" : " ");
+			console.Write(" | "); }
+
+		console.Position(60, 10).LeftEdge(60);
+		for (const auto& item : d_keyHistory) {
+			console.Write(item).CR(); }}
+
+	int d_selectedTrack = 0;
+	std::deque<std::string>& d_keyHistory;
+	FooMachine& d_fooMachine; };
+
+
 constexpr uint32_t kCKRightAlt = 0x01;
 constexpr uint32_t kCKLeftAlt = 0x02;
 constexpr uint32_t kCKRightCtrl = 0x04;
@@ -342,41 +405,11 @@ constexpr uint32_t kCKLeftCtrl = 0x08;
 constexpr uint32_t kCKShift = 0x10;
 
 
+
 int main(int argc, char **argv) {
 	cout << "==== BEGIN ====\n" << flush;
 
-	/*
-	auto& console = rclw::Console::GetInstance();
 
-	console.SetDimensions(80, 25);
-	console.Clear();
-
-	console
-		.Position(2, 2)
-		.LeftEdge(2)
-		.Write("Tempo: 120.0").CR()
-		.Write("Bar: 1/1").CR()
-		.CR()
-		.PushPosition()
-		.Write("BD [X| | | | | |X| | | | | | | | | ]").CR()
-		.Write("SD [ | | | |X| | | | | | | |X| | | ]").CR()
-		.Write("CH [X| |X| |X| |X| |X| |X| |X| |X| ]").CR()
-		.Write("MT [ | | |X| | | | | | | |X| | | | ]").CR()
-		.Position(40,2)
-		.LeftEdge(40)
-		.Write("Voice: SD").CR()
-		.Write("--------------").CR()
-		.Write("Attack: 002").CR()
-		.Write("Decay:  030").CR()
-		.Write("Pitch:  +06").CR()
-		.Write("Cutoff: 100").CR()
-		.Write("Res:    000").CR()
-		.PopPosition()
-		.ShowCursor();
-
-	//Sleep(10000);
-	//return 0;
-	*/
 
 	tstart = timeGetTime();
 
@@ -469,6 +502,13 @@ int main(int argc, char **argv) {
 
 	asio.Start();
 
+	auto& console = rclw::Console::GetInstance();
+
+	console.SetDimensions(80, 25);
+	console.Clear();
+
+
+
 	std::vector<HANDLE> pendingEvents;
 
 	fooMachine.Play();
@@ -476,8 +516,11 @@ int main(int argc, char **argv) {
 	bool done = false;
 
 	int selectedTrack = 0;
+	std::deque<std::string> keyHistory;
 
 	while (!done) {
+		FooMachineView(fooMachine, selectedTrack, keyHistory).Draw(console);
+
 		pendingEvents.clear();
 		pendingEvents.emplace_back(GetStdHandle(STD_INPUT_HANDLE));
 		DWORD result = WaitForMultipleObjects(pendingEvents.size(), pendingEvents.data(), FALSE, 1000);
@@ -495,13 +538,16 @@ int main(int argc, char **argv) {
 				if (record.EventType == KEY_EVENT) {
 					const auto& e = record.Event.KeyEvent;
 
-					{cout << (e.bKeyDown?'D':'U');
-					cout << " " << hex << e.dwControlKeyState << dec;
-					cout << " " << e.uChar.AsciiChar;
-					cout << " " << e.wRepeatCount;
-					cout << " " << e.wVirtualKeyCode;
-					cout << " " << e.wVirtualScanCode;
-					cout << endl;}
+					{stringstream ss;
+					ss << (e.bKeyDown?'D':'U');
+					ss << " " << hex << e.dwControlKeyState << dec;
+					ss << " " << e.uChar.AsciiChar;
+					ss << " " << e.wRepeatCount;
+					ss << " " << e.wVirtualKeyCode;
+					ss << " " << e.wVirtualScanCode;
+					keyHistory.emplace_back(ss.str());
+					if (keyHistory.size() > 8) {
+						keyHistory.pop_front(); }}
 
 					if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==16) {
 						// Ctrl+Q
@@ -561,3 +607,4 @@ int main(int argc, char **argv) {
 		std::cout << "exception: " << err.what() << std::endl;
 		result = EXIT_FAILURE; }
 	exit(result); }
+
