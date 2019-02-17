@@ -343,14 +343,48 @@ public:
 		auto& self = *reinterpret_cast<FooMachine*>(ptr);
 		return self.onASIOMessage(selector, value, message, opt); }
 
+	// pass-thru interface
 	void Play() {
 		d_gridSequencer.Play(); }
 	void Stop() {
 		d_gridSequencer.Stop(); }
+	bool IsPlaying() {
+		return d_gridSequencer.IsPlaying(); }
+
+	void SetTempo(int value) {
+		d_gridSequencer.SetTempo(value);
+		if (d_updateFunc) {
+			d_updateFunc();}}
+	int GetTempo() {
+		return d_gridSequencer.GetTempo(); }
+
+	void ToggleTrackGridNote(int track, int pos) {
+		d_gridSequencer.ToggleTrackGridNote(track, pos);
+		if (d_updateFunc) {
+			d_updateFunc();}}
+	int GetTrackGridNote(int track, int pos) {
+		return d_gridSequencer.GetTrackGridNote(track, pos); }
+
+	void Adjust(int ti, int pi, int amt) {
+		if      (pi == 0) Adjust2(d_voices[ti].d_params.cutoff, 0, 127, amt);
+		else if (pi == 1) Adjust2(d_voices[ti].d_params.resonance, 0, 127, amt);
+		else if (pi == 2) Adjust2(d_voices[ti].d_params.attackPct, 1, 100, amt);
+		else if (pi == 3) Adjust2(d_voices[ti].d_params.decayPct, 1, 100, amt);
+		else if (pi == 4) Adjust2(d_voices[ti].d_params.waveId, 0, 1000, amt); }
+
+private:
+	template<typename T>
+	void Adjust2(T& slot, T lower, T upper, T amt) {
+		T oldValue = slot;
+		T newValue = clamp(lower, oldValue+amt, upper);
+		if (oldValue != newValue) {
+			slot = newValue;
+			if (d_updateFunc) {
+				d_updateFunc(); }}}
 
 public:
 	std::function<void()> d_updateFunc;
-	HANDLE d_updatedEvent;
+private:
 	std::vector<float> dl, dr;
 	ralw::WaveTable d_waveTable;
 	raldsp::BasicMixer d_mixer;
@@ -414,7 +448,7 @@ public:
 		console.Position(1, y+1);
 		console.Write("| ");
 		for (int i = 0; i < 16; i++) {
-			auto value = d_fooMachine.d_gridSequencer.GetTrackGridNote(d_selectedTrack, i);
+			auto value = d_fooMachine.GetTrackGridNote(d_selectedTrack, i);
 			console.Write(value ? "X" : " ");
 			console.Write(" | "); }}
 
@@ -424,7 +458,7 @@ public:
 			console.Write(item).CR(); }}
 
 	void DrawTransportIndicator(rclw::Console& console) {
-		console.Position(79-8, 24).Write(d_fooMachine.d_gridSequencer.IsPlaying() ? "PLAYING" : "STOPPED"); }
+		console.Position(79-8, 24).Write(d_fooMachine.IsPlaying() ? "PLAYING" : "STOPPED"); }
 
 	int d_selectedTrack = 0;
 	std::deque<std::string>& d_keyHistory;
@@ -534,25 +568,26 @@ public:
 				Reactor::GetInstance().Stop(); }
 			else if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
 				// Ctrl+1...Ctrl+8
-				d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1; }
+				d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
+				FooMachineView(d_fooMachine, d_selectedTrack, d_keyHistory).Draw(d_console); }
 			else if (e.bKeyDown && e.dwControlKeyState==0) {
 				if (e.wVirtualScanCode == ScanCode::Semicolon) { d_fooMachine.Stop(); }
 				else if (e.wVirtualScanCode == ScanCode::Quote) { d_fooMachine.Play(); }
 				else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
-					int adj = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
-					if (e.dwControlKeyState & kCKShift) adj *= 10;
+					int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
+					if (e.dwControlKeyState & kCKShift) amt *= 10;
 
-					if (d_downKeys[ScanCode::T]) {
-						d_fooMachine.d_voices[d_selectedTrack].d_params.cutoff += adj; }
-					else if (d_downKeys[ScanCode::Y]) {
-						d_fooMachine.d_voices[d_selectedTrack].d_params.resonance += adj; }
-					else if (d_downKeys[ScanCode::U]) {
-						d_fooMachine.d_voices[d_selectedTrack].d_params.attackPct += adj; }
-					else if (d_downKeys[ScanCode::I]) {
-						d_fooMachine.d_voices[d_selectedTrack].d_params.decayPct += adj; }
+					if      (d_downKeys[ScanCode::T]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+0, amt); }
+					else if (d_downKeys[ScanCode::Y]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+1, amt); }
+					else if (d_downKeys[ScanCode::U]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+2, amt); }
+					else if (d_downKeys[ScanCode::I]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+3, amt); }
+					else if (d_downKeys[ScanCode::G]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+4, amt); }
+					else if (d_downKeys[ScanCode::H]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+5, amt); }
+					else if (d_downKeys[ScanCode::J]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+6, amt); }
+					else if (d_downKeys[ScanCode::K]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+7, amt); }
 					else if (d_downKeys[ScanCode::Equals]) {
-						d_fooMachine.d_gridSequencer.SetTempo(d_fooMachine.d_gridSequencer.GetTempo() + adj); }}
+						d_fooMachine.SetTempo(d_fooMachine.GetTempo() + amt); }}
 				else {
 					const array<int, 16> gridscan = { 2, 3, 4, 5, 16, 17, 18, 19, 30, 31, 32, 33, 44, 45, 46, 47 };
 					int i;
@@ -560,14 +595,13 @@ public:
 						if (e.wVirtualScanCode == gridscan[i]) {
 							break; }}
 					if (i<16) {
-						d_fooMachine.d_gridSequencer.ToggleTrackGridNote(d_selectedTrack, i); }}}
-
-		FooMachineView(d_fooMachine, d_selectedTrack, d_keyHistory).Draw(d_console); }}
+						d_fooMachine.ToggleTrackGridNote(d_selectedTrack, i); }}}}}
 
 private:
 	rclw::Console& d_console;
 	FooMachine& d_fooMachine;
 	int d_selectedTrack = 0;
+	const int d_selectedPage = 0;
 	std::deque<std::string> d_keyHistory;
 	std::vector<bool> d_downKeys; };
 
