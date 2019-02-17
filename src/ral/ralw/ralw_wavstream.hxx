@@ -1,16 +1,17 @@
 #pragma once
 #include <cstdio>
+#include <cstdint>
 
 namespace rqdq {
 namespace ralw {
 
 class WavStream {
 public:
-	WavStream(const string& filename, int freq, bool stereo);
+	WavStream(const std::string& filename, int freq, bool stereo);
 	~WavStream();
 
 	void Write(const int16_t* buf, int numSamples);
-	
+
 private:
 	//void flush();
 

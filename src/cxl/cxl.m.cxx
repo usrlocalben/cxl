@@ -61,14 +61,14 @@ uint32_t tstart;
 
 bool stopped;
 
-}  // close unnamed namespace
+}  // namespace
 
 namespace cxl {
 
 using namespace std;
 
 double fract(double x) {
-	return x - (int64_t)x; }
+	return x - static_cast<int64_t>(x); }
 
 
 struct ReactorEvent {
@@ -78,7 +78,7 @@ struct ReactorEvent {
 
 class Reactor {
 private:
-	Reactor() {}
+	Reactor() = default;
 public:
 	static Reactor& GetInstance() {
 		static Reactor reactor;
@@ -124,13 +124,13 @@ public:
 		d_gridSequencer.InitializePattern();
 
 		d_voices[0].d_params.waveId = 1;
-		d_waveTable.Get(1) = ralw::MPCWave::Load("c:\\var\\lib\\cxl\\samples\\808 Kick_short.wav", "bd", false);
+		d_waveTable.Get(1) = ralw::MPCWave::Load(R"(c:\var\lib\cxl\samples\808 Kick_short.wav)", "bd", false);
 
 		d_voices[1].d_params.waveId = 2;
-		d_waveTable.Get(2) = ralw::MPCWave::Load("c:\\var\\lib\\cxl\\samples\\808 Snare_lo1.wav", "sd", false);
+		d_waveTable.Get(2) = ralw::MPCWave::Load(R"(c:\var\lib\cxl\samples\808 Snare_lo1.wav)", "sd", false);
 
 		d_voices[2].d_params.waveId = 3;
-		d_waveTable.Get(3) = ralw::MPCWave::Load("c:\\var\\lib\\cxl\\samples\\808 Hat_closed.wav", "ch", false);
+		d_waveTable.Get(3) = ralw::MPCWave::Load(R"(c:\var\lib\cxl\samples\808 Hat_closed.wav)", "ch", false);
 	}
 
 	rqdq::ralio::ASIOCallbacks MakeASIOCallbacks() {
@@ -157,12 +157,12 @@ public:
 		nanoSeconds = 0;
 		samples = 0;
 		tcSamples = 0;
-		if (timeInfo->timeInfo.flags & kSystemTimeValid)
-			nanoSeconds = timeInfo->timeInfo.systemTime;
-		if (timeInfo->timeInfo.flags & kSamplePositionValid)
-			samples = timeInfo->timeInfo.samplePosition;
-		if (timeInfo->timeCode.flags & kTcValid)
-			tcSamples = timeInfo->timeCode.timeCodeSamples;
+		if ((timeInfo->timeInfo.flags & kSystemTimeValid) != 0u) {
+			nanoSeconds = timeInfo->timeInfo.systemTime; }
+		if ((timeInfo->timeInfo.flags & kSamplePositionValid) != 0u) {
+			samples = timeInfo->timeInfo.samplePosition; }
+		if ((timeInfo->timeCode.flags & kTcValid) != 0u) {
+			tcSamples = timeInfo->timeCode.timeCodeSamples; }
 
 		// get the system reference time
 		sysRefTime = timeGetTime();
@@ -179,8 +179,10 @@ public:
 		// perform the processing
 		for (int i=0; i<numInputChannels+numOutputChannels; i++) {
 
-			if (bufferInfos[i].isInput == false) {
-				if (i==1) continue;
+			if (!static_cast<bool>(bufferInfos[i].isInput)) {
+				if (i==1) {
+					// XXX output selection
+					continue; }
 				//cout << "CT(" << int(channelInfos[i].type) << ")";
 				// OK do processing for the outputs only
 				switch (channelInfos[i].type) {
@@ -251,7 +253,7 @@ public:
 		//else
 			processedSamples += buffSize;
 
-		return 0L; }
+		return nullptr; }
 
 	void onBufferReady(long index, ralio::ASIOBool processNow) {
 		using namespace ralio;
@@ -366,11 +368,11 @@ public:
 		return d_gridSequencer.GetTrackGridNote(track, pos); }
 
 	void Adjust(int ti, int pi, int amt) {
-		if      (pi == 0) Adjust2(d_voices[ti].d_params.cutoff, 0, 127, amt);
-		else if (pi == 1) Adjust2(d_voices[ti].d_params.resonance, 0, 127, amt);
-		else if (pi == 2) Adjust2(d_voices[ti].d_params.attackPct, 1, 100, amt);
-		else if (pi == 3) Adjust2(d_voices[ti].d_params.decayPct, 1, 100, amt);
-		else if (pi == 4) Adjust2(d_voices[ti].d_params.waveId, 0, 1000, amt); }
+		if      (pi == 0) { Adjust2(d_voices[ti].d_params.cutoff, 0, 127, amt); }
+		else if (pi == 1) { Adjust2(d_voices[ti].d_params.resonance, 0, 127, amt); }
+		else if (pi == 2) { Adjust2(d_voices[ti].d_params.attackPct, 1, 100, amt); }
+		else if (pi == 3) { Adjust2(d_voices[ti].d_params.decayPct, 1, 100, amt); }
+		else if (pi == 4) { Adjust2(d_voices[ti].d_params.waveId, 0, 1000, amt);  }}
 
 private:
 	template<typename T>
@@ -449,7 +451,7 @@ public:
 		console.Write("| ");
 		for (int i = 0; i < 16; i++) {
 			auto value = d_fooMachine.GetTrackGridNote(d_selectedTrack, i);
-			console.Write(value ? "X" : " ");
+			console.Write(value != 0 ? "X" : " ");
 			console.Write(" | "); }}
 
 	void DrawKeyHistory(rclw::Console& console, int x, int y) {
@@ -545,13 +547,13 @@ public:
 		// process stdin
 		INPUT_RECORD record;
 		DWORD numRead;
-		if (!ReadConsoleInputW(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead)) {
+		if (ReadConsoleInputW(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead) == 0) {
 			throw std::runtime_error("ReadConsoleInput failure"); }
 		if (record.EventType == KEY_EVENT) {
 			const auto& e = record.Event.KeyEvent;
 
 			{stringstream ss;
-			ss << (e.bKeyDown?'D':'U');
+			ss << (e.bKeyDown!=0?'D':'U');
 			ss << " " << hex << e.dwControlKeyState << dec;
 			ss << " " << e.uChar.AsciiChar;
 			ss << " " << e.wRepeatCount;
@@ -562,21 +564,24 @@ public:
 				d_keyHistory.pop_front(); }}
 
 			if (e.wVirtualScanCode<256) {
-				d_downKeys[e.wVirtualScanCode] = e.bKeyDown; }
+				d_downKeys[e.wVirtualScanCode] = (e.bKeyDown!=0); }
 
-			if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
+			if ((e.bKeyDown!=0) && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
 				Reactor::GetInstance().Stop(); }
-			else if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
+			else if ((e.bKeyDown!=0) && e.dwControlKeyState==kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
 				// Ctrl+1...Ctrl+8
 				d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 				FooMachineView(d_fooMachine, d_selectedTrack, d_keyHistory).Draw(d_console); }
-			else if (e.bKeyDown && e.dwControlKeyState==0) {
+			else if ((e.bKeyDown!=0) && e.dwControlKeyState==0) {
 				if (e.wVirtualScanCode == ScanCode::Semicolon) { d_fooMachine.Stop(); }
 				else if (e.wVirtualScanCode == ScanCode::Quote) { d_fooMachine.Play(); }
 				else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
 					int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
-					if (e.dwControlKeyState & kCKShift) amt *= 10;
+					if ((e.dwControlKeyState & kCKShift) != 0u) {
+						// XXX msft internal bug 9311951
+						// https://github.com/Microsoft/WSL/issues/1188
+						amt *= 10; }
 
 					if      (d_downKeys[ScanCode::T]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+0, amt); }
 					else if (d_downKeys[ScanCode::Y]) { d_fooMachine.Adjust(d_selectedTrack, d_selectedPage*8+1, amt); }
@@ -623,7 +628,7 @@ int main(int argc, char **argv) {
 		throw std::runtime_error("driver not found"); }
 
 	asio.OpenDriver(idx);
-	const auto info = asio.Init(0);
+	const auto info = asio.Init(nullptr);
 
 	cout << "Driver Initialized:\n";
 	cout << "    asioVersion: " << info.asioVersion << "\n";
@@ -687,7 +692,7 @@ int main(int argc, char **argv) {
 		);
 
 	for (int i=0; i<numInputChannels+numOutputChannels; i++) {
-		channelInfos[i] = asio.GetChannelInfo(bufferInfos[i].isInput, bufferInfos[i].channelNum);
+		channelInfos[i] = asio.GetChannelInfo(bufferInfos[i].isInput!=0, bufferInfos[i].channelNum);
 		{
 			const auto& info = channelInfos[i];
 			cout << "Ch" << info.channel << ", " << (info.isInput?" INPUT":"OUTPUT") << " \"" << info.name << "\", " << info.type << endl;
@@ -705,7 +710,7 @@ int main(int argc, char **argv) {
 	console.SetDimensions(80, 25);
 	console.Clear();
 
-	HANDLE updateEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("fooMachine state changed"));
+	HANDLE updateEvent = CreateEvent(nullptr, FALSE, FALSE, TEXT("fooMachine state changed"));
 	auto updateCallback = [&]() {
 		SetEvent(updateEvent); };
 	fooMachine.d_updateFunc = updateCallback;
@@ -726,8 +731,8 @@ int main(int argc, char **argv) {
 	return 0; }
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace cxl
+}  // namespace rqdq
 
 
 int main(int argc, char **argv) {

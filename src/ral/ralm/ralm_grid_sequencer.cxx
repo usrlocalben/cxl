@@ -52,20 +52,18 @@ void GridSequencer::Tick() {
 		d_sampleCounter--;
 		if (d_sampleCounter <= 0) {
 			IncrementT();
-			d_tracksWillUpdate = true;
+			tracksWillUpdate = true;
 			d_sampleCounter = d_ppqLUT[d_t%kPPQ];
 			if (d_t >= d_patternLengthInBars*kBeatsPerBar*kPPQ) {
 				// end of pattern
 				Rewind(); }}}
 
-	if (!d_tracksWillUpdate) return;
-	if (d_t % (kPPQ/kBeatsPerBar) != 0) return;
-
-	const int gridPos = d_t / (kPPQ/kBeatsPerBar);
-	for (auto& track : d_tracks) {
-		if (track.grid[gridPos]) {
-			track.voice->Trigger(48, 1.0, 0); }}}
+	if (tracksWillUpdate && (d_t % (kPPQ/kBeatsPerBar) == 0)) {
+		const int gridPos = d_t / (kPPQ/kBeatsPerBar);
+		for (auto& track : d_tracks) {
+			if (track.grid[gridPos] != 0) {
+				track.voice->Trigger(36, 1.0, 0); }}}}
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace ralm
+}  // namespace rqdq

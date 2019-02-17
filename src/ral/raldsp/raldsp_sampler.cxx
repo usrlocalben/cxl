@@ -48,13 +48,13 @@ void SingleSampler::Trigger(int note, double velocity, int ppqstamp) {
 	wave.AddReference();
 
 	const int samplesPerCent = (wave.d_selectionEnd - wave.d_selectionBegin) / 100;
-	if (d_params.attackPct) {
+	if (d_params.attackPct != 0) {
 		d_state.attackVelocity = velocity / (d_params.attackPct*samplesPerCent); }
 	else {
 		d_state.attackVelocity = velocity; }
 
 	const int invDecayPct = 100 - d_params.decayPct;
-	if (invDecayPct) {
+	if (invDecayPct != 0) {
 		d_state.decayVelocity = velocity / (invDecayPct*samplesPerCent); }
 	else {
 		d_state.decayVelocity = velocity; }
@@ -134,5 +134,5 @@ std::pair<float, float> SingleSampler::GetNextSample() {
 	return {sl, sr}; }
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace raldsp
+}  // namespace rqdq

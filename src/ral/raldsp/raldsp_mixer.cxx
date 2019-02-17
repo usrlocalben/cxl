@@ -30,6 +30,6 @@ std::pair<float, float> BasicMixer::GetNextSample() {
 	return {c0, c1};}
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace raldsp
+}  // namespace rqdq
 

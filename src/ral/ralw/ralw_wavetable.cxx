@@ -10,10 +10,11 @@ namespace rqdq {
 
 namespace {
 
-int clamp(int lower, int value, int upper) {
-	return std::max(std::min(value, upper), lower); }
+template <typename T>
+T clamp(T lower, T value, T upper) {
+	return std::max<T>(std::min<T>(value, upper), lower); }
 
-}  // close unnamed namespace
+}  // namespace
 
 namespace ralw {
 
@@ -64,5 +65,5 @@ XXX new name creation
 	}
 */
 
-}  // close package namepsace
-}  // close enterprise namespace
+}  // namespace ralw
+}  // namespace rqdq

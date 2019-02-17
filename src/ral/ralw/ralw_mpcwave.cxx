@@ -20,7 +20,7 @@ int clamp(int lower, int value, int upper) {
 namespace ralw {
 
 void MPCWave::Free() {
-	if (d_loaded == false) {
+	if (!d_loaded) {
 		throw std::runtime_error("attempted to release unloaded MPCWave instance"); }
 	d_loaded = false;
 	d_dataLeft.clear();
@@ -91,7 +91,8 @@ void MPCWave::Reverse() {
 	// in-place reverse
 	int j=d_selectionBegin;
 	int k=d_selectionEnd-1;
-	if (j>k) std::swap(j, k);
+	if (j>k) {
+		std::swap(j, k); }
 	while (j < k) {
 		std::swap(d_dataLeft[j], d_dataLeft[k]);
 		std::swap(d_dataRight[j], d_dataRight[k]);
@@ -173,7 +174,7 @@ MPCWave MPCWave::ExtractRegion(int rnum) const {
 MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, const bool info_only) {
 	MPCWave instance;
 	FILE* const fd = fopen(path.c_str(), "rb");
-	if (!fd) {
+	if (fd == nullptr) {
 		throw std::runtime_error("fopen read fail"); }
 
 	fseek(fd, 12, SEEK_SET);
@@ -182,7 +183,7 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, cons
 	int have_data = 0;
 
 	std::vector<uint8_t> buf;
-	while (!feof(fd)) {
+	while (feof(fd) == 0) {
 
 		wavchunkhead wch;
 		int pos = ftell(fd);
@@ -191,17 +192,19 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, cons
 		buf.resize(wch.chunk_size, 0);
 		size_t blocksread = fread(buf.data(), wch.chunk_size, 1, fd);
 
-		if (blocksread == 0) break;
+		if (blocksread == 0) {
+			break; }
 		switch (wch.chunk_id) {
 			case WAV_CHUNK_FMT : {
-				wc_fmt* fmt = reinterpret_cast<wc_fmt*>(buf.data());
+				auto* fmt = reinterpret_cast<wc_fmt*>(buf.data());
 //printf("format_tag:%08x\n", fmt->format_tag);
 //printf("channels: %d\n", fmt->channels);
 //printf("bitdepth: %d\n", fmt->bitdepth);
 //printf("samplerate: %d\n", fmt->hz);
-				if (fmt->channels > 2) break;
-				if (fmt->bitdepth != 16) break;
-				if (fmt->format_tag != 1) break;
+				if (fmt->channels > 2 ||
+				    fmt->bitdepth != 16 ||
+				    fmt->format_tag != 1) {
+					break; }
 				instance.d_freq = fmt->hz;
 				instance.d_stereo = (fmt->channels==2);
 //printf("stereo: %c (chans %d)\n", instance.d_stereo?'Y':'N', fmt->channels);
@@ -220,8 +223,9 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, cons
 //printf("--skipping LIST chunk, %d bytes @ %08x---\n", wch.chunk_size, pos);
 			}
 			case WAV_CHUNK_SMPL : {
-				if (have_data) break;
-				wc_smpl* smpl = reinterpret_cast<wc_smpl*>(buf.data());
+				if (have_data != 0) {
+					break; }
+				auto* smpl = reinterpret_cast<wc_smpl*>(buf.data());
 //printf("--smpl chunk, %d bytes @ %08x---\n", wch.chunk_size, pos);
 //printf("manufacturer:  %d\n", smpl->manufacturer);
 //printf("product:       %d\n", smpl->product);
@@ -245,13 +249,14 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, cons
 				}
 			} break;
 			case WAV_CHUNK_CNXL : {
-				wc_cnxl *cnxl = reinterpret_cast<wc_cnxl*>(buf.data());
+				auto *cnxl = reinterpret_cast<wc_cnxl*>(buf.data());
 				instance.d_selectionBegin = cnxl->trim_start;
 				instance.d_selectionEnd   = cnxl->trim_end;
 			} break;
 			case WAV_CHUNK_DATA: {
-				if (have_fmt != 1) break;
-				int16_t* sbuf = reinterpret_cast<int16_t*>(buf.data());
+				if (have_fmt != 1) {
+					break; }
+				auto* sbuf = reinterpret_cast<int16_t*>(buf.data());
 				int samples = (wch.chunk_size / 2) / (instance.d_stereo?2:1);
 //printf("data chunk is %d bytes\n", wch.chunk_size);
 //printf("samples to load: %d\n", samples);
@@ -310,5 +315,5 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, cons
 	return instance; }
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace ralw
+}  // namespace rqdq

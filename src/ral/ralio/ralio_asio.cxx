@@ -28,7 +28,7 @@ namespace ralio {
 
 ASIOSystem::ASIOSystem() {
 	std::cerr << "<ASIO> starting up\n";
-	CoInitialize(0); }
+	CoInitialize(nullptr); }
 
 
 ASIOSystem& ASIOSystem::GetInstance() {
@@ -94,7 +94,7 @@ void ASIOSystem::OpenDriver(int idx) {
 	void* vtbl;
 	auto& info = d_drivers[idx];
 	const auto clsId = rclw::CLSIDSerializer::deserialize(L"{" + info.id + L"}");
-	int result = CoCreateInstance(clsId, 0, CLSCTX_INPROC_SERVER, clsId, &vtbl);
+	int result = CoCreateInstance(clsId, nullptr, CLSCTX_INPROC_SERVER, clsId, &vtbl);
 	if (result != S_OK) {
 		throw std::runtime_error("could not create driver instance"); }
 	theAsioDriver = static_cast<IASIO*>(vtbl);
@@ -206,7 +206,7 @@ void ASIOSystem::CreateBuffers(rqdq::ralio::ASIOBufferInfo *bufs, int numChannel
 rqdq::ralio::ASIOChannelInfo ASIOSystem::GetChannelInfo(bool isInput, int channel) {
 	EnsureDriverOpen();
 	rqdq::ralio::ASIOChannelInfo_ABI info;
-	info.isInput = isInput;
+	info.isInput = static_cast<rqdq::ralio::ASIOBool>(isInput);
 	info.channel = channel;
 	int result = theAsioDriver->getChannelInfo(reinterpret_cast<::ASIOChannelInfo*>(&info));
 	if (result != ASE_OK) {
@@ -259,5 +259,5 @@ void ASIOSystem::ShowControlPanel() {
 		throw ASIOException("controlPanel failed", result); }}
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace ralio
+}  // namespace rqdq

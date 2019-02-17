@@ -83,7 +83,6 @@ private:
 	int d_tempoInBPM = 1200;
 	PlayerState d_state{PlayerState::Stopped}, d_nextState;
 	int d_sampleCounter = 0;
-	bool d_tracksWillUpdate = false;
 	int d_t = 0;
 	int d_ppqStamp = 0;
 	const int d_patternLengthInBars = 1;

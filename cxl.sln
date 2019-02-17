@@ -1,8 +1,9 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{10000001-8B4A-11D0-8D11-00A0C91BC942}") = "cxlexe", "build-support\cxlexe.vcxproj", "{20000002-0871-4008-843E-ED7359A8495A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cxlexe", "build-support\cxlexe.vcxproj", "{20000002-0871-4008-843E-ED7359A8495A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
