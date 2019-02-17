@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <deque>
+#include <functional>
 #include <iostream>
 #include <mutex>
 #include <string>
@@ -68,6 +69,46 @@ using namespace std;
 
 double fract(double x) {
 	return x - (int64_t)x; }
+
+
+struct ReactorEvent {
+	HANDLE event;
+	std::function<void()> func; };
+
+
+class Reactor {
+private:
+	Reactor() {}
+public:
+	static Reactor& GetInstance() {
+		static Reactor reactor;
+		return reactor; }
+
+	void Stop() {
+		d_shouldQuit = true; }
+
+	void AddEvent(ReactorEvent re) {
+		d_events.emplace_back(re); }
+
+	void Run() {
+		std::vector<HANDLE> pendingEvents;
+		while (!d_shouldQuit) {
+			pendingEvents.clear();
+			for (auto& re : d_events) {
+				pendingEvents.emplace_back(re.event); }
+			DWORD result = WaitForMultipleObjects(pendingEvents.size(), pendingEvents.data(), FALSE, 1000);
+			if (result == WAIT_TIMEOUT) {
+				// nothing
+				}
+			else if (WAIT_OBJECT_0 <= result && result < (WAIT_OBJECT_0+pendingEvents.size())) {
+				int signaledIdx = result - WAIT_OBJECT_0;
+				auto& re = d_events[signaledIdx];
+				if (re.func) {
+					re.func(); }}}}
+
+private:
+	bool d_shouldQuit = false;
+	std::vector<ReactorEvent> d_events; };
 
 
 class FooMachine {
@@ -308,6 +349,8 @@ public:
 		d_gridSequencer.Stop(); }
 
 public:
+	std::function<void()> d_updateFunc;
+	HANDLE d_updatedEvent;
 	std::vector<float> dl, dr;
 	ralw::WaveTable d_waveTable;
 	raldsp::BasicMixer d_mixer;
@@ -456,11 +499,81 @@ enum ScanCode {
 	LeftWindows = 91, };
 
 
+class FooMachineController {
+public:
+	FooMachineController(rclw::Console& console, FooMachine& fooMachine) :d_console(console), d_fooMachine(fooMachine) {
+		d_downKeys.resize(256, false); }
+
+	void OnFooMachineChanged() {
+		FooMachineView(d_fooMachine, d_selectedTrack, d_keyHistory).Draw(d_console); }
+
+	void OnConsoleInputAvailable() {
+		// process stdin
+		INPUT_RECORD record;
+		DWORD numRead;
+		if (!ReadConsoleInputW(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead)) {
+			throw std::runtime_error("ReadConsoleInput failure"); }
+		if (record.EventType == KEY_EVENT) {
+			const auto& e = record.Event.KeyEvent;
+
+			{stringstream ss;
+			ss << (e.bKeyDown?'D':'U');
+			ss << " " << hex << e.dwControlKeyState << dec;
+			ss << " " << e.uChar.AsciiChar;
+			ss << " " << e.wRepeatCount;
+			ss << " " << e.wVirtualKeyCode;
+			ss << " " << e.wVirtualScanCode << "  ";
+			d_keyHistory.emplace_back(ss.str());
+			if (d_keyHistory.size() > 8) {
+				d_keyHistory.pop_front(); }}
+
+			if (e.wVirtualScanCode<256) {
+				d_downKeys[e.wVirtualScanCode] = e.bKeyDown; }
+
+			if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
+				Reactor::GetInstance().Stop(); }
+			else if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
+				// Ctrl+1...Ctrl+8
+				d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1; }
+			else if (e.bKeyDown && e.dwControlKeyState==0) {
+				if (e.wVirtualScanCode == ScanCode::Semicolon) { d_fooMachine.Stop(); }
+				else if (e.wVirtualScanCode == ScanCode::Quote) { d_fooMachine.Play(); }
+				else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+
+					int adj = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
+					if (e.dwControlKeyState & kCKShift) adj *= 10;
+
+					if (d_downKeys[ScanCode::T]) {
+						d_fooMachine.d_voices[d_selectedTrack].d_params.cutoff += adj; }
+					else if (d_downKeys[ScanCode::Y]) {
+						d_fooMachine.d_voices[d_selectedTrack].d_params.resonance += adj; }
+					else if (d_downKeys[ScanCode::U]) {
+						d_fooMachine.d_voices[d_selectedTrack].d_params.attackPct += adj; }
+					else if (d_downKeys[ScanCode::I]) {
+						d_fooMachine.d_voices[d_selectedTrack].d_params.decayPct += adj; }
+					else if (d_downKeys[ScanCode::Equals]) {
+						d_fooMachine.d_gridSequencer.SetTempo(d_fooMachine.d_gridSequencer.GetTempo() + adj); }}
+				else {
+					const array<int, 16> gridscan = { 2, 3, 4, 5, 16, 17, 18, 19, 30, 31, 32, 33, 44, 45, 46, 47 };
+					int i;
+					for (i=0; i<16; i++) {
+						if (e.wVirtualScanCode == gridscan[i]) {
+							break; }}
+					if (i<16) {
+						d_fooMachine.d_gridSequencer.ToggleTrackGridNote(d_selectedTrack, i); }}}
+
+		FooMachineView(d_fooMachine, d_selectedTrack, d_keyHistory).Draw(d_console); }}
+
+private:
+	rclw::Console& d_console;
+	FooMachine& d_fooMachine;
+	int d_selectedTrack = 0;
+	std::deque<std::string> d_keyHistory;
+	std::vector<bool> d_downKeys; };
+
 
 int main(int argc, char **argv) {
 	cout << "==== BEGIN ====\n" << flush;
-
-
 
 	tstart = timeGetTime();
 
@@ -558,99 +671,19 @@ int main(int argc, char **argv) {
 	console.SetDimensions(80, 25);
 	console.Clear();
 
+	HANDLE updateEvent = CreateEvent(NULL, FALSE, FALSE, TEXT("fooMachine state changed"));
+	auto updateCallback = [&]() {
+		SetEvent(updateEvent); };
+	fooMachine.d_updateFunc = updateCallback;
 
+	FooMachineController fooMachineController(console, fooMachine);
 
-	std::vector<HANDLE> pendingEvents;
-
-
-	bool done = false;
-
-	int selectedTrack = 0;
-	std::deque<std::string> keyHistory;
-	std::vector<bool> downKeys(256, false);
-
-	while (!done) {
-		FooMachineView(fooMachine, selectedTrack, keyHistory).Draw(console);
-
-		pendingEvents.clear();
-		pendingEvents.emplace_back(GetStdHandle(STD_INPUT_HANDLE));
-		DWORD result = WaitForMultipleObjects(pendingEvents.size(), pendingEvents.data(), FALSE, 1000);
-		if (result == WAIT_TIMEOUT) {
-			// nothing
-			}
-		else if (WAIT_OBJECT_0 <= result && result < (WAIT_OBJECT_0+pendingEvents.size())) {
-			int firstSignaledIdx = result - WAIT_OBJECT_0;
-			if (firstSignaledIdx == 0) {
-				// process stdin
-				INPUT_RECORD record;
-				DWORD numRead;
-				if (!ReadConsoleInput(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead)) {
-					throw std::runtime_error("ReadConsoleInput failure"); }
-				if (record.EventType == KEY_EVENT) {
-					const auto& e = record.Event.KeyEvent;
-
-					{stringstream ss;
-					ss << (e.bKeyDown?'D':'U');
-					ss << " " << hex << e.dwControlKeyState << dec;
-					ss << " " << e.uChar.AsciiChar;
-					ss << " " << e.wRepeatCount;
-					ss << " " << e.wVirtualKeyCode;
-					ss << " " << e.wVirtualScanCode << "  ";
-					keyHistory.emplace_back(ss.str());
-					if (keyHistory.size() > 8) {
-						keyHistory.pop_front(); }}
-
-					if (e.wVirtualScanCode<256) {
-						downKeys[e.wVirtualScanCode] = e.bKeyDown; }
-
-					if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
-						done = true; }
-					else if (e.bKeyDown && e.dwControlKeyState==kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
-						// Ctrl+1...Ctrl+8
-						selectedTrack = e.wVirtualScanCode - ScanCode::Key1; }
-					else if (e.bKeyDown && e.dwControlKeyState==0) {
-						if (e.wVirtualScanCode == ScanCode::Semicolon) { fooMachine.Stop(); }
-						else if (e.wVirtualScanCode == ScanCode::Quote) { fooMachine.Play(); }
-						else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
-
-							int adj = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
-							if (e.dwControlKeyState & kCKShift) adj *= 10;
-
-							if (downKeys[ScanCode::T]) {
-								fooMachine.d_voices[selectedTrack].d_params.cutoff += adj; }
-							else if (downKeys[ScanCode::Y]) {
-								fooMachine.d_voices[selectedTrack].d_params.resonance += adj; }
-							else if (downKeys[ScanCode::U]) {
-								fooMachine.d_voices[selectedTrack].d_params.attackPct += adj; }
-							else if (downKeys[ScanCode::I]) {
-								fooMachine.d_voices[selectedTrack].d_params.decayPct += adj; }
-							else if (downKeys[ScanCode::Equals]) {
-								fooMachine.d_gridSequencer.SetTempo(fooMachine.d_gridSequencer.GetTempo() + adj); }}
-						else {
-							const array<int, 16> gridscan = { 2, 3, 4, 5, 16, 17, 18, 19, 30, 31, 32, 33, 44, 45, 46, 47 };
-							int i;
-							for (i=0; i<16; i++) {
-								if (e.wVirtualScanCode == gridscan[i]) {
-									break; }}
-							if (i<16) {
-								fooMachine.d_gridSequencer.ToggleTrackGridNote(selectedTrack, i); }}}
-
-				}}}}
-
-	/*
-
-	cout << "ASIO Driver started successfully.\n";
-	while (!stopped) {
-		Sleep(100);
-		/*std::scoped_lock lock(foolock);
-		cout << sysRefTime-tstart << " ms";
-		cout << " / " << fixed << (nanoSeconds/1000000.0) << " ms";
-		cout << " / " << (long)(nanoSeconds / 1000000.0) << " ms";
-		cout << " / " << samples << " samples";
-
-		cout << "      \r" << flush;
-		}
-		*/
+	auto& reactor = Reactor::GetInstance();
+	reactor.AddEvent(ReactorEvent{ GetStdHandle(STD_INPUT_HANDLE),
+	                               [&]() { fooMachineController.OnConsoleInputAvailable(); } });
+	reactor.AddEvent(ReactorEvent{ updateEvent,
+	                               [&]() { fooMachineController.OnFooMachineChanged(); }});
+	reactor.Run();
 
 	asio.Stop();
 	asio.DisposeBuffers();
