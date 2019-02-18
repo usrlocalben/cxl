@@ -11,6 +11,7 @@ cc_binary(
         "//src/ral/ralio:asio",
         "//src/ral/ralm:grid_sequencer",
         "//src/ral/ralw:wavetable",
+        "//src/rcl/rcls:file",
         "//src/rcl/rclw:console",
         ],
     linkopts = ['/DEFAULTLIB:winmm.lib'],

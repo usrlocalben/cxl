@@ -4,6 +4,7 @@
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
+#include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 
 #include <algorithm>
@@ -113,7 +114,7 @@ private:
 
 class FooMachine {
 public:
-	FooMachine() :d_waveTable(16) {
+	FooMachine() :d_waveTable(1024) {
 		d_gridSequencer.SetTempo(800);
 		d_voices.reserve(kNumVoices);
 		for (int i=0; i<kNumVoices; i++) {
@@ -123,15 +124,15 @@ public:
 
 		d_gridSequencer.InitializePattern();
 
-		d_voices[0].d_params.waveId = 1;
-		d_waveTable.Get(1) = ralw::MPCWave::Load(R"(c:\var\lib\cxl\samples\808 Kick_short.wav)", "808 Kick_short", false);
-
-		d_voices[1].d_params.waveId = 2;
-		d_waveTable.Get(2) = ralw::MPCWave::Load(R"(c:\var\lib\cxl\samples\808 Snare_lo1.wav)", "808 Snare_lo1", false);
-
-		d_voices[2].d_params.waveId = 3;
-		d_waveTable.Get(3) = ralw::MPCWave::Load(R"(c:\var\lib\cxl\samples\808 Hat_closed.wav)", "808 Hat_closed", false);
-	}
+		const string samplePath = R"(c:\var\lib\cxl\samples)";
+		auto files = rcls::fileglob(samplePath + R"(\*.wav)");
+		sort(begin(files), end(files));
+		int id = 1;
+		for (auto& file : files) {
+			string baseName = file.substr(0, file.size()-4);
+			d_waveTable.Get(id) = ralw::MPCWave::Load(samplePath + "\\" + file, baseName, false);
+			cout << "loaded \"" << baseName << "\"\n";
+			id++; }}
 
 	rqdq::ralio::ASIOCallbacks MakeASIOCallbacks() {
 		rqdq::ralio::ASIOCallbacks out;
@@ -724,6 +725,12 @@ int main(int argc, char **argv) {
 		info.channelNum = i;
 		info.buffers[0] = nullptr;
 		info.buffers[1] = nullptr; }
+
+	cout << "starting in ";
+	for (int i=3; i>=1; i--) {
+		cout << i << "...";
+		Sleep(1000); }
+	cout << "\n";
 
 	asio.CreateBuffers(
 		bufferInfos.data(),
