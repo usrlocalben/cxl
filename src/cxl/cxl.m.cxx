@@ -501,6 +501,12 @@ public:
 			console.Write(item).CR(); }}
 
 	void DrawTransportIndicator(rclw::Console& console) {
+		int tempo = d_fooMachine.GetTempo();
+		int whole = tempo/10;
+		int tenths = tempo%10;
+		std::stringstream ss;
+		ss << "Tempo: " << whole << "." << tenths << " bpm | ";
+		console.Position(53, 24).Write(ss.str());
 		console.Position(79-8, 24).Write(d_fooMachine.IsPlaying() ? "PLAYING" : "STOPPED"); }
 
 	int d_selectedTrack = 0;
