@@ -12,7 +12,7 @@ namespace cxl {
 
 class CXLUnitView {
 public:
-	CXLUnitView(CXLUnit&, int, int, std::deque<std::string>&);
+	CXLUnitView(CXLUnit&, int, int, std::deque<std::string>&, bool);
 	void Draw(rclw::Console& console);
 
 private:
@@ -25,6 +25,7 @@ private:
 private:
 	int d_selectedTrack = 0;
 	int d_selectedPage = 0;
+	bool d_enableKeyDebug = false;
 	std::deque<std::string>& d_keyHistory;
 	CXLUnit& d_unit; };
 

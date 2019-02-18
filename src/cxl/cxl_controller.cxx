@@ -15,6 +15,31 @@
 #include <Windows.h>
 
 namespace rqdq {
+
+namespace {
+
+using SC = rclw::ScanCode;
+
+/**
+ * LUT for converting a 4x4 matrix of scan-codes to
+ * indices for grid positions, track#, pattern# etc
+ */
+constexpr std::array<char, 16> kGridScanLUT = {
+	SC::Key1, SC::Key2, SC::Key3, SC::Key4,
+	SC::Q,    SC::W,    SC::E,    SC::R,
+	SC::A,    SC::S,    SC::D,    SC::F,
+	SC::Z,    SC::X,    SC::C,    SC::V };
+
+/**
+ * LUT for converting a 4x4 matrix of scan-codes to
+ * indices for parameter controls
+ */
+constexpr std::array<char, 8> kParamScanLUT = {
+	SC::T, SC::Y, SC::U, SC::I,
+	SC::G, SC::H, SC::J, SC::K, };
+
+}  // namespace
+
 namespace cxl {
 
 using ScanCode = rclw::ScanCode;
@@ -27,7 +52,7 @@ CXLUnitController::CXLUnitController(
 
 
 void CXLUnitController::OnCXLUnitChanged() {
-	CXLUnitView(d_unit, d_selectedTrack, d_selectedPage, d_keyHistory).Draw(d_console); }
+	CXLUnitView(d_unit, d_selectedTrack, d_selectedPage, d_keyHistory, d_enableKeyDebug).Draw(d_console); }
 
 
 void CXLUnitController::OnConsoleInputAvailable() {
@@ -37,18 +62,9 @@ void CXLUnitController::OnConsoleInputAvailable() {
 	if (ReadConsoleInputW(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead) == 0) {
 		throw std::runtime_error("ReadConsoleInput failure"); }
 	if (record.EventType == KEY_EVENT) {
-		const auto& e = record.Event.KeyEvent;
+		auto& e = record.Event.KeyEvent;
 
-		{std::stringstream ss;
-		ss << (e.bKeyDown != 0?'D':'U');
-		ss << " " << std::hex << e.dwControlKeyState << std::dec;
-		ss << " " << e.uChar.AsciiChar;
-		ss << " " << e.wRepeatCount;
-		ss << " " << e.wVirtualKeyCode;
-		ss << " " << e.wVirtualScanCode << "  ";
-		d_keyHistory.emplace_back(ss.str());
-		if (d_keyHistory.size() > 8) {
-			d_keyHistory.pop_front(); }}
+		AddKeyDebuggerEvent(&e);
 
 		if (e.wVirtualScanCode<256) {
 			d_downKeys[e.wVirtualScanCode] = (e.bKeyDown != 0); }
@@ -58,7 +74,7 @@ void CXLUnitController::OnConsoleInputAvailable() {
 		else if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
 			// Ctrl+1...Ctrl+8
 			d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
-			CXLUnitView(d_unit, d_selectedTrack, d_selectedPage, d_keyHistory).Draw(d_console); }
+			CXLUnitView(d_unit, d_selectedTrack, d_selectedPage, d_keyHistory, d_enableKeyDebug).Draw(d_console); }
 		else if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
 			if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Stop(); }
 			else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Play(); }
@@ -66,28 +82,38 @@ void CXLUnitController::OnConsoleInputAvailable() {
 
 				int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
 				if ((e.dwControlKeyState & rclw::kCKShift) != 0u) {
-					// XXX msft internal bug 9311951
+					// XXX does not work because of MSFT internal bug 9311951
 					// https://github.com/Microsoft/WSL/issues/1188
 					amt *= 10; }
 
-				if      (d_downKeys[ScanCode::T]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+0, amt); }
-				else if (d_downKeys[ScanCode::Y]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+1, amt); }
-				else if (d_downKeys[ScanCode::U]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+2, amt); }
-				else if (d_downKeys[ScanCode::I]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+3, amt); }
-				else if (d_downKeys[ScanCode::G]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+4, amt); }
-				else if (d_downKeys[ScanCode::H]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+5, amt); }
-				else if (d_downKeys[ScanCode::J]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+6, amt); }
-				else if (d_downKeys[ScanCode::K]) { d_unit.Adjust(d_selectedTrack, d_selectedPage*8+7, amt); }
+				auto it = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
+									   [&](auto& item) { return d_downKeys[item]; });
+				if (it != end(kParamScanLUT)) {
+					int idx = std::distance(begin(kParamScanLUT), it);
+					d_unit.Adjust(d_selectedTrack, d_selectedPage*8+idx, amt); }
 				else if (d_downKeys[ScanCode::Equals]) {
-					d_unit.SetTempo(d_unit.GetTempo() + amt); }}
+					d_unit.SetTempo(std::max(10, d_unit.GetTempo() + amt)); }}
 			else {
-				const std::array<int, 16> gridscan = { 2, 3, 4, 5, 16, 17, 18, 19, 30, 31, 32, 33, 44, 45, 46, 47 };
-				int i;
-				for (i=0; i<16; i++) {
-					if (e.wVirtualScanCode == gridscan[i]) {
-						break; }}
-				if (i<16) {
-					d_unit.ToggleTrackGridNote(d_selectedTrack, i); }}}}}
+				auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
+									   [&](auto &item) { return e.wVirtualScanCode == item; });
+				if (it != end(kGridScanLUT)) {
+					const int idx = std::distance(begin(kGridScanLUT), it);
+					d_unit.ToggleTrackGridNote(d_selectedTrack, idx); }}}}}
+
+
+void CXLUnitController::AddKeyDebuggerEvent(void *data) {
+	auto& e = *reinterpret_cast<KEY_EVENT_RECORD*>(data);
+	if (d_enableKeyDebug) {
+		std::stringstream ss;
+		ss << (e.bKeyDown != 0?'D':'U');
+		ss << " " << std::hex << e.dwControlKeyState << std::dec;
+		ss << " " << e.uChar.AsciiChar;
+		ss << " " << e.wRepeatCount;
+		ss << " " << e.wVirtualKeyCode;
+		ss << " " << e.wVirtualScanCode << "  ";
+		d_keyHistory.emplace_back(ss.str());
+		if (d_keyHistory.size() > 8) {
+			d_keyHistory.pop_front(); }}}
 
 
 }  // namespace cxl

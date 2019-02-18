@@ -38,11 +38,14 @@ CXLUnitView::CXLUnitView(
 	CXLUnit& unit,
 	int selectedTrack,
 	int selectedPage,
-	std::deque<std::string>& keyHistory)
+	std::deque<std::string>& keyHistory,
+	bool enableKeyDebug)
 	:d_unit(unit),
 	d_selectedTrack(selectedTrack),
 	d_selectedPage(selectedPage),
-	d_keyHistory(keyHistory) {}
+	d_keyHistory(keyHistory),
+	d_enableKeyDebug(enableKeyDebug)
+	{}
 
 
 void CXLUnitView::Draw(rclw::Console& console) {
@@ -51,7 +54,8 @@ void CXLUnitView::Draw(rclw::Console& console) {
 		.Position(79-10,0).Write("anix/rqdq");
 	DrawTrackSelection(console, 0, 2);
 	DrawGrid(console, 1, 21);
-	DrawKeyHistory(console, 60, 10);
+	if (d_enableKeyDebug) {
+		DrawKeyHistory(console, 60, 10); }
 	DrawParameters(console, 8, 6);
 	DrawTransportIndicator(console); }
 
