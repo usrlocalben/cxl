@@ -34,16 +34,20 @@ void GridSequencer::Rewind() {
 	d_t = 0; }
 
 
-void GridSequencer::Update() {
+bool GridSequencer::Update() {
+	bool changed = false;
 	if (d_state==PlayerState::Stopped && d_nextState==PlayerState::Playing) {
+		changed = true;
 		d_state = PlayerState::Playing;
 		d_sampleCounter = 0;
 		d_t = -1;  // rewind
 		d_ppqStamp = 0; }
 	if (d_state==PlayerState::Playing && d_nextState==PlayerState::Stopped) {
+		changed = true;
 		//std::cout << "[->STOPPED]" << std::flush;
 		d_state = PlayerState::Stopped;
-		d_ppqStamp = 0; }}
+		d_ppqStamp = 0; }
+	return changed; }
 
 
 void GridSequencer::Tick() {
