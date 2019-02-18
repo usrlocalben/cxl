@@ -405,7 +405,7 @@ private:
 	template<typename T>
 	void Adjust2(T& slot, T lower, T upper, T amt) {
 		T oldValue = slot;
-		T newValue = clamp(lower, oldValue+amt, upper);
+		T newValue = std::clamp(oldValue+amt, lower, upper);
 		if (oldValue != newValue) {
 			slot = newValue;
 			if (d_updateFunc) {

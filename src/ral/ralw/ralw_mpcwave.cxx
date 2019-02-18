@@ -9,14 +9,6 @@
 #include <vector>
 
 namespace rqdq {
-
-namespace {
-
-int clamp(int lower, int value, int upper) {
-	return std::max(std::min(value, upper), lower); }
-
-}  // close unnamed namespace
-
 namespace ralw {
 
 void MPCWave::Free() {

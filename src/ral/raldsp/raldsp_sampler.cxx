@@ -22,10 +22,6 @@ private:
 
 PanningLUT panningLUT;
 
-template <typename T>
-T clamp(T lower, T value, T upper) {
-	return std::min(std::max(lower, value), upper); }
-
 }  // close unnamed namespace
 
 namespace raldsp {
@@ -70,8 +66,8 @@ void SingleSampler::Trigger(int note, double velocity, int ppqstamp) {
 	const int resonance = d_params.resonance;
 	if (cutoff<127 || resonance>0) {
 		d_state.filter.SetBypass(false);
-		d_state.filter.SetCutoff(1.0 - sqrt((127-clamp(1, cutoff,    126)) / 127.0));
-		d_state.filter.SetResonance(1.0 - sqrt((127-clamp(1, resonance, 126)) / 127.0));
+		d_state.filter.SetCutoff(1.0 - sqrt((127-std::clamp(cutoff, 1, 126)) / 127.0));
+		d_state.filter.SetResonance(1.0 - sqrt((127-std::clamp(resonance, 1, 126)) / 127.0));
 		d_state.filter.Reset(); }
 	else {
 		d_state.filter.SetBypass(true); }}

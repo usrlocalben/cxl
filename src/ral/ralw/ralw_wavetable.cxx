@@ -7,15 +7,6 @@
 #include <vector>
 
 namespace rqdq {
-
-namespace {
-
-template <typename T>
-T clamp(T lower, T value, T upper) {
-	return std::max<T>(std::min<T>(value, upper), lower); }
-
-}  // namespace
-
 namespace ralw {
 
 
