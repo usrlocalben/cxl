@@ -173,6 +173,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx" />
+    <ClCompile Include="..\src\cxl\cxl_controller.cxx" />
+    <ClCompile Include="..\src\cxl\cxl_reactor.cxx" />
+    <ClCompile Include="..\src\cxl\cxl_unit.cxx" />
+    <ClCompile Include="..\src\cxl\cxl_unit_view.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_idspoutput.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx" />

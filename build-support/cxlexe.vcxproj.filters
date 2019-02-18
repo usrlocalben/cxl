@@ -39,5 +39,17 @@
     <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_controller.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_reactor.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_unit.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_unit_view.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
