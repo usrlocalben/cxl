@@ -47,7 +47,7 @@ public:
 		d_nextState = PlayerState::Stopped; }
 
 	bool Update();
-	void Tick();
+	bool Tick();
 
 	bool IsPlaying() { return d_state == PlayerState::Playing; }
 
@@ -73,6 +73,7 @@ public:
 	void InitializePattern() {
 		for (auto& track : d_tracks) {
 			std::fill(track.grid.begin(), track.grid.end(), 0); }}
+	int GetLastPlayedGridPosition() { return d_lastPlayedGridPosition; }
 
 private:
 	void IncrementT();
@@ -85,6 +86,7 @@ private:
 	int d_sampleCounter = 0;
 	int d_t = 0;
 	int d_ppqStamp = 0;
+	int d_lastPlayedGridPosition;
 	const int d_patternLengthInBars = 1;
 	std::array<int, 96> d_ppqLUT; };
 

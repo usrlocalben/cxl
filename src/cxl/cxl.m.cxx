@@ -174,10 +174,15 @@ public:
 
 		dl.resize(buffSize);
 		dr.resize(buffSize);
+		bool gridPositionUpdated = false;
 		for (int si = 0; si < buffSize; si++) {
-			d_gridSequencer.Tick();
+			bool updated = d_gridSequencer.Tick();
+			gridPositionUpdated  = gridPositionUpdated || updated;
 			std::tie(dl[si], dr[si]) = d_mixer.GetNextSample(); }
 
+		if (gridPositionUpdated) {
+			if (d_updateFunc) {
+				d_updateFunc(); }}
 
 		// perform the processing
 		for (int i=0; i<numInputChannels+numOutputChannels; i++) {
@@ -356,6 +361,8 @@ public:
 		d_gridSequencer.Stop(); }
 	bool IsPlaying() {
 		return d_gridSequencer.IsPlaying(); }
+	int GetLastPlayedGridPosition() {
+		return d_gridSequencer.GetLastPlayedGridPosition(); }
 
 	void SetTempo(int value) {
 		d_gridSequencer.SetTempo(value);
@@ -488,6 +495,8 @@ public:
 	void DrawGrid(rclw::Console& console, int x, int y) {
 		console.Position(x, y);
 		console.Write("| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
+		int pos = d_fooMachine.GetLastPlayedGridPosition();
+		console.Position(x+2 + pos*4, y).Write("o");
 		console.Position(1, y+1);
 		console.Write("| ");
 		for (int i = 0; i < 16; i++) {

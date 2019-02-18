@@ -50,7 +50,7 @@ bool GridSequencer::Update() {
 	return changed; }
 
 
-void GridSequencer::Tick() {
+bool GridSequencer::Tick() {
 	bool tracksWillUpdate = false;
 	if (d_state == PlayerState::Playing) {
 		d_sampleCounter--;
@@ -62,11 +62,15 @@ void GridSequencer::Tick() {
 				// end of pattern
 				Rewind(); }}}
 
+	bool updated = false;
 	if (tracksWillUpdate && (d_t % (kPPQ/kBeatsPerBar) == 0)) {
 		const int gridPos = d_t / (kPPQ/kBeatsPerBar);
+		d_lastPlayedGridPosition = gridPos;
+		updated = true;
 		for (auto& track : d_tracks) {
 			if (track.grid[gridPos] != 0) {
-				track.voice->Trigger(36, 1.0, 0); }}}}
+				track.voice->Trigger(36, 1.0, 0); }}}
+	return updated; }
 
 
 }  // namespace ralm
