@@ -4,6 +4,7 @@
 #include "src/cxl/cxl_unit.hxx"
 #include "src/cxl/cxl_unit_view.hxx"
 #include "src/cxl/cxl_controller.hxx"
+#include "src/cxl/cxl_config.hxx"
 
 #include <algorithm>
 #include <array>
@@ -12,6 +13,7 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include "3rdparty/fmt/include/fmt/format.h"
 
 #define NOMINMAX
 #include <Windows.h>
@@ -43,6 +45,13 @@ std::vector<ralio::ASIOChannelInfo> channelInfos;
 
 double fract(double x) {
 	return x - static_cast<int64_t>(x); }
+
+bool ConsumePrefix(std::string& text, const std::string& prefix) {
+	const int plen = prefix.size();
+	if (text.substr(0, plen) == prefix) {
+		text = text.substr(plen);
+		return true; }
+	return false; }
 
 }  // namespace
 
@@ -246,18 +255,20 @@ private:
 
 
 int main(int argc, char **argv) {
-	cout << "==== BEGIN ====\n" << flush;
+	config::Load();
 
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	asio.RefreshDriverList();
 
-	std::for_each(begin(asio.d_drivers), end(asio.d_drivers), [](auto& item) {
-				  wcout << item.stringify() << "\n"; });
+	std::for_each(begin(asio.d_drivers), end(asio.d_drivers),
+				  [](auto& item) { wcout << item.stringify() << "\n"; });
 
-	//int idx = asio.FindDriverByName("ASIO4ALL v2");
-	int idx = asio.FindDriverByName("FlexASIO");
+	int idx = asio.FindDriverByName(config::asioDriverName);
 	if (idx == -1) {
-		throw std::runtime_error("driver not found"); }
+		auto msg = fmt::format("ASIO driver \"{}\" not found in ASIO registry "
+							   "(HKEY_LOCAL_MACHINE\\Software\\ASIO)",
+							   config::asioDriverName);
+		throw std::runtime_error(msg); }
 
 	asio.OpenDriver(idx);
 	const auto info = asio.Init(nullptr);
@@ -317,12 +328,6 @@ int main(int argc, char **argv) {
 		info.buffers[0] = nullptr;
 		info.buffers[1] = nullptr; }
 
-	cout << "starting in ";
-	for (int i=3; i>=1; i--) {
-		cout << i << "...";
-		Sleep(1000); }
-	cout << "\n";
-
 	asio.CreateBuffers(
 		bufferInfos.data(),
 		numInputChannels + numOutputChannels,
@@ -330,14 +335,55 @@ int main(int argc, char **argv) {
 		&asioCallbacks
 		);
 
+	int leftChannelIdx = -1;
+	int rightChannelIdx = -1;
 	for (int i=0; i<numInputChannels+numOutputChannels; i++) {
 		channelInfos[i] = asio.GetChannelInfo(bufferInfos[i].isInput != 0, bufferInfos[i].channelNum);
-		{
-			const auto& info = channelInfos[i];
-			cout << "Ch" << info.channel << ", " << (info.isInput?" INPUT":"OUTPUT") << " \"" << info.name << "\", " << info.type << endl;
-		}
+		const auto& info = channelInfos[i];
 
-	}
+		if (!info.isInput) {
+			string mlc = config::masterLeftDest;
+			if (ConsumePrefix(mlc, "name=")) {
+				// identify connection by channel name
+				if (info.name==mlc) {
+					leftChannelIdx = i; }}
+			else if (ConsumePrefix(mlc, "num=")) {
+				// identify connection by index
+				if (info.channel==stoi(mlc)) {
+					leftChannelIdx = i; }}
+			else {
+				auto msg = fmt::format("invalid asio connection \"{}\" expected "
+				                       "either num=<num> or name=<text>", config::masterLeftDest);
+				throw std::runtime_error(msg); }
+
+			mlc = config::masterRightDest;
+			if (ConsumePrefix(mlc, "name=")) {
+				// identify connection by channel name
+				if (info.name==mlc) {
+					rightChannelIdx = i; }}
+			else if (ConsumePrefix(mlc, "num=")) {
+				// identify connection by index
+				if (info.channel==stoi(mlc)) {
+					rightChannelIdx = i; }}
+			else {
+				auto msg = fmt::format("invalid asio connection \"{}\" expected "
+				                       "either num=<num> or name=<text>", config::masterRightDest);
+				throw std::runtime_error(msg); }}
+
+		auto detail = fmt::format("Ch #{}, {} \"{}\" {}",
+		                          info.channel, info.isInput?" INPUT":"OUTPUT",
+		                          info.name, info.type);
+		cout << detail << endl; }
+
+	if (leftChannelIdx == -1 || rightChannelIdx == -1) {
+		cerr << "one or more master output channels were not connected to ASIO channels.  aborting.\n";
+		return 1; }
+
+	cout << "starting in ";
+	for (int i=3; i>=1; i--) {
+		cout << i << "...";
+		Sleep(1000); }
+	cout << "\n";
 
 	asio.Start();
 

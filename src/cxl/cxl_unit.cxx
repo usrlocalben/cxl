@@ -119,6 +119,17 @@ void CXLUnit::Adjust(int ti, int pi, int amt) {
 	else if (pi == 4) { Adjust2(d_voices[ti].d_params.waveId, 0, 1000, amt); }}
 
 
+void CXLUnit::DecrementKit() {
+	if (d_kitNum > 0) {
+		d_kitNum--; }}
+
+void CXLUnit::IncrementKit() {
+	if (d_kitNum < 99) {
+		d_kitNum++; }}
+
+void CXLUnit::SaveKit() {}
+void CXLUnit::LoadKit() {}
+
 void CXLUnit::Render(float* left, float* right, int numSamples) {
 	bool stateChanged = d_gridSequencer.Update();
 	if (stateChanged && d_updateFunc) {

@@ -78,6 +78,10 @@ void CXLUnitController::OnConsoleInputAvailable() {
 		else if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
 			if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Stop(); }
 			else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Play(); }
+			else if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); }
+			else if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); }
+			else if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); }
+			else if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); }
 			else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
 				int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);

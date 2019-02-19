@@ -10,6 +10,17 @@ cc_library(
 
 
 cc_library(
+    name = "config",
+    srcs = ["cxl_config.cxx"],
+    hdrs = ["cxl_config.hxx"],
+    deps = [
+        "//3rdparty/winreg",
+        "//src/rcl/rclt:util",
+        ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
     name = "unit",
     srcs = ["cxl_unit.cxx"],
     hdrs = ["cxl_unit.hxx"],
@@ -51,8 +62,10 @@ cc_binary(
     name = "cxl",
     srcs = ["cxl.m.cxx"],
     deps = [
+        "//3rdparty/fmt",
         "//src/ral/ralio:asio",
         "//src/rcl/rclw:console",
+        ":config",
         ":controller",
         ":reactor",
         ":unit",

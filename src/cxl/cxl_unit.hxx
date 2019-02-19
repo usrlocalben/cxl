@@ -32,6 +32,10 @@ public:
 	int GetTrackGridNote(int track, int pos);
 
 	// sampler voices
+	void IncrementKit();
+	void DecrementKit();
+	void SaveKit();
+	void LoadKit();
 	const std::string GetVoiceParameterName(int track, int num);
 	const std::string& GetWaveName(int waveId);
 	int GetVoiceParameterValue(int track, int num);
@@ -53,6 +57,8 @@ private:
 public:
 	std::function<void()> d_updateFunc;
 private:
+	int d_kitNum = 0;
+	int d_patternNum = 0;
 	ralw::WaveTable d_waveTable;
 	raldsp::BasicMixer d_mixer;
 	ralm::GridSequencer d_gridSequencer;
