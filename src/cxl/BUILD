@@ -30,6 +30,7 @@ cc_library(
         "//src/ral/ralm:grid_sequencer",
         "//src/ral/ralw:wavetable",
         "//src/rcl/rcls:file",
+        ":config",
         ],
     copts = RSR_DEFAULT_COPTS,)
 

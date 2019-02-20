@@ -53,6 +53,32 @@ bool ConsumePrefix(std::string& text, const std::string& prefix) {
 		return true; }
 	return false; }
 
+
+class WindowsEvent {
+public:
+	WindowsEvent() {
+		d_event = CreateEventW(nullptr, FALSE, FALSE, nullptr); }
+	WindowsEvent(const WindowsEvent& other) = delete;
+	WindowsEvent(WindowsEvent&& other) = delete;
+	WindowsEvent& operator=(const WindowsEvent& other) = delete;
+	~WindowsEvent() { CloseHandle(d_event); }
+	void Set() { SetEvent(d_event); }
+	HANDLE GetHandle() { return d_event; }
+private:
+	HANDLE d_event; };
+
+
+/**
+ * based on https://stackoverflow.com/questions/1517685/recursive-createdirectory
+ */
+void EnsureDirectoryExists(const std::string& path) {
+	size_t pos = 0;
+	do {
+		pos = path.find_first_of("\\/", pos+1);
+		CreateDirectoryA(path.substr(0, pos).c_str(), NULL);
+	} while (pos != std::string::npos); }
+
+
 }  // namespace
 
 namespace cxl {
@@ -73,6 +99,10 @@ public:
 		out.ptr = reinterpret_cast<void*>(this);
 		return out; }
 
+	void Connect(int leftIdx, int rightIdx) {
+		d_leftIdx = leftIdx;
+		d_rightIdx = rightIdx; }
+
 	static ralio::ASIOTime* onBufferReadyExJmp(void* ptr, ralio::ASIOTime *timeInfo, long index, ralio::ASIOBool processNow) {
 		auto& self = *reinterpret_cast<ASIOConnector*>(ptr);
 		return self.onBufferReadyEx(timeInfo, index, processNow); }
@@ -89,35 +119,37 @@ public:
 		for (int i=0; i<numInputChannels+numOutputChannels; i++) {
 
 			if (!static_cast<bool>(bufferInfos[i].isInput)) {
-				if (i==1) {
-					// XXX output selection
+				float* srcPtr = nullptr;
+				if (i == d_leftIdx) {
+					srcPtr = dl.data(); }
+				else if (i == d_rightIdx) {
+					srcPtr = dr.data(); }
+				else {
 					continue; }
 
 				//cout << "CT(" << int(channelInfos[i].type) << ")";
 				// OK do processing for the outputs only
 				switch (channelInfos[i].type) {
 				case ASIOSTInt16LSB:
-					memset (bufferInfos[i].buffers[index], 0, buffSize * 2);
+					{auto dst = reinterpret_cast<int16_t*>(bufferInfos[i].buffers[index]);
+					for (int si=0; si<buffSize; si++) {
+						dst[si] = srcPtr[si] * std::numeric_limits<int16_t>::max();}}
 					break;
 				case ASIOSTInt24LSB:		// used for 20 bits as well
 					memset (bufferInfos[i].buffers[index], 0, buffSize * 3);
 					break;
 				case ASIOSTInt32LSB:
-					//memset (bufferInfos[i].buffers[index], 0, buffSize * 4);
-					{auto dst = reinterpret_cast<int*>(bufferInfos[i].buffers[index]);
+					{auto dst = reinterpret_cast<int32_t*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
-						double t = (processedSamples + si) / 44100.0;
-						double phase = fract(t);
-						double hz = 440.0 + sin(phase*2*3.14159262) * 50.0;
-						dst[si] = sin(fract(t)*hz*2*3.14159262) * 0x7fffffff; }}
+						dst[si] = srcPtr[si] * std::numeric_limits<int32_t>::max();}}
 					break;
 				case ASIOSTFloat32LSB:		// IEEE 754 32 bit float, as found on Intel x86 architecture
-					//memset (bufferInfos[i].buffers[index], 0, buffSize * 4);
 					{auto dst = reinterpret_cast<float*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) { dst[si] = dl[si];}}
 					break;
 				case ASIOSTFloat64LSB: 		// IEEE 754 64 bit double float, as found on Intel x86 architecture
-					memset (bufferInfos[i].buffers[index], 0, buffSize * 8);
+					{auto dst = reinterpret_cast<double*>(bufferInfos[i].buffers[index]);
+					for (int si=0; si<buffSize; si++) { dst[si] = dl[si];}}
 					break;
 
 					// these are used for 32 bit data buffer, with different alignment of the data inside
@@ -251,11 +283,16 @@ public:
 
 private:
 	std::vector<float> dl, dr;
+	int d_leftIdx = -1;
+	int d_rightIdx = -1;
 	CXLUnit& d_unit; };
 
 
 int main(int argc, char **argv) {
 	config::Load();
+
+	const array<string, 3> userDirs = {config::banksDir, config::samplesDir, config::kitsDir};
+	for_each(userDirs.begin(), userDirs.end(), EnsureDirectoryExists);
 
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	asio.RefreshDriverList();
@@ -319,14 +356,12 @@ int main(int argc, char **argv) {
 		auto& info = bufferInfos[idx++];
 		info.isInput = ralio::ASIOTrue;
 		info.channelNum = i;
-		info.buffers[0] = nullptr;
-		info.buffers[1] = nullptr; }
+		info.buffers[0] = info.buffers[1] = nullptr; }
 	for (int i=0; i<numOutputChannels; i++) {
 		auto& info = bufferInfos[idx++];
 		info.isInput = ralio::ASIOFalse;
 		info.channelNum = i;
-		info.buffers[0] = nullptr;
-		info.buffers[1] = nullptr; }
+		info.buffers[0] = info.buffers[1] = nullptr; }
 
 	asio.CreateBuffers(
 		bufferInfos.data(),
@@ -379,6 +414,8 @@ int main(int argc, char **argv) {
 		cerr << "one or more master output channels were not connected to ASIO channels.  aborting.\n";
 		return 1; }
 
+	connector.Connect(leftChannelIdx, rightChannelIdx);
+
 	cout << "starting in ";
 	for (int i=3; i>=1; i--) {
 		cout << i << "...";
@@ -392,10 +429,8 @@ int main(int argc, char **argv) {
 	console.SetDimensions(80, 25);
 	console.Clear();
 
-	HANDLE updateEvent = CreateEvent(nullptr, FALSE, FALSE, TEXT("unit state changed"));
-	auto updateCallback = [&]() {
-		SetEvent(updateEvent); };
-	unit.d_updateFunc = updateCallback;
+	WindowsEvent updateEvent;
+	unit.d_updateFunc = [&]() { updateEvent.Set(); };
 
 	CXLUnitController unitController(console, unit);
 
@@ -403,7 +438,7 @@ int main(int argc, char **argv) {
 	auto& reactor = Reactor::GetInstance();
 	reactor.AddEvent(ReactorEvent{ GetStdHandle(STD_INPUT_HANDLE),
 	                               [&]() { unitController.OnConsoleInputAvailable(); } });
-	reactor.AddEvent(ReactorEvent{ updateEvent,
+	reactor.AddEvent(ReactorEvent{ updateEvent.GetHandle(),
 	                               [&]() { unitController.OnCXLUnitChanged(); }});
 	reactor.Run();
 
@@ -426,4 +461,5 @@ int main(int argc, char **argv) {
 		std::cout << "exception: " << err.what() << std::endl;
 		result = EXIT_FAILURE; }
 	exit(result); }
+
 

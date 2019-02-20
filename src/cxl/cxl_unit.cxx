@@ -1,5 +1,5 @@
 #include "src/cxl/cxl_unit.hxx"
-
+#include "src/cxl/cxl_config.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
@@ -35,13 +35,12 @@ CXLUnit::CXLUnit()
 
 	d_gridSequencer.InitializePattern();
 
-	const std::string samplePath = R"(c:\var\lib\cxl\samples)";
-	auto files = rcls::fileglob(samplePath + R"(\*.wav)");
+	auto files = rcls::fileglob(config::samplesDir + R"(\*.wav)");
 	sort(begin(files), end(files));
 	int id = 1;
 	for (auto& file : files) {
 		std::string baseName = file.substr(0, file.size()-4);
-		d_waveTable.Get(id) = ralw::MPCWave::Load(samplePath + "\\" + file, baseName, false);
+		d_waveTable.Get(id) = ralw::MPCWave::Load(config::samplesDir + "\\" + file, baseName, false);
 		std::cout << "loaded \"" << baseName << "\"\n";
 		id++; }}
 
