@@ -48,38 +48,38 @@ std::string masterLeftDest = "name=OUT 0";
 std::string masterRightDest = "name=OUT 1";
 
 std::string dataDir = R"(c:\var\lib\cxl)";
-std::string samplesDir = "samples";
-std::string banksDir = "banks";
-std::string kitsDir = "kits";
+std::string sampleDir = "samples";
+std::string patternDir = "patterns";
+std::string kitDir = "kits";
 
 
 void Load() {
 	auto key = winreg::RegKey{ HKEY_CURRENT_USER, L"SOFTWARE\\rqdq\\cxl" };
 
 	try {
-		asioDriverName = rclt::UTF8Codec::encode(key.GetStringValue(L"asioDriverName")); }
+		asioDriverName = rclt::UTF8Codec::Encode(key.GetStringValue(L"asioDriverName")); }
 	catch (const winreg::RegException& err) { err; }
 
 	try {
-		masterLeftDest = rclt::UTF8Codec::encode(key.GetStringValue(L"masterLeftDest")); }
+		masterLeftDest = rclt::UTF8Codec::Encode(key.GetStringValue(L"masterLeftDest")); }
 	catch (const winreg::RegException& err) { err; }
 
 	try {
-		masterRightDest = rclt::UTF8Codec::encode(key.GetStringValue(L"masterRightDest")); }
+		masterRightDest = rclt::UTF8Codec::Encode(key.GetStringValue(L"masterRightDest")); }
 	catch (const winreg::RegException& err) { err; }
 
 	try {
-		dataDir = rclt::UTF8Codec::encode(key.GetStringValue(L"dataDir")); }
+		dataDir = rclt::UTF8Codec::Encode(key.GetStringValue(L"dataDir")); }
 	catch (const winreg::RegException& err) { err; }
 
-	auto appDataDir = rclt::UTF8Codec::encode(GetEnvVar(L"APPDATA").value_or(L"%APPDATA%"));
+	auto appDataDir = rclt::UTF8Codec::Encode(GetEnvVar(L"APPDATA").value_or(L"%APPDATA%"));
 	//std::cout << ">>> APPDATA = [" << appDataDir << "]\n";
 	auto mod = std::regex_replace(dataDir, std::regex("%APPDATA%", std::regex::icase), appDataDir);
 	dataDir = mod;
 
-	samplesDir = dataDir + "\\" + "samples";
-	banksDir = dataDir + "\\" + "banks";
-	kitsDir = dataDir + "\\" + "kits";
+	sampleDir = dataDir + "\\" + "samples";
+	patternDir = dataDir + "\\" + "patterns";
+	kitDir = dataDir + "\\" + "kits";
 }
 	//std::cout << ">>> dataDir = [" << dataDir << "]\n"; }
 

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "3rdparty/wink/wink/signal.hpp"
+#include "3rdparty/wink/wink/slot.hpp"
 
 namespace rqdq {
 namespace cxl {
@@ -40,6 +41,9 @@ public:
 	const std::string& GetWaveName(int waveId);
 	int GetVoiceParameterValue(int track, int num);
 	void Adjust(int track, int param, int amt);
+	void Trigger(int track);
+	void SwitchPattern(int pid);
+	void CommitPattern();
 
     // audio render
     void Render(float* left, float* right, int numSamples);

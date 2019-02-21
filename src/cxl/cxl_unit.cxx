@@ -6,12 +6,15 @@
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
+#include "src/rcl/rclt/rclt_util.hxx"
 
 #include <utility>
 #include <algorithm>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
+#include "3rdparty/fmt/include/fmt/format.h"
 
 
 namespace rqdq {
@@ -32,14 +35,15 @@ CXLUnit::CXLUnit()
 		d_mixer.AddChannel(d_voices.back(), 1.0f);
 		d_gridSequencer.AddTrack(d_voices.back()); }
 
-	d_gridSequencer.InitializePattern();
+	SwitchPattern(0);
+	//d_gridSequencer.InitializePattern();
 
-	auto files = rcls::fileglob(config::samplesDir + R"(\*.wav)");
+	auto files = rcls::fileglob(config::sampleDir + R"(\*.wav)");
 	sort(begin(files), end(files));
 	int id = 1;
 	for (auto& file : files) {
 		std::string baseName = file.substr(0, file.size()-4);
-		d_waveTable.Get(id) = ralw::MPCWave::Load(config::samplesDir + "\\" + file, baseName, false);
+		d_waveTable.Get(id) = ralw::MPCWave::Load(config::sampleDir + "\\" + file, baseName, false);
 		std::cout << "loaded \"" << baseName << "\"\n";
 		id++; }}
 
@@ -110,8 +114,8 @@ int CXLUnit::GetVoiceParameterValue(int track, int num) {
 void CXLUnit::Adjust(int ti, int pi, int amt) {
 	if      (pi == 0) { Adjust2(ti, d_voices[ti].d_params.cutoff, 0, 127, amt); }
 	else if (pi == 1) { Adjust2(ti, d_voices[ti].d_params.resonance, 0, 127, amt); }
-	else if (pi == 2) { Adjust2(ti, d_voices[ti].d_params.attackPct, 1, 100, amt); }
-	else if (pi == 3) { Adjust2(ti, d_voices[ti].d_params.decayPct, 1, 100, amt); }
+	else if (pi == 2) { Adjust2(ti, d_voices[ti].d_params.attackPct, 0, 100, amt); }
+	else if (pi == 3) { Adjust2(ti, d_voices[ti].d_params.decayPct, 0, 100, amt); }
 	else if (pi == 4) { Adjust2(ti, d_voices[ti].d_params.waveId, 0, 1000, amt); }}
 
 
@@ -139,6 +143,48 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 
 	if (gridPositionUpdated) {
 		d_playbackPositionChanged.emit(GetLastPlayedGridPosition()); }}
+
+
+void CXLUnit::Trigger(int track) {
+	d_voices[track].Trigger(36, 1.0, 0); }
+
+
+void CXLUnit::CommitPattern() {
+	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, d_patternNum);
+	auto fd = std::ofstream(path.c_str());
+	fd << "Kit: " << "XXX" << "\n";
+	for (int ti=0; ti<16; ti++) {
+		bool first = true;
+		for (int pos=0; pos<16; pos++) {
+			if (first) {
+				fd << "Track " << ti << ": ";
+				first = false; }
+			else {
+				fd << ","; }
+			fd << (GetTrackGridNote(ti, pos) != 0 ? "X" : ".");}
+		fd << "\n"; }}
+
+
+void CXLUnit::SwitchPattern(int pid) {
+	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, pid);
+	d_gridSequencer.InitializePattern();
+	auto fd = std::ifstream(path.c_str());
+	if (fd.good()) {
+		std::string line;
+		while (getline(fd, line)) {
+			if (rclt::ConsumePrefix(line, "Kit: ")) {
+				// XXX
+				}
+			else if (rclt::ConsumePrefix(line, "Track ")) {
+				auto segs = rclt::Explode(line, ':');
+				auto trackId = std::stoi(segs[0]);
+				segs = rclt::Explode(segs[1], ',');
+				int pos = 0;
+				for (auto& chunk : segs) {
+					bool on = chunk.find('X') != std::string::npos;
+					if (on) {
+						ToggleTrackGridNote(trackId, pos); }
+					pos++; }}}}}
 
 }  // namespace cxl
 }  // namespace rqdq

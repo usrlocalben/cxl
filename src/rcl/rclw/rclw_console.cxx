@@ -88,7 +88,7 @@ Console& Console::Write(const std::wstring& text) {
 
 
 Console& Console::Write(const std::string& text) {
-	auto tmp = rclt::UTF8Codec::decode(text);
+	auto tmp = rclt::UTF8Codec::Decode(text);
 	return Write(tmp); }
 
 

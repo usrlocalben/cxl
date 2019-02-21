@@ -87,7 +87,7 @@ int ASIOSystem::FindDriverByName(const std::wstring& text) const {
 
 
 int ASIOSystem::FindDriverByName(const std::string& text) const {
-	return FindDriverByName(rclt::UTF8Codec::decode(text)); }
+	return FindDriverByName(rclt::UTF8Codec::Decode(text)); }
 
 
 void ASIOSystem::OpenDriver(int idx) {

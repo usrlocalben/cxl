@@ -4,6 +4,7 @@
 #include "src/cxl/cxl_unit.hxx"
 #include "src/cxl/cxl_controller.hxx"
 #include "src/cxl/cxl_config.hxx"
+#include "src/rcl/rclt/rclt_util.hxx"
 
 #include <algorithm>
 #include <array>
@@ -44,15 +45,6 @@ std::vector<ralio::ASIOChannelInfo> channelInfos;
 
 double fract(double x) {
 	return x - static_cast<int64_t>(x); }
-
-bool ConsumePrefix(std::string& text, const std::string& prefix) {
-	const int plen = prefix.size();
-	if (text.substr(0, plen) == prefix) {
-		text = text.substr(plen);
-		return true; }
-	return false; }
-
-
 
 
 /**
@@ -280,7 +272,7 @@ private:
 int main(int argc, char **argv) {
 	config::Load();
 
-	const array<string, 3> userDirs = {config::banksDir, config::samplesDir, config::kitsDir};
+	const array<string, 3> userDirs = {config::patternDir, config::sampleDir, config::kitDir};
 	for_each(userDirs.begin(), userDirs.end(), EnsureDirectoryExists);
 
 	auto& asio = ralio::ASIOSystem::GetInstance();
@@ -369,11 +361,11 @@ int main(int argc, char **argv) {
 
 		if (!info.isInput) {
 			string mlc = config::masterLeftDest;
-			if (ConsumePrefix(mlc, "name=")) {
+			if (rclt::ConsumePrefix(mlc, "name=")) {
 				// identify connection by channel name
 				if (info.name==mlc) {
 					leftChannelIdx = i; }}
-			else if (ConsumePrefix(mlc, "num=")) {
+			else if (rclt::ConsumePrefix(mlc, "num=")) {
 				// identify connection by index
 				if (info.channel==stoi(mlc)) {
 					leftChannelIdx = i; }}
@@ -383,11 +375,11 @@ int main(int argc, char **argv) {
 				throw std::runtime_error(msg); }
 
 			mlc = config::masterRightDest;
-			if (ConsumePrefix(mlc, "name=")) {
+			if (rclt::ConsumePrefix(mlc, "name=")) {
 				// identify connection by channel name
 				if (info.name==mlc) {
 					rightChannelIdx = i; }}
-			else if (ConsumePrefix(mlc, "num=")) {
+			else if (rclt::ConsumePrefix(mlc, "num=")) {
 				// identify connection by index
 				if (info.channel==stoi(mlc)) {
 					rightChannelIdx = i; }}

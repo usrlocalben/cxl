@@ -183,8 +183,9 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 		return true; }
 	else if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
-		if      (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Stop(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Play(); return true; }
+		if      (e.wVirtualScanCode == ScanCode::L) { d_isRecording = !d_isRecording; return true; }
+		if      (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Play(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Stop(); return true; }
 		else if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); return true; }
 		else if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); return true; }
 		else if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); return true; }
@@ -212,7 +213,12 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 								   [&](auto &item) { return e.wVirtualScanCode == item; });
 			if (it != end(kGridScanLUT)) {
 				const int idx = std::distance(begin(kGridScanLUT), it);
-				d_unit.ToggleTrackGridNote(d_selectedTrack, idx);
+				if (reactor.GetKeyState(ScanCode::P)) {
+					d_unit.SwitchPattern(idx); }
+				else if (d_isRecording) {
+					d_unit.ToggleTrackGridNote(d_selectedTrack, idx); }
+				else {
+					d_unit.Trigger(idx); }
 				return true; }}}
 	return false; }
 

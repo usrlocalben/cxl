@@ -17,7 +17,7 @@ namespace rqdq {
 namespace rclt {
 
 
-std::wstring UTF8Codec::decode(const std::string& str) {
+std::wstring UTF8Codec::Decode(const std::string& str) {
 	if (str.empty()) {
 		return std::wstring{}; }
 	int needed = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, str.c_str(), str.size(), NULL, 0);
@@ -28,7 +28,7 @@ std::wstring UTF8Codec::decode(const std::string& str) {
 	return out; }
 
 
-std::string UTF8Codec::encode(const std::wstring& str) {
+std::string UTF8Codec::Encode(const std::wstring& str) {
 	if (str.empty()) {
 		return std::string{}; }
 	int needed = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, str.c_str(), str.size(), NULL, 0, NULL, NULL);
@@ -39,7 +39,7 @@ std::string UTF8Codec::encode(const std::wstring& str) {
 	return out; }
 
 
-std::vector<std::string> explode(const std::string& str, char ch) {
+std::vector<std::string> Explode(const std::string& str, char ch) {
 	std::vector<std::string> items;
 	std::string src(str);
 	auto nextmatch = src.find(ch);
@@ -53,14 +53,14 @@ std::vector<std::string> explode(const std::string& str, char ch) {
 	return items; }
 
 
-bool consumePrefix(std::string& str, const std::string& prefix) {
+bool ConsumePrefix(std::string& str, const std::string& prefix) {
 	if (str.compare(0, prefix.length(), prefix) == 0) {
 		str.erase(0, prefix.length());
 		return true; }
 	return false; }
 
 
-std::string trim(const std::string &s) {
+std::string Trim(const std::string &s) {
 	std::string::const_iterator it = s.begin();
 	while (it != s.end() && isspace(*it))
 		it++;

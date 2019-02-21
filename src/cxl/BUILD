@@ -35,6 +35,7 @@ cc_library(
     srcs = ["cxl_unit.cxx"],
     hdrs = ["cxl_unit.hxx"],
     deps = [
+        "//3rdparty/fmt",
         "//3rdparty/wink",
         "//src/ral/raldsp:mixer",
         "//src/ral/raldsp:sampler",

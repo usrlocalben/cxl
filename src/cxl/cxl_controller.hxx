@@ -42,6 +42,7 @@ private:
 	CXLUnit& d_unit;
 	int d_selectedTrack = 0;
 	const int d_selectedPage = 0;
+	bool d_isRecording = false;
 	bool d_enableKeyDebug = true;
 	std::deque<std::string> d_keyHistory; };
 

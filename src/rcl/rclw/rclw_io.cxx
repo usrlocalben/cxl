@@ -12,7 +12,7 @@ namespace rqdq {
 namespace rclw {
 
 void EnsureOpenable(const std::wstring& path) {
-	const auto tmp = rclt::UTF8Codec::encode(path);
+	const auto tmp = rclt::UTF8Codec::Encode(path);
 	const char* pathPtr = tmp.c_str();
 	OFSTRUCT ofs;
 	HFILE hfile;
