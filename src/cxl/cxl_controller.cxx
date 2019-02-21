@@ -2,7 +2,6 @@
 
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_unit_view.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 
 #include <array>
@@ -38,75 +37,187 @@ constexpr std::array<char, 8> kParamScanLUT = {
 	SC::T, SC::Y, SC::U, SC::I,
 	SC::G, SC::H, SC::J, SC::K, };
 
+
+const std::array<const std::string, 16> kTrackNames = {
+	"BD", "SD", "HT", "MD", "LT", "CP", "RS", "CB",
+	"CH", "OH", "RC", "CC", "M1", "M2", "M3", "M4" };
+
+
+char tolower(char ch) {
+	if ('A' <= ch && ch <= 'Z') {
+		return ch - 'A' + 'a'; }
+	return ch; }
+
+
+const std::string& tolower(const std::string& s) {
+	thread_local std::string tmp;
+	tmp.clear();
+	for (auto ch : s) {
+		tmp.push_back(tolower(ch)); }
+	return tmp; }
+
 }  // namespace
 
 namespace cxl {
 
 using ScanCode = rclw::ScanCode;
 
-CXLUnitController::CXLUnitController(
-	rclw::Console& console,
-	CXLUnit& unit)
-	:d_console(console), d_unit(unit) {
-	d_downKeys.resize(256, false); }
+UIRoot::UIRoot(CXLUnit& unit)
+	:d_unit(unit) {
+	auto& reactor = Reactor::GetInstance();
+
+	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedMT);
+	reactor.AddEvent({ d_playbackStateChangedEvent.GetHandle(),
+	                   [&]() { onCXLUnitPlaybackStateChanged(); }});
+
+	d_unit.d_playbackPositionChanged.connect(this, &UIRoot::onCXLUnitPlaybackPositionChangedMT);
+	reactor.AddEvent({ d_playbackPositionChangedEvent.GetHandle(),
+	                   [&]() { onCXLUnitPlaybackPositionChanged(); }}); }
 
 
-void CXLUnitController::OnCXLUnitChanged() {
-	CXLUnitView(d_unit, d_selectedTrack, d_selectedPage, d_keyHistory, d_enableKeyDebug).Draw(d_console); }
+/**
+ * the playback signal handlers are called from the ASIO
+ * thread.  set the associated event, and it will be
+ * handled by the main thread.
+ */
+void UIRoot::onCXLUnitPlaybackStateChangedMT(bool isPlaying) {
+	d_playbackStateChangedEvent.Set(); }
+void UIRoot::onCXLUnitPlaybackStateChanged() {
+	Draw(); }
 
 
-void CXLUnitController::OnConsoleInputAvailable() {
-	// process stdin
-	INPUT_RECORD record;
-	DWORD numRead;
-	if (ReadConsoleInputW(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead) == 0) {
-		throw std::runtime_error("ReadConsoleInput failure"); }
-	if (record.EventType == KEY_EVENT) {
-		auto& e = record.Event.KeyEvent;
-
-		AddKeyDebuggerEvent(&e);
-
-		if (e.wVirtualScanCode<256) {
-			d_downKeys[e.wVirtualScanCode] = (e.bKeyDown != 0); }
-
-		if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
-			Reactor::GetInstance().Stop(); }
-		else if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
-			// Ctrl+1...Ctrl+8
-			d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
-			CXLUnitView(d_unit, d_selectedTrack, d_selectedPage, d_keyHistory, d_enableKeyDebug).Draw(d_console); }
-		else if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
-			if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Stop(); }
-			else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Play(); }
-			else if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); }
-			else if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); }
-			else if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); }
-			else if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); }
-			else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
-
-				int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
-				if ((e.dwControlKeyState & rclw::kCKShift) != 0u) {
-					// XXX does not work because of MSFT internal bug 9311951
-					// https://github.com/Microsoft/WSL/issues/1188
-					amt *= 10; }
-
-				auto it = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
-									   [&](auto& item) { return d_downKeys[item]; });
-				if (it != end(kParamScanLUT)) {
-					int idx = std::distance(begin(kParamScanLUT), it);
-					d_unit.Adjust(d_selectedTrack, d_selectedPage*8+idx, amt); }
-				else if (d_downKeys[ScanCode::Equals]) {
-					d_unit.SetTempo(std::max(10, d_unit.GetTempo() + amt)); }}
-			else {
-				auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
-									   [&](auto &item) { return e.wVirtualScanCode == item; });
-				if (it != end(kGridScanLUT)) {
-					const int idx = std::distance(begin(kGridScanLUT), it);
-					d_unit.ToggleTrackGridNote(d_selectedTrack, idx); }}}}}
+void UIRoot::onCXLUnitPlaybackPositionChangedMT(int pos) {
+	d_playbackPositionChangedEvent.Set(); }
+void UIRoot::onCXLUnitPlaybackPositionChanged() {
+	Draw(); }
 
 
-void CXLUnitController::AddKeyDebuggerEvent(void *data) {
-	auto& e = *reinterpret_cast<KEY_EVENT_RECORD*>(data);
+void UIRoot::Draw() {
+	auto& console = rclw::Console::GetInstance();
+	console
+		.Position(1,0).Write("cxl 0.1.0")
+		.Position(79-10,0).Write("anix/rqdq");
+	DrawTrackSelection(0, 2);
+	DrawGrid(1, 21);
+	if (d_enableKeyDebug) {
+		DrawKeyHistory(60, 10); }
+	DrawParameters(8, 6);
+	DrawTransportIndicator(); }
+
+
+void UIRoot::DrawTrackSelection(int x, int y) {
+	auto& console = rclw::Console::GetInstance();
+	console
+		.Position(x, y)
+		.LeftEdge(x);
+	console.Write("  ");
+	for (int i = 0; i < 8; i++) {
+		console.Write(tolower(kTrackNames[i]) + " ");}
+	console.CR();
+	console.Write("  ");
+	for (int i = 8; i <16; i++) {
+		console.Write(tolower(kTrackNames[i]) + " ");}
+
+	int selY = d_selectedTrack / 8       +  y;
+	int selX = (d_selectedTrack % 8) * 3 + (x+2);
+	console.Position(selX, selY).Write(kTrackNames[d_selectedTrack]);
+	console.Position(selX-1, selY).Write("[");
+	console.Position(selX+2, selY).Write("]"); }
+
+
+void UIRoot::DrawParameters(int x, int y) {
+	auto& console = rclw::Console::GetInstance();
+	console.Position(x, y).LeftEdge(x);
+	for (int i = 0; i < 8; i++) {
+		int paramNum = d_selectedPage*8+i;
+		auto& paramName = d_unit.GetVoiceParameterName(d_selectedTrack, paramNum);
+		int value = d_unit.GetVoiceParameterValue(d_selectedTrack, paramNum);
+		std::stringstream ss;
+		ss << paramName << ": " << value << "      ";
+		console.Write(ss.str()).CR(); }
+	int waveId = d_unit.GetVoiceParameterValue(d_selectedTrack, 4);
+	std::string waveName = d_unit.GetWaveName(waveId);
+	console.Position(20,10).Write(waveName + "         ");}
+
+
+void UIRoot::DrawGrid(int x, int y) {
+	auto& console = rclw::Console::GetInstance();
+	console.Position(x, y);
+	console.Write("| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
+	int pos = d_unit.GetLastPlayedGridPosition();
+	console.Position(x+2 + pos*4, y).Write("o");
+	console.Position(1, y+1);
+	console.Write("| ");
+	for (int i = 0; i < 16; i++) {
+		auto value = d_unit.GetTrackGridNote(d_selectedTrack, i);
+		console.Write(value != 0 ? "X" : " ");
+		console.Write(" | "); }}
+
+
+void UIRoot::DrawKeyHistory(int x, int y) {
+	auto& console = rclw::Console::GetInstance();
+	console.Position(x, y).LeftEdge(x);
+	for (const auto& item : d_keyHistory) {
+		console.Write(item).CR(); }}
+
+
+void UIRoot::DrawTransportIndicator() {
+	auto& console = rclw::Console::GetInstance();
+	int tempo = d_unit.GetTempo();
+	int whole = tempo/10;
+	int tenths = tempo%10;
+	std::stringstream ss;
+	ss << "Tempo: " << whole << "." << tenths << " bpm | ";
+	console.Position(53, 24).Write(ss.str());
+	console.Position(79-8, 24).Write(d_unit.IsPlaying() ? "PLAYING" : "STOPPED"); }
+
+
+bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
+	AddKeyDebuggerEvent(e);
+	auto& reactor = Reactor::GetInstance();
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
+		reactor.Stop();
+		return true; }
+	else if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
+		// Ctrl+1...Ctrl+8
+		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
+		return true; }
+	else if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
+		if      (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Stop(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Play(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); return true; }
+		else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+
+			int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
+			if ((e.dwControlKeyState & rclw::kCKShift) != 0u) {
+				// XXX does not work because of MSFT internal bug 9311951
+				// https://github.com/Microsoft/WSL/issues/1188
+				amt *= 10; }
+
+			auto it = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
+								   [&](auto& item) { return reactor.GetKeyState(item); });
+			if (it != end(kParamScanLUT)) {
+				int idx = std::distance(begin(kParamScanLUT), it);
+				d_unit.Adjust(d_selectedTrack, d_selectedPage*8+idx, amt); }
+			else if (reactor.GetKeyState(ScanCode::Equals)) {
+				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + amt)); }
+
+			// indicate handled even if not paired with a valid key
+			return true; }
+		else {
+			auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
+								   [&](auto &item) { return e.wVirtualScanCode == item; });
+			if (it != end(kGridScanLUT)) {
+				const int idx = std::distance(begin(kGridScanLUT), it);
+				d_unit.ToggleTrackGridNote(d_selectedTrack, idx);
+				return true; }}}
+	return false; }
+
+
+void UIRoot::AddKeyDebuggerEvent(KEY_EVENT_RECORD e) {
 	if (d_enableKeyDebug) {
 		std::stringstream ss;
 		ss << (e.bKeyDown != 0?'D':'U');

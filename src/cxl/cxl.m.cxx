@@ -2,18 +2,17 @@
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_unit_view.hxx"
 #include "src/cxl/cxl_controller.hxx"
 #include "src/cxl/cxl_config.hxx"
 
 #include <algorithm>
 #include <array>
 #include <deque>
-#include <functional>
 #include <iostream>
 #include <mutex>
 #include <string>
 #include "3rdparty/fmt/include/fmt/format.h"
+#include "3rdparty/wink/wink/signal.hpp"
 
 #define NOMINMAX
 #include <Windows.h>
@@ -54,18 +53,6 @@ bool ConsumePrefix(std::string& text, const std::string& prefix) {
 	return false; }
 
 
-class WindowsEvent {
-public:
-	WindowsEvent() {
-		d_event = CreateEventW(nullptr, FALSE, FALSE, nullptr); }
-	WindowsEvent(const WindowsEvent& other) = delete;
-	WindowsEvent(WindowsEvent&& other) = delete;
-	WindowsEvent& operator=(const WindowsEvent& other) = delete;
-	~WindowsEvent() { CloseHandle(d_event); }
-	void Set() { SetEvent(d_event); }
-	HANDLE GetHandle() { return d_event; }
-private:
-	HANDLE d_event; };
 
 
 /**
@@ -101,7 +88,8 @@ public:
 
 	void Connect(int leftIdx, int rightIdx) {
 		d_leftIdx = leftIdx;
-		d_rightIdx = rightIdx; }
+		d_rightIdx = rightIdx;
+		d_connectionChangedSignal.emit(d_leftIdx, d_rightIdx); }
 
 	static ralio::ASIOTime* onBufferReadyExJmp(void* ptr, ralio::ASIOTime *timeInfo, long index, ralio::ASIOBool processNow) {
 		auto& self = *reinterpret_cast<ASIOConnector*>(ptr);
@@ -280,7 +268,8 @@ public:
 				ret = 0;
 				break; }
 		return ret; }
-
+public:
+	wink::signal<wink::slot<void(int, int)>> d_connectionChangedSignal;
 private:
 	std::vector<float> dl, dr;
 	int d_leftIdx = -1;
@@ -347,6 +336,8 @@ int main(int argc, char **argv) {
 	CXLUnit unit;
 	ASIOConnector connector{ unit };
 	auto asioCallbacks = connector.MakeASIOCallbacks();
+
+	connector.d_connectionChangedSignal.connect([](int a, int b) { cout << "connection changed to " << a << ", " << b << "\n"; });
 
 
 	bufferInfos.resize(numInputChannels+numOutputChannels);
@@ -429,17 +420,17 @@ int main(int argc, char **argv) {
 	console.SetDimensions(80, 25);
 	console.Clear();
 
-	WindowsEvent updateEvent;
-	unit.d_updateFunc = [&]() { updateEvent.Set(); };
-
-	CXLUnitController unitController(console, unit);
-
-	unitController.OnCXLUnitChanged();
 	auto& reactor = Reactor::GetInstance();
-	reactor.AddEvent(ReactorEvent{ GetStdHandle(STD_INPUT_HANDLE),
-	                               [&]() { unitController.OnConsoleInputAvailable(); } });
-	reactor.AddEvent(ReactorEvent{ updateEvent.GetHandle(),
-	                               [&]() { unitController.OnCXLUnitChanged(); }});
+
+	UIRoot uiRoot(unit);
+
+	WindowsEvent forcedRedrawEvent;
+	reactor.AddEvent({ forcedRedrawEvent.GetHandle(),
+	                   [&]() { uiRoot.Draw(); }});
+
+	forcedRedrawEvent.Set();
+
+	reactor.d_widget = &uiRoot;
 	reactor.Run();
 
 	asio.Stop();

@@ -7,9 +7,9 @@
 #include "src/rcl/rcls/rcls_file.hxx"
 
 #include <algorithm>
-#include <functional>
 #include <string>
 #include <vector>
+#include "3rdparty/wink/wink/signal.hpp"
 
 namespace rqdq {
 namespace cxl {
@@ -46,16 +46,20 @@ public:
 
 private:
 	template<typename T>
-	void Adjust2(T& slot, T lower, T upper, T amt) {
+	void Adjust2(int id, T& slot, T lower, T upper, T amt) {
 		T oldValue = slot;
 		T newValue = std::clamp(oldValue+amt, lower, upper);
 		if (oldValue != newValue) {
 			slot = newValue;
-			if (d_updateFunc) {
-				d_updateFunc(); }}}
+			d_voiceParameterChanged.emit(id);}}
 
 public:
-	std::function<void()> d_updateFunc;
+	wink::signal<wink::slot<void(int)>> d_voiceParameterChanged;
+	wink::signal<wink::slot<void(int)>> d_tempoChanged;
+	wink::signal<wink::slot<void(int)>> d_patternDataChanged;
+	wink::signal<wink::slot<void(bool)>> d_playbackStateChanged;
+	wink::signal<wink::slot<void(int)>> d_playbackPositionChanged;
+
 private:
 	int d_kitNum = 0;
 	int d_patternNum = 0;

@@ -9,7 +9,6 @@
 
 #include <utility>
 #include <algorithm>
-#include <functional>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -64,8 +63,7 @@ int CXLUnit::GetLastPlayedGridPosition() {
 
 void CXLUnit::SetTempo(int value) {
 	d_gridSequencer.SetTempo(value);
-	if (d_updateFunc) {
-		d_updateFunc();}}
+	d_tempoChanged.emit(value); }
 
 
 int CXLUnit::GetTempo() {
@@ -75,8 +73,7 @@ int CXLUnit::GetTempo() {
 // pattern editing
 void CXLUnit::ToggleTrackGridNote(int track, int pos) {
 	d_gridSequencer.ToggleTrackGridNote(track, pos);
-	if (d_updateFunc) {
-		d_updateFunc();}}
+	d_patternDataChanged.emit(track); }
 
 
 int CXLUnit::GetTrackGridNote(int track, int pos) {
@@ -111,11 +108,11 @@ int CXLUnit::GetVoiceParameterValue(int track, int num) {
 
 
 void CXLUnit::Adjust(int ti, int pi, int amt) {
-	if      (pi == 0) { Adjust2(d_voices[ti].d_params.cutoff, 0, 127, amt); }
-	else if (pi == 1) { Adjust2(d_voices[ti].d_params.resonance, 0, 127, amt); }
-	else if (pi == 2) { Adjust2(d_voices[ti].d_params.attackPct, 1, 100, amt); }
-	else if (pi == 3) { Adjust2(d_voices[ti].d_params.decayPct, 1, 100, amt); }
-	else if (pi == 4) { Adjust2(d_voices[ti].d_params.waveId, 0, 1000, amt); }}
+	if      (pi == 0) { Adjust2(ti, d_voices[ti].d_params.cutoff, 0, 127, amt); }
+	else if (pi == 1) { Adjust2(ti, d_voices[ti].d_params.resonance, 0, 127, amt); }
+	else if (pi == 2) { Adjust2(ti, d_voices[ti].d_params.attackPct, 1, 100, amt); }
+	else if (pi == 3) { Adjust2(ti, d_voices[ti].d_params.decayPct, 1, 100, amt); }
+	else if (pi == 4) { Adjust2(ti, d_voices[ti].d_params.waveId, 0, 1000, amt); }}
 
 
 void CXLUnit::DecrementKit() {
@@ -131,8 +128,8 @@ void CXLUnit::LoadKit() {}
 
 void CXLUnit::Render(float* left, float* right, int numSamples) {
 	bool stateChanged = d_gridSequencer.Update();
-	if (stateChanged && d_updateFunc) {
-		d_updateFunc(); }
+	if (stateChanged) {
+		d_playbackStateChanged.emit(IsPlaying()); }
 
 	bool gridPositionUpdated = false;
 	for (int si = 0; si < numSamples; si++) {
@@ -140,8 +137,8 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 		gridPositionUpdated = gridPositionUpdated || updated;
 		std::tie(left[si], right[si]) = d_mixer.GetNextSample(); }
 
-	if (gridPositionUpdated && d_updateFunc) {
-		d_updateFunc(); }}
+	if (gridPositionUpdated) {
+		d_playbackPositionChanged.emit(GetLastPlayedGridPosition()); }}
 
 }  // namespace cxl
 }  // namespace rqdq
