@@ -1,11 +1,28 @@
 #pragma once
+#include "src/ral/raldsp/raldsp_idspoutput.hxx"
+
 #include <utility>
 
 namespace rqdq {
 namespace raldsp {
 
+class CXLFilter : public IDSPOutput {
+public:
+	// IDSPOutput
+	void Update(int tempo) override {}
+	void Process(float* inputs, float* outputs) override {
+		auto& il = inputs[0];
+		auto& ir = inputs[1];
+		if (d_bypass) {
+			outputs[0] = il, outputs[1] = ir; }
+		else {
+			d_l0 = d_l0 + d_f * (il - d_l0 + d_fb * (d_l0 - d_l1));
+			d_l1 = d_l1 + d_f *                     (d_l0 - d_l1) ;
 
-class CXLFilter {
+			d_r0 = d_r0 + d_f * (ir - d_r0 + d_fb * (d_r0 - d_r1));
+			d_r1 = d_r1 + d_f *                     (d_r0 - d_r1) ;
+			outputs[0] = d_l1, outputs[1] = d_r1; }}
+
 public:
 	void SetCutoff(double value) {
 		d_f = value;
@@ -25,17 +42,6 @@ public:
 		d_r1 = 0.0;
 		d_l0 = 0.0;
 		d_l1 = 0.0; }
-
-	std::pair<float, float> Process(float il, float ir) {
-		if (d_bypass) {
-			return {il, ir}; }
-		else {
-			d_l0 = d_l0 + d_f * (il - d_l0 + d_fb * (d_l0 - d_l1));
-			d_l1 = d_l1 + d_f *                     (d_l0 - d_l1) ;
-
-			d_r0 = d_r0 + d_f * (il - d_r0 + d_fb * (d_r0 - d_r1));
-			d_r1 = d_r1 + d_f *                     (d_r0 - d_r1) ;
-			return {d_l1, d_r1}; }}
 
 private:
 	void UpdateInternal() {

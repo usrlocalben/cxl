@@ -50,7 +50,7 @@ bool GridSequencer::Update() {
 	return changed; }
 
 
-bool GridSequencer::Tick() {
+bool GridSequencer::Process() {
 	bool tracksWillUpdate = false;
 	if (d_state == PlayerState::Playing) {
 		d_sampleCounter--;

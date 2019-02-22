@@ -14,7 +14,9 @@ cc_library(
     name="filter",
     srcs=["raldsp_filter.cxx"],
     hdrs=["raldsp_filter.hxx"],
-    deps=[],
+    deps=[
+        ":idspoutput",
+        ],
     copts = RSR_DEFAULT_COPTS,
     )
 
@@ -22,6 +24,16 @@ cc_library(
     name="mixer",
     srcs=["raldsp_mixer.cxx"],
     hdrs=["raldsp_mixer.hxx"],
+    deps=[
+        ":idspoutput",
+        ],
+    copts = RSR_DEFAULT_COPTS,
+    )
+
+cc_library(
+    name="syncdelay",
+    srcs=["raldsp_syncdelay.cxx"],
+    hdrs=["raldsp_syncdelay.hxx"],
     deps=[
         ":idspoutput",
         ],
@@ -37,6 +49,7 @@ cc_library(
         "//src/ral/ralw:wavetable",
         ":filter",
         ":idspoutput",
+        ":syncdelay",
         ],
     copts = RSR_DEFAULT_COPTS,
     )

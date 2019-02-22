@@ -1,6 +1,7 @@
 #pragma once
 #include "src/ral/raldsp/raldsp_filter.hxx"
 #include "src/ral/raldsp/raldsp_idspoutput.hxx"
+#include "src/ral/raldsp/raldsp_syncdelay.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 
@@ -68,15 +69,19 @@ private:
 
 struct VoiceParameters {
 	int waveId = 0;
-	int tuning = 0;     // pitch fine-tune in cents
-	int cutoff = 127;   // 0-127, 127=filter off
-	int resonance = 0;  // 0-127
+	int tuning = 0;         // pitch fine-tune in cents
+	int cutoff = 127;       // 0-127, 127=filter off
+	int resonance = 0;      // 0-127
 	LoopType loopType = LoopType::None;
-	int attackPct = 0;  // [0...100] % of sample duration
-	int decayPct = 90;  // [0...100] % of sample duration
+	int attackPct = 0;      // [0...100] % of sample duration
+	int decayPct = 90;      // [0...100] % of sample duration
 	DecayMode decayMode = DecayMode::End;
-	int gain = 10;  // [-600...+60] db gain*10
-	int pan = 0; };     // [-63...+63] 0=center
+	int gain = 10;          // [-600...+60] db gain*10
+	int pan = 0;            // [-63...+63] 0=center
+
+	int delaySend = 0;      // 0-127 = 0...1.0
+	int delayTime = 16;     // 0-127, 128th notes
+	int delayFeedback = 0;};// 0-127 = 0...1.0
 
 
 class PlayState {
@@ -101,7 +106,8 @@ public:
 class SingleSampler : public IDSPOutput {
 public:
 	// IDSPOutput
-	std::pair<float, float> GetNextSample() override;
+	void Update(int) override;
+	void Process(float*, float*) override;
 
 public:
 	SingleSampler(ralw::WaveTable& wt)
@@ -113,7 +119,8 @@ public:
 public:
 	PlayState d_state;
 	ralw::WaveTable& d_waveTable;
-	VoiceParameters d_params; };
+	VoiceParameters d_params;
+	SyncDelay d_delay; };
 
 
 }  // close package namespace

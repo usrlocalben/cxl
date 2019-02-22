@@ -17,7 +17,8 @@ struct BasicMixerChannel {
 class BasicMixer : public IDSPOutput {
 	// IDSPOutput
 public:
-	std::pair<float, float> GetNextSample() override;
+	void Update(int tempo) override;
+	void Process(float*, float*) override;
 
 public:
 	void AddChannel(IDSPOutput& input, float gain=1.0f);

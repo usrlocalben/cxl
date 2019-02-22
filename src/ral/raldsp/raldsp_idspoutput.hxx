@@ -7,7 +7,8 @@ namespace raldsp {
 
 class IDSPOutput {
 public:
-	virtual std::pair<float, float> GetNextSample() = 0;
+	virtual void Update(int tempo) = 0;
+	virtual void Process(float* inputs, float* outputs) = 0;
 };
 
 

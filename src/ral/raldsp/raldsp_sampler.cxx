@@ -78,56 +78,69 @@ void SingleSampler::Stop() {
 	d_state.wavePtr->Release(); }
 
 
-std::pair<float, float> SingleSampler::GetNextSample() {
-	if (!d_state.active) {
-		return {0.0f, 0.0f}; }
+void SingleSampler::Update(int tempo) {
+	d_state.filter.Update(tempo);
+	d_delay.SetTime(d_params.delayTime);
+	d_delay.SetFeedbackGain(d_params.delayFeedback / 127.0);
+	d_delay.Update(tempo); }
 
-	float sl, sr;
 
-	std::tie(sl, sr) = d_state.wavePtr->Sample(d_state.position);
-	std::tie(sl, sr) = d_state.filter.Process(sl, sr);
+void SingleSampler::Process(float* inputs, float* outputs) {
+	float sl = 0, sr = 0;
 
-	if (d_state.state == VoiceState::Attack) {
-		d_state.curGain += d_state.attackVelocity;
+	if (d_state.active) {
+
+		std::tie(sl, sr) = d_state.wavePtr->Sample(d_state.position);
+		float tmpA[2], tmpB[2];
+		tmpA[0] = sl, tmpA[1] = sr;
+		d_state.filter.Process(tmpA, tmpB);
+		sl = tmpB[0], sr = tmpB[1];
+
+		if (d_state.state == VoiceState::Attack) {
+			d_state.curGain += d_state.attackVelocity;
+			if (d_state.curGain >= d_state.targetGain) {
+				d_state.curGain = d_state.targetGain;
+				if (d_params.decayMode == DecayMode::Begin) {
+					d_state.state = VoiceState::Decay; }}}
+
+		if (d_state.state == VoiceState::Decay) {
+			d_state.curGain -= d_state.decayVelocity;
+			if (d_state.curGain < 0) {
+				d_state.curGain = 0; }}
+
+		if (d_params.loopType != LoopType::Loop) {
+			if ((d_state.position >= d_state.decayBegin) &&
+				(d_state.state != VoiceState::Decay)) {
+				d_state.state = VoiceState::Decay; }}
+
+		// XXX internal panning would be applied here
+		sl *= d_state.curGain;
+		sr *= d_state.curGain;
+
+		d_state.position += d_state.delta;
+
 		if (d_state.curGain >= d_state.targetGain) {
-			d_state.curGain = d_state.targetGain;
 			if (d_params.decayMode == DecayMode::Begin) {
-				d_state.state = VoiceState::Decay; }}}
+				d_state.state = VoiceState::Decay; }}
 
-	if (d_state.state == VoiceState::Decay) {
-		d_state.curGain -= d_state.decayVelocity;
-		if (d_state.curGain < 0) {
-			d_state.curGain = 0; }}
-
-	if (d_params.loopType != LoopType::Loop) {
-		if ((d_state.position >= d_state.decayBegin) &&
-			(d_state.state != VoiceState::Decay)) {
-			d_state.state = VoiceState::Decay; }}
-
-	sl *= d_state.curGain;
-	sr *= d_state.curGain;
-
-	// XXX internal panning would be applied here
-
-	d_state.position += d_state.delta;
-
-	if (d_state.curGain >= d_state.targetGain) {
-		if (d_params.decayMode == DecayMode::Begin) {
-			d_state.state = VoiceState::Decay; }}
-
-	if (d_state.curGain <= 0) {
-		d_state.active = false;
-		d_state.wavePtr->Release(); }
-	else {
-		if (d_params.loopType == LoopType::Loop) {
-			if (int(d_state.position) > d_state.wavePtr->d_loopEnd) {
-				d_state.position -= d_state.wavePtr->d_loopEnd - d_state.wavePtr->d_loopBegin; }}
+		if (d_state.curGain <= 0) {
+			d_state.active = false;
+			d_state.wavePtr->Release(); }
 		else {
-			if (int(d_state.position) >= d_state.wavePtr->d_selectionEnd) {
-				d_state.active = false;
-				d_state.wavePtr->Release(); }}}
+			if (d_params.loopType == LoopType::Loop) {
+				if (int(d_state.position) > d_state.wavePtr->d_loopEnd) {
+					d_state.position -= d_state.wavePtr->d_loopEnd - d_state.wavePtr->d_loopBegin; }}
+			else {
+				if (int(d_state.position) >= d_state.wavePtr->d_selectionEnd) {
+					d_state.active = false;
+					d_state.wavePtr->Release(); }}}}
 
-	return {sl, sr}; }
+	float delaySend = d_params.delaySend / 127.0;
+	std::array<float, 2> toDelay = {sl*delaySend, sr*delaySend};
+	std::array<float, 2> fromDelay;
+	d_delay.Process(toDelay.data(), fromDelay.data());
+	sl += fromDelay[0], sr += fromDelay[1];
+	outputs[0] = sl, outputs[1] = sr; }
 
 
 }  // namespace raldsp

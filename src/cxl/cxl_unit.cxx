@@ -90,9 +90,9 @@ const std::string CXLUnit::GetVoiceParameterName(int track, int num) {
 	else if (num == 2) { return "attack"; }
 	else if (num == 3) { return "decay"; }
 	else if (num == 4) { return "wave#"; }
-	else if (num == 5) { return "unused"; }
-	else if (num == 6) { return "unused"; }
-	else if (num == 7) { return "unused"; }
+	else if (num == 5) { return "d.send"; }
+	else if (num == 6) { return "d.time"; }
+	else if (num == 7) { return "d.fbck"; }
 	else {
 		throw std::runtime_error("invalid parameter number"); }}
 
@@ -107,6 +107,9 @@ int CXLUnit::GetVoiceParameterValue(int track, int num) {
 	else if (num == 2) { return d_voices[track].d_params.attackPct; }
 	else if (num == 3) { return d_voices[track].d_params.decayPct; }
 	else if (num == 4) { return d_voices[track].d_params.waveId; }
+	else if (num == 5) { return d_voices[track].d_params.delaySend; }
+	else if (num == 6) { return d_voices[track].d_params.delayTime; }
+	else if (num == 7) { return d_voices[track].d_params.delayFeedback; }
 	else { return 0; }}
 
 
@@ -115,7 +118,10 @@ void CXLUnit::Adjust(int ti, int pi, int amt) {
 	else if (pi == 1) { Adjust2(ti, d_voices[ti].d_params.resonance, 0, 127, amt); }
 	else if (pi == 2) { Adjust2(ti, d_voices[ti].d_params.attackPct, 0, 100, amt); }
 	else if (pi == 3) { Adjust2(ti, d_voices[ti].d_params.decayPct, 0, 100, amt); }
-	else if (pi == 4) { Adjust2(ti, d_voices[ti].d_params.waveId, 0, 1000, amt); }}
+	else if (pi == 4) { Adjust2(ti, d_voices[ti].d_params.waveId, 0, 1000, amt); }
+	else if (pi == 5) { Adjust2(ti, d_voices[ti].d_params.delaySend, 0, 127, amt); }
+	else if (pi == 6) { Adjust2(ti, d_voices[ti].d_params.delayTime, 0, 127, amt); }
+	else if (pi == 7) { Adjust2(ti, d_voices[ti].d_params.delayFeedback, 0, 127, amt); }}
 
 
 void CXLUnit::DecrementKit() {
@@ -145,13 +151,18 @@ void CXLUnit::SaveKit() {
 		fd << "  resonance " << d_voices[ti].d_params.resonance << "\n";
 		fd << "  attack " << d_voices[ti].d_params.attackPct << "\n";
 		fd << "  decay " << d_voices[ti].d_params.decayPct << "\n";
+
 		fd << "  wave ";
 		auto& wave = d_waveTable.Get(d_voices[ti].d_params.waveId);
 		if (wave.d_loaded) {
 			fd << "name=" << wave.d_descr; }
 		else {
 			fd << "none"; }
-		fd << "\n"; }}
+		fd << "\n";
+
+		fd << "  delaySend " << d_voices[ti].d_params.delaySend << "\n";
+		fd << "  delayTime " << d_voices[ti].d_params.delayTime << "\n";
+		fd << "  delayFeedback " << d_voices[ti].d_params.delayFeedback << "\n"; }}
 
 
 void CXLUnit::InitializeKit() {
@@ -189,6 +200,12 @@ void CXLUnit::LoadKit() {
 				else {
 					// XXX error? log
 					d_voices[vid].d_params.waveId = 0; }}
+			else if (ConsumePrefix(line, "  delaySend ")) {
+				d_voices[vid].d_params.delaySend = stoi(line); }
+			else if (ConsumePrefix(line, "  delayTime ")) {
+				d_voices[vid].d_params.delayTime = stoi(line); }
+			else if (ConsumePrefix(line, "  delayFeedback ")) {
+				d_voices[vid].d_params.delayFeedback = stoi(line); }
 			else {
 				auto msg = fmt::format("unknown kit line \"{}\"", line);
 				throw std::runtime_error(msg); }}}}
@@ -198,12 +215,16 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 	bool stateChanged = d_gridSequencer.Update();
 	if (stateChanged) {
 		d_playbackStateChanged.emit(IsPlaying()); }
+	d_mixer.Update(GetTempo());
 
 	bool gridPositionUpdated = false;
 	for (int si = 0; si < numSamples; si++) {
-		bool updated = d_gridSequencer.Tick();
+		bool updated = d_gridSequencer.Process();
 		gridPositionUpdated = gridPositionUpdated || updated;
-		std::tie(left[si], right[si]) = d_mixer.GetNextSample(); }
+		std::array<float, 2> samples;
+		d_mixer.Process(nullptr, samples.data());
+		left[si] = samples[0];
+		right[si] = samples[1]; }
 
 	if (gridPositionUpdated) {
 		d_playbackPositionChanged.emit(GetLastPlayedGridPosition()); }}

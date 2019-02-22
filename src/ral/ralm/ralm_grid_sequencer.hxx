@@ -47,7 +47,7 @@ public:
 		d_nextState = PlayerState::Stopped; }
 
 	bool Update();
-	bool Tick();
+	bool Process();
 
 	bool IsPlaying() { return d_state == PlayerState::Playing; }
 

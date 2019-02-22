@@ -2,6 +2,7 @@
 #include "src/ral/raldsp/raldsp_idspoutput.hxx"
 
 #include <algorithm>
+#include <array>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -19,15 +20,21 @@ void BasicMixer::AddChannel(IDSPOutput& input, float gain) {
 	d_channels.emplace_back(BasicMixerChannel{ input, gain, false }); }
 
 
-std::pair<float, float> BasicMixer::GetNextSample() {
-	float c0 = 0;
-	float c1 = 0;
+void BasicMixer::Update(int tempo) {
 	for (auto& channel : d_channels) {
-		auto[sub0, sub1] = channel.input.GetNextSample();
+		channel.input.Update(tempo); }}
+
+
+void BasicMixer::Process(float* inputs, float* outputs) {
+	float& c0 = outputs[0];
+	float& c1 = outputs[1];
+	c0 = 0, c1 = 0;
+	for (auto& channel : d_channels) {
+		std::array<float, 2> sub;
+		channel.input.Process(nullptr, sub.data());
 		if (!channel.mute) {
-			c0 += sub0 * channel.gain;
-			c1 += sub1 * channel.gain; }}
-	return {c0, c1};}
+			c0 += sub[0] * channel.gain;
+			c1 += sub[1] * channel.gain; }}}
 
 
 }  // namespace raldsp
