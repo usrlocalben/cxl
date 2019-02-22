@@ -418,7 +418,7 @@ int main(int argc, char **argv) {
 
 	WindowsEvent forcedRedrawEvent;
 	reactor.AddEvent({ forcedRedrawEvent.GetHandle(),
-	                   [&]() { uiRoot.Draw(); }});
+	                   [&]() { reactor.DrawScreen(); }});
 
 	forcedRedrawEvent.Set();
 

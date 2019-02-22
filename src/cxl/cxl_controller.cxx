@@ -85,13 +85,13 @@ UIRoot::UIRoot(CXLUnit& unit)
 void UIRoot::onCXLUnitPlaybackStateChangedMT(bool isPlaying) {
 	d_playbackStateChangedEvent.Set(); }
 void UIRoot::onCXLUnitPlaybackStateChanged() {
-	Draw(); }
+	Reactor::GetInstance().DrawScreen(); }
 
 
 void UIRoot::onCXLUnitPlaybackPositionChangedMT(int pos) {
 	d_playbackPositionChangedEvent.Set(); }
 void UIRoot::onCXLUnitPlaybackPositionChanged() {
-	Draw(); }
+	Reactor::GetInstance().DrawScreen(); }
 
 
 rclw::ConsoleCanvas UIRoot::Draw() {
