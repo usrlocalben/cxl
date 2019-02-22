@@ -35,9 +35,6 @@ CXLUnit::CXLUnit()
 		d_mixer.AddChannel(d_voices.back(), 1.0f);
 		d_gridSequencer.AddTrack(d_voices.back()); }
 
-	SwitchPattern(0);
-	//d_gridSequencer.InitializePattern();
-
 	auto files = rcls::fileglob(config::sampleDir + R"(\*.wav)");
 	sort(begin(files), end(files));
 	int id = 1;
@@ -45,7 +42,9 @@ CXLUnit::CXLUnit()
 		std::string baseName = file.substr(0, file.size()-4);
 		d_waveTable.Get(id) = ralw::MPCWave::Load(config::sampleDir + "\\" + file, baseName, false);
 		std::cout << "loaded \"" << baseName << "\"\n";
-		id++; }}
+		id++; }
+
+	SwitchPattern(0); }
 
 
 // transport controls
@@ -121,14 +120,79 @@ void CXLUnit::Adjust(int ti, int pi, int amt) {
 
 void CXLUnit::DecrementKit() {
 	if (d_kitNum > 0) {
-		d_kitNum--; }}
+		d_kitNum--;
+		LoadKit(); }}
+
 
 void CXLUnit::IncrementKit() {
 	if (d_kitNum < 99) {
-		d_kitNum++; }}
+		d_kitNum++;
+		LoadKit(); }}
 
-void CXLUnit::SaveKit() {}
-void CXLUnit::LoadKit() {}
+
+void CXLUnit::SwitchKit(int n) {
+	d_kitNum = n;
+	LoadKit(); }
+
+
+void CXLUnit::SaveKit() {
+	const auto path = fmt::format("{}\\kit_{}.txt", config::kitDir, d_kitNum);
+	auto fd = std::ofstream(path.c_str());
+	fd << "Name: " << d_kitName << "\n";
+	for (int ti=0; ti<16; ti++) {
+		fd << "Voice #" << ti << "\n";
+		fd << "  cutoff " << d_voices[ti].d_params.cutoff << "\n";
+		fd << "  resonance " << d_voices[ti].d_params.resonance << "\n";
+		fd << "  attack " << d_voices[ti].d_params.attackPct << "\n";
+		fd << "  decay " << d_voices[ti].d_params.decayPct << "\n";
+		fd << "  wave ";
+		auto& wave = d_waveTable.Get(d_voices[ti].d_params.waveId);
+		if (wave.d_loaded) {
+			fd << "name=" << wave.d_descr; }
+		else {
+			fd << "none"; }
+		fd << "\n"; }}
+
+
+void CXLUnit::InitializeKit() {
+	d_kitName = "new kit";
+	for (int i=0; i<16; i++) {
+		d_voices[i].d_params = raldsp::VoiceParameters{}; }}
+
+
+void CXLUnit::LoadKit() {
+	using rclt::ConsumePrefix;
+	const auto path = fmt::format("{}\\kit_{}.txt", config::kitDir, d_kitNum);
+	auto fd = std::ifstream(path.c_str());
+	InitializeKit();
+	int vid = 0;
+	if (fd.good()) {
+		std::string line;
+		while (getline(fd, line)) {
+			if (ConsumePrefix(line, "Name: ")) {
+				d_kitName = line; }
+			else if (ConsumePrefix(line, "Voice #")) {
+				vid = stoi(line); }
+			else if (ConsumePrefix(line, "  cutoff ")) {
+				d_voices[vid].d_params.cutoff = stoi(line); }
+			else if (ConsumePrefix(line, "  resonance ")) {
+				d_voices[vid].d_params.resonance = stoi(line); }
+			else if (ConsumePrefix(line, "  attack ")) {
+				d_voices[vid].d_params.attackPct = stoi(line); }
+			else if (ConsumePrefix(line, "  decay ")) {
+				d_voices[vid].d_params.decayPct = stoi(line); }
+			else if (ConsumePrefix(line, "  wave ")) {
+				if (line == "none") {
+					d_voices[vid].d_params.waveId = 0; }
+				else if (ConsumePrefix(line, "name=")) {
+					d_voices[vid].d_params.waveId = d_waveTable.FindByName(line); }
+				else {
+					// XXX error? log
+					d_voices[vid].d_params.waveId = 0; }}
+			else {
+				auto msg = fmt::format("unknown kit line \"{}\"", line);
+				throw std::runtime_error(msg); }}}}
+
 
 void CXLUnit::Render(float* left, float* right, int numSamples) {
 	bool stateChanged = d_gridSequencer.Update();
@@ -152,7 +216,7 @@ void CXLUnit::Trigger(int track) {
 void CXLUnit::CommitPattern() {
 	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, d_patternNum);
 	auto fd = std::ofstream(path.c_str());
-	fd << "Kit: " << "XXX" << "\n";
+	fd << "Kit: " << d_kitNum << "\n";
 	for (int ti=0; ti<16; ti++) {
 		bool first = true;
 		for (int pos=0; pos<16; pos++) {
@@ -174,8 +238,7 @@ void CXLUnit::SwitchPattern(int pid) {
 		std::string line;
 		while (getline(fd, line)) {
 			if (rclt::ConsumePrefix(line, "Kit: ")) {
-				// XXX
-				}
+				SwitchKit(stoi(line)); }
 			else if (rclt::ConsumePrefix(line, "Track ")) {
 				auto segs = rclt::Explode(line, ':');
 				auto trackId = std::stoi(segs[0]);

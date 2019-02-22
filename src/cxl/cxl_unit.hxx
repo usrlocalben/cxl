@@ -33,10 +33,14 @@ public:
 	int GetTrackGridNote(int track, int pos);
 
 	// sampler voices
+	void InitializeKit();
 	void IncrementKit();
 	void DecrementKit();
 	void SaveKit();
 	void LoadKit();
+	void SwitchKit(int n);
+	int GetCurrentKitNumber() { return d_kitNum; }
+	const std::string& GetCurrentKitName() { return d_kitName; }
 	const std::string GetVoiceParameterName(int track, int num);
 	const std::string& GetWaveName(int waveId);
 	int GetVoiceParameterValue(int track, int num);
@@ -67,6 +71,7 @@ public:
 
 private:
 	int d_kitNum = 0;
+	std::string d_kitName = "new kit";
 	int d_patternNum = 0;
 	ralw::WaveTable d_waveTable;
 	raldsp::BasicMixer d_mixer;

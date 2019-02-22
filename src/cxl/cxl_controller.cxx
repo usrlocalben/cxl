@@ -181,6 +181,10 @@ rclw::ConsoleCanvas UIRoot::DrawTransportIndicator() {
 	std::string s;
 	WriteXY(out, 1, 0, "Pattern: ", lo);
 	WriteXY(out, 10, 0, fmt::sprintf("A-%d", d_unit.GetCurrentPatternNumber()+1), hi);
+
+	WriteXY(out, 14, 0, "| Kit: ", lo);
+	WriteXY(out, 21, 0, fmt::sprintf("%d", d_unit.GetCurrentKitNumber()+1), hi);
+
 	int tempo = d_unit.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
