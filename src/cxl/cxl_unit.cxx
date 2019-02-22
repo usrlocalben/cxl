@@ -168,6 +168,7 @@ void CXLUnit::CommitPattern() {
 void CXLUnit::SwitchPattern(int pid) {
 	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, pid);
 	d_gridSequencer.InitializePattern();
+	d_patternNum = pid;
 	auto fd = std::ifstream(path.c_str());
 	if (fd.good()) {
 		std::string line;

@@ -44,6 +44,7 @@ public:
 	void Trigger(int track);
 	void SwitchPattern(int pid);
 	void CommitPattern();
+	int GetCurrentPatternNumber() { return d_patternNum; }
 
     // audio render
     void Render(float* left, float* right, int numSamples);

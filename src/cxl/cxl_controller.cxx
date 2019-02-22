@@ -172,12 +172,25 @@ rclw::ConsoleCanvas UIRoot::DrawKeyHistory() {
 
 rclw::ConsoleCanvas UIRoot::DrawTransportIndicator() {
 	rclw::ConsoleCanvas out{ 80, 1 };
-	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue));
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
+	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
+	auto higreen = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongGreen);
+	auto hired = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+
+	//Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue));
+	std::string s;
+	WriteXY(out, 1, 0, "Pattern: ", lo);
+	WriteXY(out, 10, 0, fmt::sprintf("A-%d", d_unit.GetCurrentPatternNumber()+1), hi);
 	int tempo = d_unit.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
-	auto s = fmt::sprintf("Tempo: %3d.%d bpm | %s", whole, tenths, d_unit.IsPlaying() ? "PLAYING" : "STOPPED");
-	WriteXY(out, 80-s.length()-1, 0, s);
+	WriteXY(out, 47, 0, "Tempo:", lo);
+	s = fmt::sprintf("%3d.%d bpm", whole, tenths);
+	WriteXY(out, 54, 0, s, hi);
+	WriteXY(out, 64, 0, "|", lo);
+	WriteXY(out, 66, 0, d_unit.IsPlaying() ? "PLAYING" : "STOPPED", d_unit.IsPlaying() ? higreen : lo);
+	WriteXY(out, 74, 0, "|", lo);
+	WriteXY(out, 76, 0, d_isRecording ? "REC" : "rec", d_isRecording ? hired : lo);
 	return out; }
 
 
