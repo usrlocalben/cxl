@@ -12,6 +12,7 @@
 
 #define NOMINMAX
 #include <Windows.h>
+#include "3rdparty/fmt/include/fmt/printf.h"
 
 namespace rqdq {
 
@@ -132,9 +133,7 @@ void UIRoot::DrawParameters(int x, int y) {
 		int paramNum = d_selectedPage*8+i;
 		auto& paramName = d_unit.GetVoiceParameterName(d_selectedTrack, paramNum);
 		int value = d_unit.GetVoiceParameterValue(d_selectedTrack, paramNum);
-		std::stringstream ss;
-		ss << paramName << ": " << value << "      ";
-		console.Write(ss.str()).CR(); }
+		console.Write(fmt::sprintf("% 12s : % 3d", paramName, value)).CR(); }
 	int waveId = d_unit.GetVoiceParameterValue(d_selectedTrack, 4);
 	std::string waveName = d_unit.GetWaveName(waveId);
 	console.Position(20,10).Write(waveName + "         ");}
@@ -166,10 +165,8 @@ void UIRoot::DrawTransportIndicator() {
 	int tempo = d_unit.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
-	std::stringstream ss;
-	ss << "Tempo: " << whole << "." << tenths << " bpm | ";
-	console.Position(53, 24).Write(ss.str());
-	console.Position(79-8, 24).Write(d_unit.IsPlaying() ? "PLAYING" : "STOPPED"); }
+	auto s = fmt::sprintf("Tempo: %3d.%d bpm | %s", whole, tenths, d_unit.IsPlaying() ? "PLAYING" : "STOPPED");
+	console.Position(80-s.length()-1, 24).Write(s); }
 
 
 bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
@@ -178,19 +175,19 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
 		reactor.Stop();
 		return true; }
-	else if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
 		// Ctrl+1...Ctrl+8
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 		return true; }
-	else if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
-		if      (e.wVirtualScanCode == ScanCode::L) { d_isRecording = !d_isRecording; return true; }
-		if      (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Play(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Stop(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); return true; }
-		else if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
+		if (e.wVirtualScanCode == ScanCode::L) { d_isRecording = !d_isRecording; d_unit.CommitPattern(); return true; }
+		if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Play(); return true; }
+		if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Stop(); return true; }
+		if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); return true; }
+		if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); return true; }
+		if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); return true; }
+		if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); return true; }
+		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
 			int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
 			if ((e.dwControlKeyState & rclw::kCKShift) != 0u) {
@@ -208,7 +205,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 
 			// indicate handled even if not paired with a valid key
 			return true; }
-		else {
+
 			auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
 								   [&](auto &item) { return e.wVirtualScanCode == item; });
 			if (it != end(kGridScanLUT)) {
@@ -219,20 +216,20 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 					d_unit.ToggleTrackGridNote(d_selectedTrack, idx); }
 				else {
 					d_unit.Trigger(idx); }
-				return true; }}}
+				return true; }}
 	return false; }
 
 
 void UIRoot::AddKeyDebuggerEvent(KEY_EVENT_RECORD e) {
 	if (d_enableKeyDebug) {
-		std::stringstream ss;
-		ss << (e.bKeyDown != 0?'D':'U');
-		ss << " " << std::hex << e.dwControlKeyState << std::dec;
-		ss << " " << e.uChar.AsciiChar;
-		ss << " " << e.wRepeatCount;
-		ss << " " << e.wVirtualKeyCode;
-		ss << " " << e.wVirtualScanCode << "  ";
-		d_keyHistory.emplace_back(ss.str());
+		auto s = fmt::sprintf("%c %c % 3d",
+		                      (e.bKeyDown != 0?'D':'U'),
+		                      //e.dwControlKeyState,
+		                      e.uChar.AsciiChar,
+		                      //e.wRepeatCount,
+		                      //e.wVirtualKeyCode,
+		                      e.wVirtualScanCode);
+		d_keyHistory.emplace_back(s);
 		if (d_keyHistory.size() > 8) {
 			d_keyHistory.pop_front(); }}}
 

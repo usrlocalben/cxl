@@ -173,10 +173,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx" />
+    <ClCompile Include="..\src\cxl\cxl_config.cxx" />
     <ClCompile Include="..\src\cxl\cxl_controller.cxx" />
     <ClCompile Include="..\src\cxl\cxl_reactor.cxx" />
     <ClCompile Include="..\src\cxl\cxl_unit.cxx" />
-    <ClCompile Include="..\src\cxl\cxl_unit_view.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_idspoutput.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx" />
@@ -187,6 +187,7 @@
     <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx" />
+    <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

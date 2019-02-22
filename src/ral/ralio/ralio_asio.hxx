@@ -31,7 +31,7 @@ enum {
 	ASIOSTInt32MSB18 = 9,		// 32 bit data with 18 bit alignment
 	ASIOSTInt32MSB20 = 10,		// 32 bit data with 20 bit alignment
 	ASIOSTInt32MSB24 = 11,		// 32 bit data with 24 bit alignment
-	
+
 	ASIOSTInt16LSB   = 16,
 	ASIOSTInt24LSB   = 17,		// used for 20 bits as well
 	ASIOSTInt32LSB   = 18,
@@ -91,7 +91,7 @@ struct ASIODriverInfo {
 
 
 #pragma pack(push,4)
-struct ASIOTimeCode {       
+struct ASIOTimeCode {
 	double          speed;                  // speed relation (fraction of nominal speed)
 	                                        // optional; set to 0. or 1. if not supported
 	ASIOSamples     timeCodeSamples;        // time in samples
@@ -125,7 +125,7 @@ enum AsioTimeInfoFlags {
 	kSamplePositionValid    = 1 << 1,       // must always be valid
 	kSampleRateValid        = 1 << 2,
 	kSpeedValid             = 1 << 3,
-	
+
 	kSampleRateChanged      = 1 << 4,
 	kClockSourceChanged     = 1 << 5 };
 
@@ -217,7 +217,7 @@ enum {
 	kAsioSupportsTimeInfo,		// if host returns true here, it will expect the
 								// callback bufferSwitchTimeInfo to be called instead
 								// of bufferSwitch
-	kAsioSupportsTimeCode,		// 
+	kAsioSupportsTimeCode,		//
 	kAsioMMCCommand,			// unused - value: number of commands, message points to mmc commands
 	kAsioSupportsInputMonitor,	// kAsioSupportsXXX return 1 if host supports this
 	kAsioSupportsInputGain,     // unused and undefined
