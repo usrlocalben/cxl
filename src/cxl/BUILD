@@ -16,6 +16,9 @@ cc_library(
     name = "widget",
     srcs = ["cxl_widget.cxx"],
     hdrs = ["cxl_widget.hxx"],
+    deps = [
+        "//src/rcl/rclw:console_canvas",
+        ],
     copts = RSR_DEFAULT_COPTS,)
 
 

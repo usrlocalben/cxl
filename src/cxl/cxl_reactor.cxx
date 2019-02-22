@@ -25,6 +25,23 @@ bool Reactor::GetKeyState(int scanCode) {
 	return false; }
 
 
+void Reactor::DrawScreen() {
+	if (d_widget != nullptr) {
+		auto canvas = d_widget->Draw();
+		SMALL_RECT rect;
+		rect.Left = 0;
+		rect.Top = 0;
+		rect.Right = canvas.d_width - 1;
+		rect.Bottom = canvas.d_height - 1;
+		auto result = WriteConsoleOutput(GetStdHandle(STD_OUTPUT_HANDLE),
+		                                 canvas.GetDataPtr(),
+		                                 COORD{ short(canvas.d_width), short(canvas.d_height) },
+		                                 COORD{ 0, 0 },
+		                                 &rect);
+		if (result == 0) {
+			throw std::runtime_error("WriteConsoleOutput failure"); }}}
+
+
 void Reactor::Run() {
 	std::vector<HANDLE> pendingEvents;
 	while (!d_shouldQuit) {
@@ -41,8 +58,8 @@ void Reactor::Run() {
 			if (signaledIdx == 0) {
 				// keyboard input
 				bool handled = HandleKeyboardInput();
-				if (handled && d_widget) {
-					d_widget->Draw(); }}
+				if (handled) {
+					DrawScreen(); }}
 			else {
 				auto& re = d_events[signaledIdx-1];
 				if (re.func) {

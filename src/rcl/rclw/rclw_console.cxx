@@ -1,4 +1,5 @@
 #include "src/rcl/rclw/rclw_console.hxx"
+#include "src/rcl/rclw/rclw_console_canvas.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <stdexcept>
@@ -98,7 +99,7 @@ Console& Console::Clear() {
 	DWORD written;
 	FillConsoleOutputCharacterW(d_stdout, TEXT(' '), d_width*d_height, coordScreen, &written);
 	GetConsoleScreenBufferInfo(d_stdout, &csbi);
-	FillConsoleOutputAttribute(d_stdout, MakeAttribute(Color::White, Color::Black), d_width*d_height, coordScreen, &written);
+	FillConsoleOutputAttribute(d_stdout, MakeAttribute(Color::Black, Color::White), d_width*d_height, coordScreen, &written);
 	SetConsoleCursorPosition(d_stdout, coordScreen);
 	return *this; }
 

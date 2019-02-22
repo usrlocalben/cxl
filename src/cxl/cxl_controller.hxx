@@ -3,6 +3,7 @@
 #include "src/cxl/cxl_unit.hxx"
 #include "src/cxl/cxl_widget.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
+#include "src/rcl/rclw/rclw_console_canvas.hxx"
 
 #include <deque>
 #include <string>
@@ -25,14 +26,15 @@ public:
 	void onCXLUnitPlaybackPositionChanged();
 
 	// Widget impl
-	bool HandleKeyEvent(KEY_EVENT_RECORD);
-	void Draw();
+	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
+	rclw::ConsoleCanvas Draw() override;
 private:
-	void DrawTrackSelection(int x, int y);
-	void DrawParameters(int x, int y);
-	void DrawGrid(int x, int y);
-	void DrawKeyHistory(int x, int y);
-	void DrawTransportIndicator();
+	rclw::ConsoleCanvas DrawHeader();
+	rclw::ConsoleCanvas DrawTrackSelection();
+	rclw::ConsoleCanvas DrawParameters();
+	rclw::ConsoleCanvas DrawGrid();
+	rclw::ConsoleCanvas DrawKeyHistory();
+	rclw::ConsoleCanvas DrawTransportIndicator();
 
 private:
 	WindowsEvent d_playbackStateChangedEvent;

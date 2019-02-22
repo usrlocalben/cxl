@@ -33,6 +33,15 @@ cc_library(
     hdrs = ["rclw_console.hxx"],
     deps=[
         "//src/rcl/rclt:util",
+        ":console_canvas",
         ],
+    copts = RSR_DEFAULT_COPTS,
+    )
+
+cc_library(
+    name = "console_canvas",
+    srcs = ["rclw_console_canvas.cxx"],
+    hdrs = ["rclw_console_canvas.hxx"],
+    deps=[],
     copts = RSR_DEFAULT_COPTS,
     )

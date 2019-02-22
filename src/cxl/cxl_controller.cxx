@@ -3,6 +3,7 @@
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
+#include "src/rcl/rclw/rclw_console_canvas.hxx"
 
 #include <array>
 #include <deque>
@@ -93,80 +94,91 @@ void UIRoot::onCXLUnitPlaybackPositionChanged() {
 	Draw(); }
 
 
-void UIRoot::Draw() {
-	auto& console = rclw::Console::GetInstance();
-	console
-		.Position(1,0).Write("cxl 0.1.0")
-		.Position(79-10,0).Write("anix/rqdq");
-	DrawTrackSelection(0, 2);
-	DrawGrid(1, 21);
+rclw::ConsoleCanvas UIRoot::Draw() {
+	rclw::ConsoleCanvas tmp(80, 25);
+	tmp = Flatten(tmp, DrawHeader(), 0, 0);
+	tmp = Flatten(tmp, DrawTrackSelection(), 1, 2);
+	tmp = Flatten(tmp, DrawGrid(), 1, 21);
 	if (d_enableKeyDebug) {
-		DrawKeyHistory(60, 10); }
-	DrawParameters(8, 6);
-	DrawTransportIndicator(); }
+		tmp = Flatten(tmp, DrawKeyHistory(), 60, 10); }
+	tmp = Flatten(tmp, DrawParameters(), 8, 6);
+	tmp = Flatten(tmp, DrawTransportIndicator(), 0, 24);
+	return tmp; }
 
 
-void UIRoot::DrawTrackSelection(int x, int y) {
-	auto& console = rclw::Console::GetInstance();
-	console
-		.Position(x, y)
-		.LeftEdge(x);
-	console.Write("  ");
+rclw::ConsoleCanvas UIRoot::DrawHeader() {
+	rclw::ConsoleCanvas out(80, 1);
+	Fill(out, rclw::MakeAttribute(rclw::Color::Red, rclw::Color::Black));
+	WriteXY(out, 1, 0, "cxl 0.1.0");
+	WriteXY(out, 80-9-1, 0, "anix/rqdq");
+	return out; }
+
+
+rclw::ConsoleCanvas UIRoot::DrawTrackSelection() {
+	rclw::ConsoleCanvas out{ 25, 2 };
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan);
+	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongCyan);
 	for (int i = 0; i < 8; i++) {
-		console.Write(tolower(kTrackNames[i]) + " ");}
-	console.CR();
-	console.Write("  ");
+		WriteXY(out, i*3+1, 0, tolower(kTrackNames[i]), lo); }
 	for (int i = 8; i <16; i++) {
-		console.Write(tolower(kTrackNames[i]) + " ");}
+		WriteXY(out, (i-8)*3+1, 1, tolower(kTrackNames[i]), lo); }
 
-	int selY = d_selectedTrack / 8       +  y;
-	int selX = (d_selectedTrack % 8) * 3 + (x+2);
-	console.Position(selX, selY).Write(kTrackNames[d_selectedTrack]);
-	console.Position(selX-1, selY).Write("[");
-	console.Position(selX+2, selY).Write("]"); }
+	int selY = d_selectedTrack / 8;
+	int selX = (d_selectedTrack % 8) * 3 + 1;
+	WriteXY(out, selX-1, selY, "[" + kTrackNames[d_selectedTrack] + "]", hi);
+	return out; }
 
 
-void UIRoot::DrawParameters(int x, int y) {
-	auto& console = rclw::Console::GetInstance();
-	console.Position(x, y).LeftEdge(x);
+rclw::ConsoleCanvas UIRoot::DrawParameters() {
+	rclw::ConsoleCanvas out{ 30, 8 };
+	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
 	for (int i = 0; i < 8; i++) {
 		int paramNum = d_selectedPage*8+i;
 		auto& paramName = d_unit.GetVoiceParameterName(d_selectedTrack, paramNum);
 		int value = d_unit.GetVoiceParameterValue(d_selectedTrack, paramNum);
-		console.Write(fmt::sprintf("% 12s : % 3d", paramName, value)).CR(); }
+		WriteXY(out, 0, i, fmt::sprintf("% 12s : % 3d", paramName, value)); }
 	int waveId = d_unit.GetVoiceParameterValue(d_selectedTrack, 4);
 	std::string waveName = d_unit.GetWaveName(waveId);
-	console.Position(20,10).Write(waveName + "         ");}
+	WriteXY(out, 19, 4, waveName);
+	return out; }
 
 
-void UIRoot::DrawGrid(int x, int y) {
-	auto& console = rclw::Console::GetInstance();
-	console.Position(x, y);
-	console.Write("| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
+rclw::ConsoleCanvas UIRoot::DrawGrid() {
+	rclw::ConsoleCanvas out{ 65, 2 };
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
+	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
+	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+	Fill(out, lo);
+	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
 	int pos = d_unit.GetLastPlayedGridPosition();
-	console.Position(x+2 + pos*4, y).Write("o");
-	console.Position(1, y+1);
-	console.Write("| ");
+	WriteXY(out, 2+pos*4, 0, "o", hi);
+
+	WriteXY(out, 0, 1, "|");
 	for (int i = 0; i < 16; i++) {
 		auto value = d_unit.GetTrackGridNote(d_selectedTrack, i);
-		console.Write(value != 0 ? "X" : " ");
-		console.Write(" | "); }}
+		WriteXY(out, i*4+2, 1, value != 0 ? "X" : " ", red);
+		WriteXY(out, i*4+4, 1, "|", lo); }
+	return out; }
 
 
-void UIRoot::DrawKeyHistory(int x, int y) {
-	auto& console = rclw::Console::GetInstance();
-	console.Position(x, y).LeftEdge(x);
+rclw::ConsoleCanvas UIRoot::DrawKeyHistory() {
+	rclw::ConsoleCanvas out{ 10, 8 };
+	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue));
+	int row = 0;
 	for (const auto& item : d_keyHistory) {
-		console.Write(item).CR(); }}
+		WriteXY(out, 0, row++, item); }
+	return out; }
 
 
-void UIRoot::DrawTransportIndicator() {
-	auto& console = rclw::Console::GetInstance();
+rclw::ConsoleCanvas UIRoot::DrawTransportIndicator() {
+	rclw::ConsoleCanvas out{ 80, 1 };
+	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue));
 	int tempo = d_unit.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
 	auto s = fmt::sprintf("Tempo: %3d.%d bpm | %s", whole, tenths, d_unit.IsPlaying() ? "PLAYING" : "STOPPED");
-	console.Position(80-s.length()-1, 24).Write(s); }
+	WriteXY(out, 80-s.length()-1, 0, s);
+	return out; }
 
 
 bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {

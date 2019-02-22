@@ -43,6 +43,8 @@ public:
 		d_events.emplace_back(re); }
 
 	bool GetKeyState(int scanCode);
+
+	void DrawScreen();
 private:
 	bool HandleKeyboardInput();
 

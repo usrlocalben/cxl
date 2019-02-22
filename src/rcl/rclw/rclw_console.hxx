@@ -11,31 +11,6 @@
 namespace rqdq {
 namespace rclw {
 
-enum Color {
-	Black,
-	Blue,
-	Green,
-	Cyan,
-	Red,
-	Magenta,
-	Brown,
-	White,
-
-	StrongBlack,
-	StrongBlue,
-	StrongGreen,
-	StrongCyan,
-	StrongRed,
-	StrongMagenta,
-	StrongBrown,
-	StrongWhite,
-};
-
-const char Bright = 0x8;
-
-inline uint8_t MakeAttribute(Color bg, Color fg) {
-	return (bg<<4)|fg; }
-
 constexpr uint32_t kCKRightAlt = 0x01;
 constexpr uint32_t kCKLeftAlt = 0x02;
 constexpr uint32_t kCKRightCtrl = 0x04;
