@@ -39,6 +39,14 @@ public:
 	ConsoleCanvas(int width, int height) : d_width(width), d_height(height), d_buf(d_width*d_height) {}
 
 public:
+	void Resize(int width, int height) {
+		d_width = width;
+		d_height = height;
+		d_buf.resize(width*height);}
+
+	void Clear() {
+		std::fill(d_buf.begin(), d_buf.end(), CHAR_INFO{});}
+
 	CHAR_INFO* GetDataPtr() { return d_buf.data(); }
 	int d_width;
 	int d_height;

@@ -27,7 +27,7 @@ bool Reactor::GetKeyState(int scanCode) {
 
 void Reactor::DrawScreen() {
 	if (d_widget != nullptr) {
-		auto canvas = d_widget->Draw();
+		auto canvas = d_widget->Draw(80, 25);
 		SMALL_RECT rect;
 		rect.Left = 0;
 		rect.Top = 0;

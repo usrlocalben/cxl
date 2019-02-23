@@ -19,16 +19,6 @@ namespace {
 
 using SC = rclw::ScanCode;
 
-int pos2page(int pos) {
-	if (pos < 16) return 0;
-	if (pos < 32) return 1;
-	if (pos < 48) return 2;
-	if (pos < 64) return 3;
-	auto msg = fmt::sprintf("unexpected pos %d", pos);
-	throw std::runtime_error(msg); }
-
-
-
 /**
  * LUT for converting a 4x4 matrix of scan-codes to
  * indices for grid positions, track#, pattern# etc
@@ -102,29 +92,39 @@ void UIRoot::onCXLUnitPlaybackPositionChanged() {
 	Reactor::GetInstance().DrawScreen(); }
 
 
-rclw::ConsoleCanvas UIRoot::Draw() {
-	rclw::ConsoleCanvas tmp(80, 25);
-	tmp = Flatten(tmp, DrawHeader(), 0, 0);
+const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
+	static rclw::ConsoleCanvas tmp(width, height);
+	tmp.Clear();
+	tmp = Flatten(tmp, DrawHeader(width), 0, 0);
 	tmp = Flatten(tmp, DrawTrackSelection(), 1, 2);
 	tmp = Flatten(tmp, DrawGrid(), 1, 21);
-	tmp = Flatten(tmp, DrawPageIndicator(), 68, 22);
+	tmp = Flatten(tmp, DrawPageIndicator(), 68, height-3);
 	if (d_enableKeyDebug) {
-		tmp = Flatten(tmp, DrawKeyHistory(), 60, 10); }
+		tmp = Flatten(tmp, DrawKeyHistory(), width-20, height-15); }
 	tmp = Flatten(tmp, DrawParameters(), 8, 6);
-	tmp = Flatten(tmp, DrawTransportIndicator(), 0, 24);
+	tmp = Flatten(tmp, DrawTransportIndicator(width), 0, height-1);
+
+	if (d_patternLengthEditor) {
+		auto overlay = d_patternLengthEditor->Draw(-1, -1);
+		int xc = (width - overlay.d_width) / 2;
+		int yc = (height - overlay.d_height) / 2;
+		tmp = Flatten(tmp, overlay, xc, yc); }
+
 	return tmp; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawHeader() {
-	rclw::ConsoleCanvas out(80, 1);
+const rclw::ConsoleCanvas& UIRoot::DrawHeader(int width) {
+	static rclw::ConsoleCanvas out(width, 1);
+	out.Resize(width, 1);
+	out.Clear();
 	Fill(out, rclw::MakeAttribute(rclw::Color::Red, rclw::Color::Black));
 	WriteXY(out, 1, 0, "cxl 0.1.0");
-	WriteXY(out, 80-9-1, 0, "anix/rqdq");
+	WriteXY(out, width-9-1, 0, "anix/rqdq");
 	return out; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawTrackSelection() {
-	rclw::ConsoleCanvas out{ 25, 2 };
+const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
+	static rclw::ConsoleCanvas out{ 25, 2 };
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongCyan);
 	for (int i = 0; i < 8; i++) {
@@ -138,8 +138,8 @@ rclw::ConsoleCanvas UIRoot::DrawTrackSelection() {
 	return out; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawParameters() {
-	rclw::ConsoleCanvas out{ 30, 8 };
+const rclw::ConsoleCanvas& UIRoot::DrawParameters() {
+	static rclw::ConsoleCanvas out{ 30, 8 };
 	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
 	for (int i = 0; i < 8; i++) {
 		int paramNum = d_selectedParameterPage*8+i;
@@ -152,18 +152,19 @@ rclw::ConsoleCanvas UIRoot::DrawParameters() {
 	return out; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawGrid() {
-	rclw::ConsoleCanvas out{ 65, 2 };
+const rclw::ConsoleCanvas& UIRoot::DrawGrid() {
+	static rclw::ConsoleCanvas out{ 65, 2 };
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
 	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
 	const int curPos = d_unit.GetLastPlayedGridPosition();
-	const int curPage = pos2page(curPos);
+	const int curPage = curPos/16;
+	const int curPagePos = curPos%16;
 
 	if (curPage == d_selectedGridPage) {
-		WriteXY(out, 2+curPos*4, 0, "o", hi); }
+		WriteXY(out, 2+curPagePos*4, 0, "o", hi); }
 
 	WriteXY(out, 0, 1, "|");
 	for (int i = 0; i < 16; i++) {
@@ -173,11 +174,11 @@ rclw::ConsoleCanvas UIRoot::DrawGrid() {
 	return out; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawPageIndicator() {
-	rclw::ConsoleCanvas out{ 9, 1 };
+const rclw::ConsoleCanvas& UIRoot::DrawPageIndicator() {
+	static rclw::ConsoleCanvas out{ 9, 1 };
 	int numPages = d_unit.GetPatternLength() / 16;
 	int curPage = d_selectedGridPage;
-	int playingPage = pos2page(d_unit.GetLastPlayedGridPosition());
+	int playingPage = d_unit.GetLastPlayedGridPosition() / 16;
 
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
@@ -196,8 +197,9 @@ rclw::ConsoleCanvas UIRoot::DrawPageIndicator() {
 	return out; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawKeyHistory() {
-	rclw::ConsoleCanvas out{ 10, 8 };
+const rclw::ConsoleCanvas& UIRoot::DrawKeyHistory() {
+	static rclw::ConsoleCanvas out{ 10, 8 };
+	out.Clear();
 	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue));
 	int row = 0;
 	for (const auto& item : d_keyHistory) {
@@ -205,8 +207,9 @@ rclw::ConsoleCanvas UIRoot::DrawKeyHistory() {
 	return out; }
 
 
-rclw::ConsoleCanvas UIRoot::DrawTransportIndicator() {
-	rclw::ConsoleCanvas out{ 80, 1 };
+const rclw::ConsoleCanvas& UIRoot::DrawTransportIndicator(int width) {
+	static rclw::ConsoleCanvas out{ width, 1 };
+	out.Clear();
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
 	auto higreen = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongGreen);
@@ -223,18 +226,25 @@ rclw::ConsoleCanvas UIRoot::DrawTransportIndicator() {
 	int tempo = d_unit.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
-	WriteXY(out, 47, 0, "Tempo:", lo);
+
+	WriteXY(out, width-33, 0, "Tempo:", lo);
 	s = fmt::sprintf("%3d.%d bpm", whole, tenths);
-	WriteXY(out, 54, 0, s, hi);
-	WriteXY(out, 64, 0, "|", lo);
-	WriteXY(out, 66, 0, d_unit.IsPlaying() ? "PLAYING" : "STOPPED", d_unit.IsPlaying() ? higreen : lo);
-	WriteXY(out, 74, 0, "|", lo);
-	WriteXY(out, 76, 0, d_isRecording ? "REC" : "rec", d_isRecording ? hired : lo);
+	WriteXY(out, width-26, 0, s, hi);
+	WriteXY(out, width-16, 0, "|", lo);
+	WriteXY(out, width-14, 0, d_unit.IsPlaying() ? "PLAYING" : "STOPPED", d_unit.IsPlaying() ? higreen : lo);
+	WriteXY(out, width-6, 0, "|", lo);
+	WriteXY(out, width-4, 0, d_isRecording ? "REC" : "rec", d_isRecording ? hired : lo);
 	return out; }
 
 
 bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 	AddKeyDebuggerEvent(e);
+
+	if (d_patternLengthEditor) {
+		bool handled = d_patternLengthEditor->HandleKeyEvent(e);
+		if (handled) {
+			return true; }}
+
 	auto& reactor = Reactor::GetInstance();
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
 		reactor.Stop();
@@ -243,6 +253,15 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		// Ctrl+1...Ctrl+8
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 		return true; }
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Backslash) {
+		d_patternLengthEditor = std::make_unique<PatternLengthEdit>(d_unit.GetPatternLength()); 
+		d_patternLengthEditor->onSuccess = [&](int newValue) {
+			d_patternLengthEditor.reset(nullptr);
+			d_unit.SetPatternLength(newValue); };
+		d_patternLengthEditor->onCancel = [&]() {
+			d_patternLengthEditor.reset(nullptr); };
+		return true; }
+
 	// xxx if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCK
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
 		if (e.wVirtualScanCode == ScanCode::Backslash) {
@@ -283,7 +302,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 				if (reactor.GetKeyState(ScanCode::P)) {
 					d_unit.SwitchPattern(idx); }
 				else if (d_isRecording) {
-					d_unit.ToggleTrackGridNote(d_selectedTrack, idx); }
+					d_unit.ToggleTrackGridNote(d_selectedTrack, d_selectedGridPage*16+idx); }
 				else {
 					d_unit.Trigger(idx); }
 				return true; }}
@@ -302,6 +321,39 @@ void UIRoot::AddKeyDebuggerEvent(KEY_EVENT_RECORD e) {
 		d_keyHistory.emplace_back(s);
 		if (d_keyHistory.size() > 8) {
 			d_keyHistory.pop_front(); }}}
+
+
+PatternLengthEdit::PatternLengthEdit(int amt) :d_amt(amt) {}
+
+
+bool PatternLengthEdit::HandleKeyEvent(KEY_EVENT_RECORD e) {
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
+		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+
+			int amt = (e.wVirtualScanCode == ScanCode::Comma ? -16 : 16);
+			d_amt = std::clamp(d_amt+amt, 16, 64);
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::Enter) {
+			if (onSuccess) {
+				onSuccess(d_amt);}
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::Esc) {
+			if (onCancel) {
+				onCancel(); }
+			return true;}}
+	return false; }
+
+
+const rclw::ConsoleCanvas& PatternLengthEdit::Draw(int width, int height) {
+	static rclw::ConsoleCanvas out{ 10, 10 };
+	out.Clear();
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
+	Fill(out, lo);
+	WriteXY(out, 0, 0, "...");
+	WriteXY(out, 0, 1, ".len:");
+	WriteXY(out, 0, 2, ".");
+	WriteXY(out, 1, 2, fmt::sprintf("%d", d_amt));
+	return out; }
 
 
 }  // namespace cxl

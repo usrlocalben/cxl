@@ -13,7 +13,7 @@ namespace cxl {
 class Widget {
 public:
 	virtual bool HandleKeyEvent(KEY_EVENT_RECORD) = 0;
-	virtual rclw::ConsoleCanvas Draw() = 0; };
+	virtual const rclw::ConsoleCanvas& Draw(int width, int height) = 0; };
 
 
 }  // namespace cxl
