@@ -145,7 +145,7 @@ void CXLUnit::SaveKit() {
 	const auto path = fmt::format("{}\\kit_{}.txt", config::kitDir, d_kitNum);
 	auto fd = std::ofstream(path.c_str());
 	fd << "Name: " << d_kitName << "\n";
-	for (int ti=0; ti<16; ti++) {
+	for (int ti=0; ti<kNumVoices; ti++) {
 		fd << "Voice #" << ti << "\n";
 		fd << "  cutoff " << d_voices[ti].d_params.cutoff << "\n";
 		fd << "  resonance " << d_voices[ti].d_params.resonance << "\n";
@@ -167,7 +167,7 @@ void CXLUnit::SaveKit() {
 
 void CXLUnit::InitializeKit() {
 	d_kitName = "new kit";
-	for (int i=0; i<16; i++) {
+	for (int i=0; i<kNumVoices; i++) {
 		d_voices[i].d_params = raldsp::VoiceParameters{}; }}
 
 
@@ -236,16 +236,13 @@ void CXLUnit::Trigger(int track) {
 
 void CXLUnit::CommitPattern() {
 	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, d_patternNum);
+	int patternLength = GetPatternLength();
 	auto fd = std::ofstream(path.c_str());
 	fd << "Kit: " << d_kitNum << "\n";
-	for (int ti=0; ti<16; ti++) {
-		bool first = true;
-		for (int pos=0; pos<16; pos++) {
-			if (first) {
-				fd << "Track " << ti << ": ";
-				first = false; }
-			else {
-				fd << ","; }
+	fd << "Length: " << patternLength << "\n";
+	for (int ti=0; ti<kNumVoices; ti++) {
+		fd << "Track " << ti << ": ";
+		for (int pos=0; pos<patternLength; pos++) {
 			fd << (GetTrackGridNote(ti, pos) != 0 ? "X" : ".");}
 		fd << "\n"; }}
 
@@ -260,13 +257,16 @@ void CXLUnit::SwitchPattern(int pid) {
 		while (getline(fd, line)) {
 			if (rclt::ConsumePrefix(line, "Kit: ")) {
 				SwitchKit(stoi(line)); }
+			else if (rclt::ConsumePrefix(line, "Length: ")) {
+				SetPatternLength(stoi(line)); }
 			else if (rclt::ConsumePrefix(line, "Track ")) {
+				// "Track NN: X..X.XX"
 				auto segs = rclt::Explode(line, ':');
 				auto trackId = std::stoi(segs[0]);
-				segs = rclt::Explode(segs[1], ',');
+				auto grid = rclt::Trim(segs[1]);
 				int pos = 0;
-				for (auto& chunk : segs) {
-					bool on = chunk.find('X') != std::string::npos;
+				for (auto ch : grid) {
+					bool on = (ch == 'X');
 					if (on) {
 						ToggleTrackGridNote(trackId, pos); }
 					pos++; }}}}}

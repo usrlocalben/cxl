@@ -55,6 +55,12 @@ public:
 	int GetTempo();
 	void AddTrack(raldsp::SingleSampler& voice);
 
+	int GetPatternLength() { return d_patternLength; }
+	void SetPatternLength(int value) {
+		if (!(value==16 || value==32 || value==64)) {
+			throw std::runtime_error("invalid pattern length"); }
+		d_patternLength = value; }
+
 	void SetTrackGridNote(int tn, int pos, int value) {
 		if (!(0<=tn && tn<d_tracks.size())) {
 			throw std::runtime_error("invalid track"); }
@@ -79,6 +85,7 @@ private:
 	void IncrementT();
 	void Rewind();
 	std::vector<GridTrack> d_tracks;
+	int d_patternLength = 16;
 
 	// playing state
 	int d_tempoInBPM = 1200;
@@ -86,8 +93,7 @@ private:
 	int d_sampleCounter = 0;
 	int d_t = 0;
 	int d_ppqStamp = 0;
-	int d_lastPlayedGridPosition;
-	const int d_patternLengthInBars = 1;
+	int d_lastPlayedGridPosition = 0;
 	std::array<int, 96> d_ppqLUT; };
 
 

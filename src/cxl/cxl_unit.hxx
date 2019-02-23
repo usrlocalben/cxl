@@ -31,6 +31,11 @@ public:
 	// pattern editing
 	void ToggleTrackGridNote(int track, int pos);
 	int GetTrackGridNote(int track, int pos);
+	void SwitchPattern(int pid);
+	void CommitPattern();
+	int GetCurrentPatternNumber() { return d_patternNum; }
+	int GetPatternLength() { return d_gridSequencer.GetPatternLength(); }
+	void SetPatternLength(int value) { d_gridSequencer.SetPatternLength(value); }
 
 	// sampler voices
 	void InitializeKit();
@@ -46,9 +51,6 @@ public:
 	int GetVoiceParameterValue(int track, int num);
 	void Adjust(int track, int param, int amt);
 	void Trigger(int track);
-	void SwitchPattern(int pid);
-	void CommitPattern();
-	int GetCurrentPatternNumber() { return d_patternNum; }
 
     // audio render
     void Render(float* left, float* right, int numSamples);

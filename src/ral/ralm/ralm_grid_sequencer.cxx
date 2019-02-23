@@ -58,7 +58,7 @@ bool GridSequencer::Process() {
 			IncrementT();
 			tracksWillUpdate = true;
 			d_sampleCounter = d_ppqLUT[d_t%kPPQ];
-			if (d_t >= d_patternLengthInBars*kBeatsPerBar*kPPQ) {
+			if (d_t >= (d_patternLength/4)*kPPQ) {
 				// end of pattern
 				Rewind(); }}}
 

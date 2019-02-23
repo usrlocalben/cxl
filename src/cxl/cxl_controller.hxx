@@ -33,6 +33,7 @@ private:
 	rclw::ConsoleCanvas DrawTrackSelection();
 	rclw::ConsoleCanvas DrawParameters();
 	rclw::ConsoleCanvas DrawGrid();
+	rclw::ConsoleCanvas DrawPageIndicator();
 	rclw::ConsoleCanvas DrawKeyHistory();
 	rclw::ConsoleCanvas DrawTransportIndicator();
 
@@ -43,7 +44,8 @@ private:
 
 	CXLUnit& d_unit;
 	int d_selectedTrack = 0;
-	const int d_selectedPage = 0;
+	int d_selectedGridPage = 0;
+	int d_selectedParameterPage = 0;
 	bool d_isRecording = false;
 	bool d_enableKeyDebug = true;
 	std::deque<std::string> d_keyHistory; };

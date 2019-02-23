@@ -21,6 +21,16 @@ namespace {
 
 using SC = rclw::ScanCode;
 
+int pos2page(int pos) {
+	if (pos < 16) return 0;
+	if (pos < 32) return 1;
+	if (pos < 48) return 2;
+	if (pos < 64) return 3;
+	auto msg = fmt::sprintf("unexpected pos %d", pos);
+	throw std::runtime_error(msg); }
+
+
+
 /**
  * LUT for converting a 4x4 matrix of scan-codes to
  * indices for grid positions, track#, pattern# etc
@@ -99,6 +109,7 @@ rclw::ConsoleCanvas UIRoot::Draw() {
 	tmp = Flatten(tmp, DrawHeader(), 0, 0);
 	tmp = Flatten(tmp, DrawTrackSelection(), 1, 2);
 	tmp = Flatten(tmp, DrawGrid(), 1, 21);
+	tmp = Flatten(tmp, DrawPageIndicator(), 68, 22);
 	if (d_enableKeyDebug) {
 		tmp = Flatten(tmp, DrawKeyHistory(), 60, 10); }
 	tmp = Flatten(tmp, DrawParameters(), 8, 6);
@@ -133,7 +144,7 @@ rclw::ConsoleCanvas UIRoot::DrawParameters() {
 	rclw::ConsoleCanvas out{ 30, 8 };
 	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
 	for (int i = 0; i < 8; i++) {
-		int paramNum = d_selectedPage*8+i;
+		int paramNum = d_selectedParameterPage*8+i;
 		auto& paramName = d_unit.GetVoiceParameterName(d_selectedTrack, paramNum);
 		int value = d_unit.GetVoiceParameterValue(d_selectedTrack, paramNum);
 		WriteXY(out, 0, i, fmt::sprintf("% 12s : % 3d", paramName, value)); }
@@ -150,14 +161,40 @@ rclw::ConsoleCanvas UIRoot::DrawGrid() {
 	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
-	int pos = d_unit.GetLastPlayedGridPosition();
-	WriteXY(out, 2+pos*4, 0, "o", hi);
+	const int curPos = d_unit.GetLastPlayedGridPosition();
+	const int curPage = pos2page(curPos);
+
+	if (curPage == d_selectedGridPage) {
+		WriteXY(out, 2+curPos*4, 0, "o", hi); }
 
 	WriteXY(out, 0, 1, "|");
 	for (int i = 0; i < 16; i++) {
-		auto value = d_unit.GetTrackGridNote(d_selectedTrack, i);
+		auto value = d_unit.GetTrackGridNote(d_selectedTrack, d_selectedGridPage*16+i);
 		WriteXY(out, i*4+2, 1, value != 0 ? "X" : " ", red);
 		WriteXY(out, i*4+4, 1, "|", lo); }
+	return out; }
+
+
+rclw::ConsoleCanvas UIRoot::DrawPageIndicator() {
+	rclw::ConsoleCanvas out{ 9, 1 };
+	int numPages = d_unit.GetPatternLength() / 16;
+	int curPage = d_selectedGridPage;
+	int playingPage = pos2page(d_unit.GetLastPlayedGridPosition());
+
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
+	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
+	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+	Fill(out, lo);
+	WriteXY(out, 0, 0, "[. . . .]", lo);
+	const std::array<int,4> xa = { 1, 3, 5, 7 };
+	
+	for (int n=0; n<4; n++) {
+	if (d_unit.IsPlaying() && playingPage == n) {
+		WriteXY(out, xa[n], 0, "o", red); }
+	else if (curPage == n) {
+		WriteXY(out, xa[n], 0, "o", hi); }
+	else {}}
+
 	return out; }
 
 
@@ -208,7 +245,13 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		// Ctrl+1...Ctrl+8
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 		return true; }
+	// xxx if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCK
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
+		if (e.wVirtualScanCode == ScanCode::Backslash) {
+			d_selectedGridPage++;
+			if (d_selectedGridPage >= d_unit.GetPatternLength()/16) {
+				d_selectedGridPage = 0; }
+			return true; }
 		if (e.wVirtualScanCode == ScanCode::L) { d_isRecording = !d_isRecording; d_unit.CommitPattern(); return true; }
 		if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Play(); return true; }
 		if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Stop(); return true; }
@@ -228,7 +271,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 								   [&](auto& item) { return reactor.GetKeyState(item); });
 			if (it != end(kParamScanLUT)) {
 				int idx = std::distance(begin(kParamScanLUT), it);
-				d_unit.Adjust(d_selectedTrack, d_selectedPage*8+idx, amt); }
+				d_unit.Adjust(d_selectedTrack, d_selectedParameterPage*8+idx, amt); }
 			else if (reactor.GetKeyState(ScanCode::Equals)) {
 				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + amt)); }
 
