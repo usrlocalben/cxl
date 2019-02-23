@@ -11,6 +11,14 @@ cc_library(
     )
 
 cc_library(
+    name="math",
+    srcs=["raldsp_math.cxx"],
+    hdrs=["raldsp_math.hxx"],
+    deps=[],
+    copts = RSR_DEFAULT_COPTS,
+    )
+
+cc_library(
     name="filter",
     srcs=["raldsp_filter.cxx"],
     hdrs=["raldsp_filter.hxx"],
