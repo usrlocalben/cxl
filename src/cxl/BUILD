@@ -51,9 +51,9 @@ cc_library(
 
 
 cc_library(
-    name = "controller",
-    srcs = ["cxl_controller.cxx"],
-    hdrs = ["cxl_controller.hxx"],
+    name = "ui_root",
+    srcs = ["cxl_ui_root.cxx"],
+    hdrs = ["cxl_ui_root.hxx"],
     deps = [
         "//src/rcl/rclw:console",
         ":reactor",
@@ -72,7 +72,7 @@ cc_binary(
         "//src/ral/ralio:asio",
         "//src/rcl/rclw:console",
         ":config",
-        ":controller",
+        ":ui_root",
         ":reactor",
         ":unit",
         ],
