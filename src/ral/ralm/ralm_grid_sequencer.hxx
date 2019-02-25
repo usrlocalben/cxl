@@ -89,7 +89,7 @@ private:
 
 	// playing state
 	int d_tempoInBPM = 1200;
-	PlayerState d_state{PlayerState::Stopped}, d_nextState;
+	PlayerState d_state{PlayerState::Stopped}, d_nextState{PlayerState::Stopped};
 	int d_sampleCounter = 0;
 	int d_t = 0;
 	int d_ppqStamp = 0;

@@ -92,25 +92,38 @@ void UIRoot::onCXLUnitPlaybackPositionChanged() {
 	Reactor::GetInstance().DrawScreen(); }
 
 
-const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
-	static rclw::ConsoleCanvas tmp(width, height);
-	tmp.Clear();
-	tmp = Flatten(tmp, DrawHeader(width), 0, 0);
-	tmp = Flatten(tmp, DrawTrackSelection(), 1, 2);
-	tmp = Flatten(tmp, DrawGrid(), 1, 21);
-	tmp = Flatten(tmp, DrawPageIndicator(), 68, height-3);
-	if (d_enableKeyDebug) {
-		tmp = Flatten(tmp, DrawKeyHistory(), width-20, height-15); }
-	tmp = Flatten(tmp, DrawParameters(), 8, 6);
-	tmp = Flatten(tmp, DrawTransportIndicator(width), 0, height-1);
+std::pair<int, int> UIRoot::Pack(int w, int h) {
+	return {80, 25}; }
 
-	if (d_patternLengthEditor) {
-		auto overlay = d_patternLengthEditor->Draw(-1, -1);
+
+int UIRoot::GetType() {
+	return WT_BOX; }
+
+
+const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
+	auto& out = d_canvas;
+	out.Resize(width, height);
+	out.Clear();
+	WriteXY(out, 0, 0, DrawHeader(width));
+	WriteXY(out, 1, 2, DrawTrackSelection());
+
+	WriteXY(out, 1, height-4, DrawGrid());
+	WriteXY(out, 68, height-3, DrawPageIndicator());
+
+	if (d_enableKeyDebug) {
+		WriteXY(out, width-20, height-15, DrawKeyHistory()); }
+
+	WriteXY(out, 8, 6, DrawParameters());
+	WriteXY(out, 0, height-1, DrawTransportIndicator(width));
+
+	if (d_popup) {
+		auto [sx, sy] = d_popup->Pack(-1, -1);
+		const auto& overlay = d_popup->Draw(sx, sy);
 		int xc = (width - overlay.d_width) / 2;
 		int yc = (height - overlay.d_height) / 2;
-		tmp = Flatten(tmp, overlay, xc, yc); }
+		WriteXY(out, xc, yc, overlay); }
 
-	return tmp; }
+	return out; }
 
 
 const rclw::ConsoleCanvas& UIRoot::DrawHeader(int width) {
@@ -125,6 +138,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawHeader(int width) {
 
 const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
 	static rclw::ConsoleCanvas out{ 25, 2 };
+	out.Clear();
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongCyan);
 	for (int i = 0; i < 8; i++) {
@@ -140,6 +154,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
 
 const rclw::ConsoleCanvas& UIRoot::DrawParameters() {
 	static rclw::ConsoleCanvas out{ 30, 8 };
+	out.Clear();
 	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
 	for (int i = 0; i < 8; i++) {
 		int paramNum = d_selectedParameterPage*8+i;
@@ -239,8 +254,8 @@ const rclw::ConsoleCanvas& UIRoot::DrawTransportIndicator(int width) {
 bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 	AddKeyDebuggerEvent(e);
 
-	if (d_patternLengthEditor) {
-		bool handled = d_patternLengthEditor->HandleKeyEvent(e);
+	if (d_popup) {
+		bool handled = d_popup->HandleKeyEvent(e);
 		if (handled) {
 			return true; }}
 
@@ -253,12 +268,13 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Backslash) {
-		d_patternLengthEditor = std::make_unique<PatternLengthEdit>(d_unit.GetPatternLength());
-		d_patternLengthEditor->onSuccess = [&](int newValue) {
-			d_patternLengthEditor.reset(nullptr);
+		auto editor = std::make_shared<PatternLengthEdit>(d_unit.GetPatternLength());
+		d_popup = std::make_shared<LineBox>(editor);
+		editor->onSuccess = [&](int newValue) {
+			d_popup.reset();
 			d_unit.SetPatternLength(newValue); };
-		d_patternLengthEditor->onCancel = [&]() {
-			d_patternLengthEditor.reset(nullptr); };
+		editor->onCancel = [&]() {
+			d_popup.reset(); };
 		return true; }
 
 	// xxx if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCK
@@ -277,19 +293,19 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); return true; }
 		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
-			int amt = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
+			int offset = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
 			if ((e.dwControlKeyState & rclw::kCKShift) != 0u) {
 				// XXX does not work because of MSFT internal bug 9311951
 				// https://github.com/Microsoft/WSL/issues/1188
-				amt *= 10; }
+				offset *= 10; }
 
 			auto it = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
 								   [&](auto& item) { return reactor.GetKeyState(item); });
 			if (it != end(kParamScanLUT)) {
 				int idx = std::distance(begin(kParamScanLUT), it);
-				d_unit.Adjust(d_selectedTrack, d_selectedParameterPage*8+idx, amt); }
+				d_unit.Adjust(d_selectedTrack, d_selectedParameterPage*8+idx, offset); }
 			else if (reactor.GetKeyState(ScanCode::Equals)) {
-				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + amt)); }
+				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
 
 			// indicate handled even if not paired with a valid key
 			return true; }
@@ -322,19 +338,30 @@ void UIRoot::AddKeyDebuggerEvent(KEY_EVENT_RECORD e) {
 			d_keyHistory.pop_front(); }}}
 
 
-PatternLengthEdit::PatternLengthEdit(int amt) :d_amt(amt) {}
+PatternLengthEdit::PatternLengthEdit(int value) :d_value(value) {}
+
+
+std::pair<int, int> PatternLengthEdit::Pack(int w, int h) {
+	return {std::string("Pattern Length").length(), 2};}
+
+
+int PatternLengthEdit::GetType() {
+	return WT_FIXED; }
 
 
 bool PatternLengthEdit::HandleKeyEvent(KEY_EVENT_RECORD e) {
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
 		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
-			int amt = (e.wVirtualScanCode == ScanCode::Comma ? -16 : 16);
-			d_amt = std::clamp(d_amt+amt, 16, 64);
+			int offset = (e.wVirtualScanCode == ScanCode::Comma ? -16 : 16);
+			int newValue = std::clamp(d_value+offset, 16, 64);
+			if (newValue != d_value) {
+				d_value = newValue;
+				d_dirty = true; }
 			return true; }
 		if (e.wVirtualScanCode == ScanCode::Enter) {
 			if (onSuccess) {
-				onSuccess(d_amt);}
+				onSuccess(d_value);}
 			return true; }
 		if (e.wVirtualScanCode == ScanCode::Esc) {
 			if (onCancel) {
@@ -344,14 +371,20 @@ bool PatternLengthEdit::HandleKeyEvent(KEY_EVENT_RECORD e) {
 
 
 const rclw::ConsoleCanvas& PatternLengthEdit::Draw(int width, int height) {
-	static rclw::ConsoleCanvas out{ 10, 10 };
-	out.Clear();
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
-	Fill(out, lo);
-	WriteXY(out, 0, 0, "...");
-	WriteXY(out, 0, 1, ".len:");
-	WriteXY(out, 0, 2, ".");
-	WriteXY(out, 1, 2, fmt::sprintf("%d", d_amt));
+	const auto mySize = Pack(-1, -1);
+	if (width != mySize.first || height != mySize.second) {
+		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
+
+	auto& out = d_canvas;
+	if (d_dirty) {
+		d_dirty = false;
+		out.Resize(width, height);
+		out.Clear();
+		auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
+		Fill(out, lo);
+		WriteXY(out, 0, 0, "Pattern Length");
+		WriteXY(out, 6, 1, fmt::sprintf("%d", d_value)); }
+
 	return out; }
 
 

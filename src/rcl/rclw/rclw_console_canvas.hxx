@@ -36,6 +36,7 @@ inline uint8_t MakeAttribute(Color bg, Color fg) {
 
 class ConsoleCanvas {
 public:
+	ConsoleCanvas() :d_width(0), d_height(0) {}
 	ConsoleCanvas(int width, int height) : d_width(width), d_height(height), d_buf(d_width*d_height) {}
 
 public:
@@ -51,6 +52,18 @@ public:
 	int d_width;
 	int d_height;
 	std::vector<CHAR_INFO> d_buf; };
+
+
+inline void WriteXY(ConsoleCanvas& dst, int x, int y, const ConsoleCanvas& src) {
+	for (int ry=0; ry<dst.d_height; ry++) {
+		for (int rx=0; rx<dst.d_width; rx++) {
+			if ((ry>=y && ry<y+src.d_height) &&
+			    (rx>=x && rx<x+src.d_width)) {
+				int sx = rx-x;
+				int sy = ry-y;
+				auto& srcCell = src.d_buf[sy*src.d_width+sx];
+				auto& dstCell = dst.d_buf[ry*dst.d_width+rx];
+				dstCell = srcCell; }}}}
 
 
 inline ConsoleCanvas Flatten(const ConsoleCanvas& a, const ConsoleCanvas& b, int x, int y) {

@@ -16,16 +16,20 @@ namespace cxl {
 
 class PatternLengthEdit : public Widget {
 public:
-	PatternLengthEdit(int amt);
+	PatternLengthEdit(int value);
 
 	// Widget
 	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
+	std::pair<int, int> Pack(int, int) override;
+	int GetType() override;
 
 	std::function<void(int)> onSuccess;
 	std::function<void()> onCancel;
 private:
-	int d_amt = 0; };
+	rclw::ConsoleCanvas d_canvas;
+	bool d_dirty = true;
+	int d_value = 0; };
 
 
 class UIRoot : public Widget {
@@ -43,6 +47,9 @@ public:
 	// Widget impl
 	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
+	std::pair<int, int> Pack(int, int) override;
+	int GetType() override;
+
 private:
 	const rclw::ConsoleCanvas& DrawHeader(int width);
 	const rclw::ConsoleCanvas& DrawTrackSelection();
@@ -57,9 +64,10 @@ private:
 	WindowsEvent d_playbackPositionChangedEvent;
 	void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 
-	std::unique_ptr<PatternLengthEdit> d_patternLengthEditor;
+	std::shared_ptr<Widget> d_popup;
 
 	CXLUnit& d_unit;
+	rclw::ConsoleCanvas d_canvas;
 	bool d_editPatternLength = false;
 	int d_selectedTrack = 0;
 	int d_selectedGridPage = 0;
