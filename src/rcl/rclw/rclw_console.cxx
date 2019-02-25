@@ -57,7 +57,7 @@ void Console::SetDimensions(int width, int height) {
 	if (!SetConsoleScreenBufferSize(d_stdout, newSize)) {
 		throw std::runtime_error("SetConsoleScreenBufferSize failure"); }
 
-	const SMALL_RECT window{ 0, 0, short(width)-1, short(height)-1 };
+	const SMALL_RECT window{ 0, 0, static_cast<short>(width-1), static_cast<short>(height-1) };
 	success = SetConsoleWindowInfo(d_stdout, TRUE, &window);
 	if (!success) {
 		throw std::runtime_error("SetConsoleWindowInfo tiny failure"); }
@@ -72,9 +72,9 @@ std::pair<int, int> Console::GetCursorPosition() {
 	return { csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y }; }
 
 
-Console& Console::ShowCursor() { 
-    COORD coord; 
-    coord.X = d_x; coord.Y = d_y; 
+Console& Console::ShowCursor() {
+    COORD coord;
+    coord.X = d_x; coord.Y = d_y;
     SetConsoleCursorPosition(d_stdout, coord);
 	return *this; }
 

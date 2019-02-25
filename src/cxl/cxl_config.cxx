@@ -7,7 +7,7 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
-#include "3rdparty/winreg/winreg.hxx"
+#include "3rdparty/winreg/WinReg.hxx"
 
 #define NOMINMAX
 #include <Windows.h>
@@ -58,19 +58,19 @@ void Load() {
 
 	try {
 		asioDriverName = rclt::UTF8Codec::Encode(key.GetStringValue(L"asioDriverName")); }
-	catch (const winreg::RegException& err) { err; }
+	catch (const winreg::RegException&) {}
 
 	try {
 		masterLeftDest = rclt::UTF8Codec::Encode(key.GetStringValue(L"masterLeftDest")); }
-	catch (const winreg::RegException& err) { err; }
+	catch (const winreg::RegException&) {}
 
 	try {
 		masterRightDest = rclt::UTF8Codec::Encode(key.GetStringValue(L"masterRightDest")); }
-	catch (const winreg::RegException& err) { err; }
+	catch (const winreg::RegException&) {}
 
 	try {
 		dataDir = rclt::UTF8Codec::Encode(key.GetStringValue(L"dataDir")); }
-	catch (const winreg::RegException& err) { err; }
+	catch (const winreg::RegException&) {}
 
 	auto appDataDir = rclt::UTF8Codec::Encode(GetEnvVar(L"APPDATA").value_or(L"%APPDATA%"));
 	//std::cout << ">>> APPDATA = [" << appDataDir << "]\n";

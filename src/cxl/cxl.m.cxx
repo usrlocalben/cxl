@@ -43,10 +43,6 @@ bool supportsOutputReadyOptimization;
 std::vector<ralio::ASIOBufferInfo> bufferInfos;
 std::vector<ralio::ASIOChannelInfo> channelInfos;
 
-double fract(double x) {
-	return x - static_cast<int64_t>(x); }
-
-
 /**
  * based on https://stackoverflow.com/questions/1517685/recursive-createdirectory
  */

@@ -39,11 +39,13 @@ public:
 	void Increment() {
 		switch (e) {
 		case None: e = Loop; break;
-		case Loop: e = Oneshot; break; }}
+		case Loop: e = Oneshot; break;
+		default: {}}}
 	void Decrement() {
 		switch (e) {
 		case Loop: e = None; break;
-		case Oneshot: e = Loop; break; }}
+		case Oneshot: e = Loop; break;
+		default: {} }}
 	void offset(const int dir) {
 		assert(dir==1 || dir==-1);
 		if (dir == 1) {

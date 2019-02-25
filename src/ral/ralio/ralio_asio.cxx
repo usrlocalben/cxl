@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "3rdparty/asiosdk/common/iasiodrv.h"
-#include "3rdparty/winreg/winreg.hxx"
+#include "3rdparty/winreg/WinReg.hxx"
 
 
 namespace rqdq {
@@ -59,7 +59,7 @@ void ASIOSystem::RefreshDriverList() {
 		RegKey driverNode{ driverListNode.Get(), driverName, KEY_READ };
 		try {
 			auto clsIdText = driverNode.GetStringValue(L"CLSID");
-			auto clsId = rclw::CLSIDSerializer::Deserialize(clsIdText);
+			rclw::CLSIDSerializer::Deserialize(clsIdText);
 			auto driverId = clsIdText.substr(1, clsIdText.length()-2);
 
 			RegKey comNode{ HKEY_CLASSES_ROOT, L"CLSID\\" + clsIdText + L"\\InprocServer32", KEY_READ };

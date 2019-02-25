@@ -176,7 +176,6 @@ const rclw::ConsoleCanvas& UIRoot::DrawGrid() {
 
 const rclw::ConsoleCanvas& UIRoot::DrawPageIndicator() {
 	static rclw::ConsoleCanvas out{ 9, 1 };
-	int numPages = d_unit.GetPatternLength() / 16;
 	int curPage = d_selectedGridPage;
 	int playingPage = d_unit.GetLastPlayedGridPosition() / 16;
 
@@ -186,7 +185,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawPageIndicator() {
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "[. . . .]", lo);
 	const std::array<int,4> xa = { 1, 3, 5, 7 };
-	
+
 	for (int n=0; n<4; n++) {
 	if (d_unit.IsPlaying() && playingPage == n) {
 		WriteXY(out, xa[n], 0, "o", red); }
@@ -254,7 +253,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Backslash) {
-		d_patternLengthEditor = std::make_unique<PatternLengthEdit>(d_unit.GetPatternLength()); 
+		d_patternLengthEditor = std::make_unique<PatternLengthEdit>(d_unit.GetPatternLength());
 		d_patternLengthEditor->onSuccess = [&](int newValue) {
 			d_patternLengthEditor.reset(nullptr);
 			d_unit.SetPatternLength(newValue); };

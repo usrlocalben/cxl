@@ -57,5 +57,26 @@
     <ClCompile Include="..\src\cxl\cxl_widget.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

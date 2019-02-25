@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <Windows.h>
+#include <windows.h>
 
 namespace rqdq {
 namespace rcls {
@@ -22,7 +22,8 @@ vector<string> FindGlob(const string& pathpat) {
 	HANDLE hFind = FindFirstFileW(rclt::UTF8Codec::Decode(pathpat).c_str(), &ffd);
 	if (hFind != INVALID_HANDLE_VALUE) {
 		do {
-			if (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) continue;
+			if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0u) {
+				continue; }
 			lst.push_back(rclt::UTF8Codec::Encode(wstring{ffd.cFileName}));
 		} while (FindNextFile(hFind, &ffd) != 0); }
 	return lst; }
@@ -34,14 +35,14 @@ vector<string> FindGlob(const string& pathpat) {
 */
 long long GetFileMTime(const string& fn) {
 	long long mtime = -1;
-	HANDLE hFile = CreateFileA(fn.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+	HANDLE hFile = CreateFileA(fn.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);
 	if (hFile != INVALID_HANDLE_VALUE) {
 		FILETIME ftCreate, ftAccess, ftWrite;
-		if (!GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite)) {
+		if (GetFileTime(hFile, &ftCreate, &ftAccess, &ftWrite) == 0) {
 			mtime = 0;
 		}
 		else {
-			mtime = (long long)ftWrite.dwHighDateTime << 32 | ftWrite.dwLowDateTime;
+			mtime = static_cast<long long>(ftWrite.dwHighDateTime) << 32 | ftWrite.dwLowDateTime;
 		}
 		CloseHandle(hFile);
 	}
@@ -55,7 +56,7 @@ vector<char> GetFileContents(const string& fn) {
 	f.exceptions(ifstream::badbit | ifstream::failbit | ifstream::eofbit);
 	f.seekg(0, ios::end);
 	streampos length(f.tellg());
-	if (length) {
+	if (length != 0) {
 		cout << "reading " << length << " bytes from " << fn << endl;
 		f.seekg(0, ios::beg);
 		buf.resize(static_cast<size_t>(length));
@@ -73,7 +74,7 @@ void GetFileContents(const string& fn, vector<char>& buf) {
 	f.exceptions(ifstream::badbit | ifstream::failbit | ifstream::eofbit);
 	f.seekg(0, ios::end);
 	streampos length(f.tellg());
-	if (length) {
+	if (length != 0) {
 		f.seekg(0, ios::beg);
 		buf.resize(static_cast<size_t>(length));
 		f.read(&buf.front(), static_cast<std::size_t>(length)); } }
@@ -89,5 +90,5 @@ vector<string> GetFileLines(const string& filename) {
 
 	return data; }
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace rcls
+}  // namespace rqdq

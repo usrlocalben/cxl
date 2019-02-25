@@ -180,15 +180,22 @@
     <ClCompile Include="..\src\cxl\cxl_widget.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_idspoutput.cxx" />
+    <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_sampler.cxx" />
+    <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx" />
     <ClCompile Include="..\src\ral\ralio\ralio_asio.cxx" />
     <ClCompile Include="..\src\ral\ralm\ralm_grid_sequencer.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_mpcwave.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx" />
+    <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx" />
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx" />
+    <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx" />
+    <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx" />
+    <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx" />
+    <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
