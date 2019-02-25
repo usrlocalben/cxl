@@ -8,17 +8,14 @@
 #include <iostream>
 #include <string>
 #include <vector>
-
 #include <Windows.h>
-#undef min
-#undef max
 
 namespace rqdq {
 namespace rcls {
 
 using namespace std;
 
-vector<string> fileglob(const string& pathpat) {
+vector<string> FindGlob(const string& pathpat) {
 	vector<string> lst;
 	WIN32_FIND_DATA ffd;
 
@@ -35,7 +32,7 @@ vector<string> fileglob(const string& pathpat) {
 * example from
 * http://nickperrysays.wordpress.com/2011/05/24/monitoring-a-file-last-modified-date-with-visual-c/
 */
-long long getmtime(const string& fn) {
+long long GetFileMTime(const string& fn) {
 	long long mtime = -1;
 	HANDLE hFile = CreateFileA(fn.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 	if (hFile != INVALID_HANDLE_VALUE) {
@@ -52,7 +49,7 @@ long long getmtime(const string& fn) {
 }
 
 
-vector<char> file_get_contents(const string& fn) {
+vector<char> GetFileContents(const string& fn) {
 	vector<char> buf;
 	ifstream f(fn);
 	f.exceptions(ifstream::badbit | ifstream::failbit | ifstream::eofbit);
@@ -71,7 +68,7 @@ vector<char> file_get_contents(const string& fn) {
 }
 
 
-void file_get_contents(const string& fn, vector<char>& buf) {
+void GetFileContents(const string& fn, vector<char>& buf) {
 	ifstream f(fn);
 	f.exceptions(ifstream::badbit | ifstream::failbit | ifstream::eofbit);
 	f.seekg(0, ios::end);
@@ -79,12 +76,10 @@ void file_get_contents(const string& fn, vector<char>& buf) {
 	if (length) {
 		f.seekg(0, ios::beg);
 		buf.resize(static_cast<size_t>(length));
-		f.read(&buf.front(), static_cast<std::size_t>(length));
-	}
-}
+		f.read(&buf.front(), static_cast<std::size_t>(length)); } }
 
 
-vector<string> loadFileAsLines(const string& filename) {
+vector<string> GetFileLines(const string& filename) {
 	ifstream f(filename);
 	vector<string> data;
 

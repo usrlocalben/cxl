@@ -178,7 +178,6 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename, cons
 	while (feof(fd) == 0) {
 
 		wavchunkhead wch;
-		int pos = ftell(fd);
 		fread(&wch, 8, 1, fd);
 
 		buf.resize(wch.chunk_size, 0);

@@ -10,6 +10,7 @@ MSVC_FLAGS = [
     "/wd4244",  # "conversion from 'double' to 'float' possible loss of data
     "/wd4005",  # macro redefinition
     "/wd4267",  # conversion from 'size_t' to 'type', possible loss of data
+    #"-Wno-builtin-macro-redefined",  # clang-cl is angry
 
     "/DUNICODE",
     "/D_UNICODE",
@@ -19,11 +20,11 @@ MSVC_FLAGS = [
     ]
 
 MSVC_RELEASE_FLAGS = [
-    "/Oi",  # intrinsic functions: enable
-    "/Ot",  # optimizer mode: speed
-    "/Ob2",  # inline expansion: level 2
+    #"/Oi",  # intrinsic functions: enable
+    #"/Ot",  # optimizer mode: speed
+    #"/Ob2",  # inline expansion: level 2
     "/fp:fast",  # fpu mode: less precise
-    "/DNDEBUG",  # disable assert, etc
+    #"/DNDEBUG",  # disable assert, etc
     ]
 
 RSR_DEFAULT_COPTS = MSVC_FLAGS + MSVC_RELEASE_FLAGS

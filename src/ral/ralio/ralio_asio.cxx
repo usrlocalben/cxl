@@ -59,7 +59,7 @@ void ASIOSystem::RefreshDriverList() {
 		RegKey driverNode{ driverListNode.Get(), driverName, KEY_READ };
 		try {
 			auto clsIdText = driverNode.GetStringValue(L"CLSID");
-			auto clsId = rclw::CLSIDSerializer::deserialize(clsIdText);
+			auto clsId = rclw::CLSIDSerializer::Deserialize(clsIdText);
 			auto driverId = clsIdText.substr(1, clsIdText.length()-2);
 
 			RegKey comNode{ HKEY_CLASSES_ROOT, L"CLSID\\" + clsIdText + L"\\InprocServer32", KEY_READ };
@@ -93,7 +93,7 @@ int ASIOSystem::FindDriverByName(const std::string& text) const {
 void ASIOSystem::OpenDriver(int idx) {
 	void* vtbl;
 	auto& info = d_drivers[idx];
-	const auto clsId = rclw::CLSIDSerializer::deserialize(L"{" + info.id + L"}");
+	const auto clsId = rclw::CLSIDSerializer::Deserialize(L"{" + info.id + L"}");
 	int result = CoCreateInstance(clsId, nullptr, CLSCTX_INPROC_SERVER, clsId, &vtbl);
 	if (result != S_OK) {
 		throw std::runtime_error("could not create driver instance"); }

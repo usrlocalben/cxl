@@ -35,7 +35,7 @@ CXLUnit::CXLUnit()
 		d_mixer.AddChannel(d_voices.back(), 1.0f);
 		d_gridSequencer.AddTrack(d_voices.back()); }
 
-	auto files = rcls::fileglob(config::sampleDir + R"(\*.wav)");
+	auto files = rcls::FindGlob(config::sampleDir + R"(\*.wav)");
 	sort(begin(files), end(files));
 	int id = 1;
 	for (auto& file : files) {

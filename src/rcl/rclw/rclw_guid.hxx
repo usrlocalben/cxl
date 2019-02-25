@@ -1,7 +1,5 @@
 #pragma once
 #include <string>
-
-#define NOMINMAX
 #include <Windows.h>
 
 namespace rqdq {
@@ -9,7 +7,7 @@ namespace rclw {
 
 
 struct CLSIDSerializer {
-	static CLSID deserialize(const std::wstring&);
+	static CLSID Deserialize(const std::wstring&);
 };
 
 

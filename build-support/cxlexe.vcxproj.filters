@@ -39,9 +39,6 @@
     <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_controller.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\cxl\cxl_reactor.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
@@ -52,6 +49,12 @@
       <Filter>cxx</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_ui_root.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_widget.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
   </ItemGroup>
