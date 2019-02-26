@@ -15,6 +15,7 @@ constexpr int kBeatsPerBar = 4;
 
 struct GridTrack {
 	raldsp::SingleSampler* voice = nullptr;
+	bool isMuted = false;
 	std::array<int, 16*4> grid;
 	GridTrack(raldsp::SingleSampler* voice) :voice(voice) {
 		std::fill(begin(grid), end(grid), 0); } };
@@ -76,6 +77,11 @@ public:
 		cell = (cell==1?0:1); }
 	void ClearTrackGrid(int tn) {
 		std::fill(d_tracks[tn].grid.begin(), d_tracks[tn].grid.end(), 0);}
+	bool IsTrackMuted(int tn) {
+		return d_tracks[tn].isMuted; }
+	void ToggleTrackMute(int tn) {
+		d_tracks[tn].isMuted = !d_tracks[tn].isMuted; }
+
 	void InitializePattern() {
 		for (auto& track : d_tracks) {
 			std::fill(track.grid.begin(), track.grid.end(), 0); }}

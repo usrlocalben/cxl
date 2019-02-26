@@ -36,6 +36,8 @@ public:
 	int GetCurrentPatternNumber() { return d_patternNum; }
 	int GetPatternLength() { return d_sequencer.GetPatternLength(); }
 	void SetPatternLength(int value) { d_sequencer.SetPatternLength(value); }
+	bool IsTrackMuted(int ti) { return d_sequencer.IsTrackMuted(ti); }
+	void ToggleTrackMute(int ti) { d_sequencer.ToggleTrackMute(ti); d_patternDataChanged.emit(ti); }
 
 	// sampler voices
 	void InitializeKit();

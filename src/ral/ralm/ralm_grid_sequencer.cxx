@@ -68,7 +68,7 @@ bool GridSequencer::Process() {
 		d_lastPlayedGridPosition = gridPos;
 		updated = true;
 		for (auto& track : d_tracks) {
-			if (track.grid[gridPos] != 0) {
+			if (track.grid[gridPos] != 0 && !track.isMuted) {
 				track.voice->Trigger(36, 1.0, 0); }}}
 	return updated; }
 

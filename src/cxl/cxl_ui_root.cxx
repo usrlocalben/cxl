@@ -186,16 +186,19 @@ const rclw::ConsoleCanvas& UIRoot::DrawHeader(int width) {
 const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
 	static rclw::ConsoleCanvas out{ 25, 2 };
 	out.Clear();
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongCyan);
-	for (int i = 0; i < 8; i++) {
-		WriteXY(out, i*3+1, 0, tolower(kTrackNames[i]), lo); }
-	for (int i = 8; i <16; i++) {
-		WriteXY(out, (i-8)*3+1, 1, tolower(kTrackNames[i]), lo); }
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
+	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
+	for (int ti = 0; ti < 8; ti++) {
+		auto isMuted = d_unit.IsTrackMuted(ti);
+		WriteXY(out, ti*3+1, 0, tolower(kTrackNames[ti]), isMuted?lo:hi); }
+	for (int ti = 8; ti <16; ti++) {
+		auto isMuted = d_unit.IsTrackMuted(ti);
+		WriteXY(out, (ti-8)*3+1, 1, tolower(kTrackNames[ti]), isMuted?lo:hi); }
 
 	int selY = d_selectedTrack / 8;
 	int selX = (d_selectedTrack % 8) * 3 + 1;
-	WriteXY(out, selX-1, selY, "[" + kTrackNames[d_selectedTrack] + "]", hi);
+	auto isMuted = d_unit.IsTrackMuted(d_selectedTrack);
+	WriteXY(out, selX-1, selY, "[" + kTrackNames[d_selectedTrack] + "]", isMuted?lo:hi);
 	return out; }
 
 
@@ -363,6 +366,8 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 				const int idx = std::distance(begin(kGridScanLUT), it);
 				if (reactor.GetKeyState(ScanCode::P)) {
 					d_unit.SwitchPattern(idx); }
+				else if (reactor.GetKeyState(ScanCode::M)) {
+					d_unit.ToggleTrackMute(idx); }
 				else if (d_isRecording) {
 					d_unit.ToggleTrackGridNote(d_selectedTrack, d_selectedGridPage*16+idx); }
 				else {
