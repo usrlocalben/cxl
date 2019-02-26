@@ -350,7 +350,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 								   [&](auto& item) { return reactor.GetKeyState(item); });
 			if (it != end(kParamScanLUT)) {
 				int idx = std::distance(begin(kParamScanLUT), it);
-				d_unit.Adjust(d_selectedTrack, d_selectedParameterPage*8+idx, offset); }
+				d_unit.AdjustVoiceParameter(d_selectedTrack, d_selectedParameterPage*8+idx, offset); }
 			else if (reactor.GetKeyState(ScanCode::Equals)) {
 				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
 

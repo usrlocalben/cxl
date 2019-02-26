@@ -46,10 +46,10 @@ public:
 	void SwitchKit(int n);
 	int GetCurrentKitNumber() { return d_kitNum; }
 	const std::string& GetCurrentKitName() { return d_kitName; }
-	const std::string GetVoiceParameterName(int track, int num);
+	const std::string GetVoiceParameterName(int ti, int pi);
+	int GetVoiceParameterValue(int ti, int pi);
+	void AdjustVoiceParameter(int ti, int pi, int offset);
 	const std::string& GetWaveName(int waveId);
-	int GetVoiceParameterValue(int track, int num);
-	void Adjust(int track, int param, int amt);
 	void Trigger(int track);
 
     // audio render

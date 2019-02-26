@@ -345,12 +345,10 @@ int main(int argc, char **argv) {
 		info.channelNum = i;
 		info.buffers[0] = info.buffers[1] = nullptr; }
 
-	asio.CreateBuffers(
-		bufferInfos.data(),
-		numInputChannels + numOutputChannels,
-		bufPreferredSize,
-		&asioCallbacks
-		);
+	asio.CreateBuffers(bufferInfos.data(),
+	                   numInputChannels + numOutputChannels,
+	                   bufPreferredSize,
+	                   &asioCallbacks);
 
 	int leftChannelIdx = -1;
 	int rightChannelIdx = -1;
