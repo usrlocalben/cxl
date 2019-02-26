@@ -8,8 +8,6 @@
 #include <stdexcept>
 #include <string>
 #include "3rdparty/winreg/WinReg.hxx"
-
-#define NOMINMAX
 #include <Windows.h>
 
 namespace rqdq {

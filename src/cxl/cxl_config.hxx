@@ -16,7 +16,8 @@ extern std::string kitDir;
 
 void Load();
 
-}
+}  // namespace config
+
 
 }  // namespace cxl
 }  // namespace rqdq

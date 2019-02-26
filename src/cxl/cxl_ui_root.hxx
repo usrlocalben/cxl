@@ -14,6 +14,24 @@ namespace rqdq {
 namespace cxl {
 
 
+class LoadingStatus : public Widget {
+public:
+	LoadingStatus(CXLUnit& unit);
+
+	// Widget
+	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
+	const rclw::ConsoleCanvas& Draw(int, int) override;
+	std::pair<int, int> Pack(int, int) override;
+	int GetType() override;
+private:
+	void onLoaderStateChange();
+
+private:
+	rclw::ConsoleCanvas d_canvas;
+	CXLUnit& d_unit;
+	bool d_dirty = true; };
+
+
 class PatternLengthEdit : public Widget {
 public:
 	PatternLengthEdit(int value);
@@ -44,6 +62,10 @@ public:
 	void onCXLUnitPlaybackPositionChangedMT(int);
 	void onCXLUnitPlaybackPositionChanged();
 
+	void onLogWrite();
+
+	void onLoaderStateChange();
+
 	// Widget impl
 	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
@@ -57,6 +79,7 @@ private:
 	const rclw::ConsoleCanvas& DrawGrid();
 	const rclw::ConsoleCanvas& DrawPageIndicator();
 	const rclw::ConsoleCanvas& DrawKeyHistory();
+	const rclw::ConsoleCanvas& DrawLog();
 	const rclw::ConsoleCanvas& DrawTransportIndicator(int width);
 
 private:
@@ -65,6 +88,8 @@ private:
 	void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 
 	std::shared_ptr<Widget> d_popup;
+
+	std::shared_ptr<Widget> d_loading;
 
 	CXLUnit& d_unit;
 	rclw::ConsoleCanvas d_canvas;

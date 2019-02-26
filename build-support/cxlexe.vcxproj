@@ -174,6 +174,7 @@
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx" />
     <ClCompile Include="..\src\cxl\cxl_config.cxx" />
+    <ClCompile Include="..\src\cxl\cxl_log.cxx" />
     <ClCompile Include="..\src\cxl\cxl_reactor.cxx" />
     <ClCompile Include="..\src\cxl\cxl_ui_root.cxx" />
     <ClCompile Include="..\src\cxl\cxl_unit.cxx" />

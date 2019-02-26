@@ -32,7 +32,7 @@ int LineBox::GetType() {
 
 const rclw::ConsoleCanvas& LineBox::Draw(int width, int height) {
 	auto& out = d_canvas;
-	out.Resize(width+2, height+2);
+	out.Resize(width, height);
 	auto xa = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
 	const auto& sub = d_widget->Draw(width-2, height-2);
 	WriteXY(out, 0, 0, "/--- -  -", xa);

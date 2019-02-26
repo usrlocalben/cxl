@@ -1,5 +1,7 @@
 #include "src/cxl/cxl_unit.hxx"
 #include "src/cxl/cxl_config.hxx"
+#include "src/cxl/cxl_reactor.hxx"
+#include "src/cxl/cxl_log.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
@@ -15,72 +17,110 @@
 #include <vector>
 #include <fstream>
 #include "3rdparty/fmt/include/fmt/format.h"
+#include "3rdparty/fmt/include/fmt/printf.h"
 
 
 namespace rqdq {
 namespace {
 
 constexpr int kNumVoices = 16;
+constexpr int kMaxWaves = 1024;
+constexpr int kDefaultTempo = 1200;
 
 };
 namespace cxl {
 
 
 CXLUnit::CXLUnit()
-	:d_waveTable(1024) {
-	d_gridSequencer.SetTempo(1200);
+	:d_waveTable(kMaxWaves) {
+	d_sequencer.SetTempo(kDefaultTempo);
 	d_voices.reserve(kNumVoices);
 	for (int i=0; i<kNumVoices; i++) {
 		d_voices.emplace_back(d_waveTable);
 		d_mixer.AddChannel(d_voices.back(), 1.0f);
-		d_gridSequencer.AddTrack(d_voices.back()); }
+		d_sequencer.AddTrack(d_voices.back()); }
 
-	auto files = rcls::FindGlob(config::sampleDir + R"(\*.wav)");
-	sort(begin(files), end(files));
-	int id = 1;
-	for (auto& file : files) {
-		std::string baseName = file.substr(0, file.size()-4);
-		d_waveTable.Get(id) = ralw::MPCWave::Load(config::sampleDir + "\\" + file, baseName, false);
-		std::cout << "loaded \"" << baseName << "\"\n";
-		id++; }
+	BeginLoadingWaves(); }
 
-	SwitchPattern(0); }
+
+void CXLUnit::BeginLoadingWaves() {
+	d_loading = true;
+	d_filesToLoad = rcls::FindGlob(config::sampleDir + R"(\*.wav)");
+	sort(begin(d_filesToLoad), end(d_filesToLoad));
+	d_nextFileId = 0;
+	d_nextWaveId = 1;
+	d_loaderStateChanged.emit();
+	MakeProgressLoadingWaves(); }
+
+
+void CXLUnit::MakeProgressLoadingWaves() {
+	if (d_nextFileId >= d_filesToLoad.size()) {
+		d_loading = false;
+		d_loaderStateChanged.emit();
+		SwitchPattern(0);
+		return; }
+	Reactor::GetInstance().LoadFile(config::sampleDir + "\\" + d_filesToLoad[d_nextFileId],
+		[&](const std::vector<uint8_t>& data) { this->onWaveIOComplete(data);},
+		[&](uint32_t err) { this->onWaveIOError(err);});}
+
+
+float CXLUnit::GetLoadingProgress() {
+	float total = d_filesToLoad.size();
+	float done = d_nextFileId;
+	return done / total; }
+
+
+void CXLUnit::onWaveIOComplete(const std::vector<uint8_t>& data) {
+	auto& fileName = d_filesToLoad[d_nextFileId];
+	auto baseName = fileName.substr(0, fileName.size() - 4);
+	// xxx Sleep(20);
+	d_waveTable.Get(d_nextWaveId) = ralw::MPCWave::Load(data, baseName);
+	Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
+	d_loaderStateChanged.emit();
+	d_nextFileId++;
+	d_nextWaveId++;
+	MakeProgressLoadingWaves(); }
+
+
+void CXLUnit::onWaveIOError(int error) {
+	d_nextFileId++;
+	MakeProgressLoadingWaves(); }
 
 
 // transport controls
 void CXLUnit::Play() {
-	d_gridSequencer.Play(); }
+	d_sequencer.Play(); }
 
 
 void CXLUnit::Stop() {
-	d_gridSequencer.Stop(); }
+	d_sequencer.Stop(); }
 
 
 bool CXLUnit::IsPlaying() {
-	return d_gridSequencer.IsPlaying(); }
+	return d_sequencer.IsPlaying(); }
 
 
 int CXLUnit::GetLastPlayedGridPosition() {
-	return d_gridSequencer.GetLastPlayedGridPosition(); }
+	return d_sequencer.GetLastPlayedGridPosition(); }
 
 
 void CXLUnit::SetTempo(int value) {
-	d_gridSequencer.SetTempo(value);
+	d_sequencer.SetTempo(value);
 	d_tempoChanged.emit(value); }
 
 
 int CXLUnit::GetTempo() {
-	return d_gridSequencer.GetTempo(); }
+	return d_sequencer.GetTempo(); }
 
 
 // pattern editing
 void CXLUnit::ToggleTrackGridNote(int track, int pos) {
-	d_gridSequencer.ToggleTrackGridNote(track, pos);
+	d_sequencer.ToggleTrackGridNote(track, pos);
 	d_patternDataChanged.emit(track); }
 
 
 int CXLUnit::GetTrackGridNote(int track, int pos) {
-	return d_gridSequencer.GetTrackGridNote(track, pos); }
+	return d_sequencer.GetTrackGridNote(track, pos); }
 
 
 // sampler voices
@@ -212,14 +252,14 @@ void CXLUnit::LoadKit() {
 
 
 void CXLUnit::Render(float* left, float* right, int numSamples) {
-	bool stateChanged = d_gridSequencer.Update();
+	bool stateChanged = d_sequencer.Update();
 	if (stateChanged) {
 		d_playbackStateChanged.emit(IsPlaying()); }
 	d_mixer.Update(GetTempo());
 
 	bool gridPositionUpdated = false;
 	for (int si = 0; si < numSamples; si++) {
-		bool updated = d_gridSequencer.Process();
+		bool updated = d_sequencer.Process();
 		gridPositionUpdated = gridPositionUpdated || updated;
 		std::array<float, 2> samples;
 		d_mixer.Process(nullptr, samples.data());
@@ -249,7 +289,7 @@ void CXLUnit::CommitPattern() {
 
 void CXLUnit::SwitchPattern(int pid) {
 	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, pid);
-	d_gridSequencer.InitializePattern();
+	d_sequencer.InitializePattern();
 	d_patternNum = pid;
 	auto fd = std::ifstream(path.c_str());
 	if (fd.good()) {

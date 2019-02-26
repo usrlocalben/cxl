@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#define NOMINMAX
 #include <Windows.h>
 
 namespace rqdq {
@@ -102,6 +101,17 @@ inline void Fill(ConsoleCanvas& canvas, uint8_t attr) {
 	for (auto& cell : canvas.d_buf) {
 		cell.Attributes = attr; }}
 
+
+inline void DrawPercentageBar(ConsoleCanvas& canvas, int x, int y, int width, float pct) {
+	//char fillChar[2];
+	//fillChar[0] = (char)0xb1; fillChar[1] = (char)0;
+	const std::string fillChar("="); //
+	const auto fillLen = int( pct * width );
+	int cx;
+	for ( cx=x; cx<fillLen+x; cx++) {
+		WriteXY(canvas, cx, y, fillChar);}
+	for (     ; cx<  width+x; cx++) {
+		WriteXY(canvas, cx, y, " "     );}}
 
 }  // namespace rclw
 }  // namespace rqdq

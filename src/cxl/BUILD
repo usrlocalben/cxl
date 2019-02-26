@@ -7,7 +7,10 @@ cc_library(
     srcs = ["cxl_reactor.cxx"],
     hdrs = ["cxl_reactor.hxx"],
     deps = [
+        "//3rdparty/fmt",
+        "//src/rcl/rclt:util",
         ":widget",
+        ":log",
         ],
     copts = RSR_DEFAULT_COPTS,)
 
@@ -46,6 +49,8 @@ cc_library(
         "//src/ral/ralw:wavetable",
         "//src/rcl/rcls:file",
         ":config",
+        ":log",
+        ":reactor",
         ],
     copts = RSR_DEFAULT_COPTS,)
 
@@ -56,6 +61,7 @@ cc_library(
     hdrs = ["cxl_ui_root.hxx"],
     deps = [
         "//src/rcl/rclw:console",
+        ":log",
         ":reactor",
         ":unit",
         ":widget",
@@ -75,5 +81,16 @@ cc_binary(
         ":ui_root",
         ":reactor",
         ":unit",
+        ":log",
+        ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "log",
+    srcs = ["cxl_log.cxx"],
+    hdrs = ["cxl_log.hxx"],
+    deps = [
+        "//3rdparty/wink",
         ],
     copts = RSR_DEFAULT_COPTS,)

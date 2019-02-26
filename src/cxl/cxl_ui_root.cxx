@@ -1,6 +1,7 @@
 #include "src/cxl/cxl_ui_root.hxx"
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
+#include "src/cxl/cxl_log.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
 
@@ -9,7 +10,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#define NOMINMAX
 #include <Windows.h>
 #include "3rdparty/fmt/include/fmt/printf.h"
 
@@ -67,12 +67,22 @@ UIRoot::UIRoot(CXLUnit& unit)
 	auto& reactor = Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedMT);
-	reactor.AddEvent({ d_playbackStateChangedEvent.GetHandle(),
-	                   [&]() { onCXLUnitPlaybackStateChanged(); }});
+	reactor.ListenForever({ d_playbackStateChangedEvent.GetHandle(),
+	                        [&]() { onCXLUnitPlaybackStateChanged(); }});
 
+	// XXX dtor should stop listening to these!
 	d_unit.d_playbackPositionChanged.connect(this, &UIRoot::onCXLUnitPlaybackPositionChangedMT);
-	reactor.AddEvent({ d_playbackPositionChangedEvent.GetHandle(),
-	                   [&]() { onCXLUnitPlaybackPositionChanged(); }}); }
+	reactor.ListenForever({ d_playbackPositionChangedEvent.GetHandle(),
+	                        [&]() { onCXLUnitPlaybackPositionChanged(); }});
+
+	d_unit.d_loaderStateChanged.connect(this, &UIRoot::onLoaderStateChange);
+
+	d_loading = std::make_shared<LineBox>(
+		std::make_shared<LoadingStatus>(d_unit)
+		);
+
+	auto& log = Log::GetInstance();
+	log.d_updated.connect([&]() { onLogWrite(); }); }
 
 
 /**
@@ -83,13 +93,21 @@ UIRoot::UIRoot(CXLUnit& unit)
 void UIRoot::onCXLUnitPlaybackStateChangedMT(bool isPlaying) {
 	d_playbackStateChangedEvent.Set(); }
 void UIRoot::onCXLUnitPlaybackStateChanged() {
-	Reactor::GetInstance().DrawScreen(); }
+	Reactor::GetInstance().DrawScreenEventually(); }
 
 
 void UIRoot::onCXLUnitPlaybackPositionChangedMT(int pos) {
 	d_playbackPositionChangedEvent.Set(); }
 void UIRoot::onCXLUnitPlaybackPositionChanged() {
-	Reactor::GetInstance().DrawScreen(); }
+	Reactor::GetInstance().DrawScreenEventually(); }
+
+
+void UIRoot::onLogWrite() {
+	Reactor::GetInstance().DrawScreenEventually(); }
+
+
+void UIRoot::onLoaderStateChange() {
+	Reactor::GetInstance().DrawScreenEventually(); }
 
 
 std::pair<int, int> UIRoot::Pack(int w, int h) {
@@ -116,13 +134,42 @@ const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
 	WriteXY(out, 8, 6, DrawParameters());
 	WriteXY(out, 0, height-1, DrawTransportIndicator(width));
 
+	// WriteXY(out, 1, height-12, DrawLog());
+
 	if (d_popup) {
+		auto attr = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
+		Fill(out, attr);
 		auto [sx, sy] = d_popup->Pack(-1, -1);
 		const auto& overlay = d_popup->Draw(sx, sy);
 		int xc = (width - overlay.d_width) / 2;
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }
 
+	if (d_unit.IsLoading()) {
+		auto attr = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
+		Fill(out, attr);
+		auto [sx, sy] = d_loading->Pack(-1, -1);
+		const auto& overlay = d_loading->Draw(sx, sy);
+		int xc = (width - overlay.d_width) / 2;
+		int yc = (height - overlay.d_height) / 2;
+		WriteXY(out, xc, yc, overlay); }
+
+	return out; }
+
+
+const rclw::ConsoleCanvas& UIRoot::DrawLog() {
+	auto& log = Log::GetInstance();
+	static rclw::ConsoleCanvas out;
+	out.Resize(78, 6);
+	out.Clear();
+	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack));
+	int head = log.GetHeadIdx();
+	WriteXY(out, 0, 0, log.GetEntry(5, head));
+	WriteXY(out, 0, 1, log.GetEntry(4, head));
+	WriteXY(out, 0, 2, log.GetEntry(3, head));
+	WriteXY(out, 0, 3, log.GetEntry(2, head));
+	WriteXY(out, 0, 4, log.GetEntry(1, head));
+	WriteXY(out, 0, 5, log.GetEntry(0, head));
 	return out; }
 
 
@@ -384,6 +431,45 @@ const rclw::ConsoleCanvas& PatternLengthEdit::Draw(int width, int height) {
 		Fill(out, lo);
 		WriteXY(out, 0, 0, "Pattern Length");
 		WriteXY(out, 6, 1, fmt::sprintf("%d", d_value)); }
+
+	return out; }
+
+
+LoadingStatus::LoadingStatus(CXLUnit& unit) :d_unit(unit) {
+	d_unit.d_loaderStateChanged.connect(this, &LoadingStatus::onLoaderStateChange); }
+
+
+void LoadingStatus::onLoaderStateChange() {
+	d_dirty = true; }
+
+
+std::pair<int, int> LoadingStatus::Pack(int w, int h) {
+	return {60, 4}; }
+
+
+int LoadingStatus::GetType() {
+	return WT_FIXED; }
+
+
+bool LoadingStatus::HandleKeyEvent(KEY_EVENT_RECORD e) {
+	return false; }
+
+
+const rclw::ConsoleCanvas& LoadingStatus::Draw(int width, int height) {
+	const auto mySize = Pack(-1, -1);
+	if (width != mySize.first || height != mySize.second) {
+		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
+
+	auto& out = d_canvas;
+	if (d_dirty) {
+		d_dirty = false;
+		out.Resize(width, height);
+		out.Clear();
+		auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
+		Fill(out, lo);
+		WriteXY(out, 0, 0, fmt::sprintf("Loading...", width, height));
+		WriteXY(out, 0, 1, d_unit.GetLoadingName());
+		DrawPercentageBar(out, 0, 2, 60, d_unit.GetLoadingProgress()); }
 
 	return out; }
 

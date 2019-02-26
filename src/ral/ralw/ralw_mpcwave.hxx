@@ -68,7 +68,8 @@ public:
 	// io
 	//int Save(const std::string& path) const;
 
-	static MPCWave Load(const std::string& path, const std::string& wavename, const bool infoOnly=false);
+	static MPCWave Load(const std::string& path, const std::string& wavename);
+	static MPCWave Load(const std::vector<uint8_t>& buf, const std::string& wavename);
 	static MPCWave Load(int size, int freq, const int16_t* l, const int16_t* r, bool stereo);
 
 	void Free();

@@ -78,5 +78,8 @@
     <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\cxl\cxl_log.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

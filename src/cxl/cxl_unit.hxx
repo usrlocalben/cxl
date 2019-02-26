@@ -34,8 +34,8 @@ public:
 	void SwitchPattern(int pid);
 	void CommitPattern();
 	int GetCurrentPatternNumber() { return d_patternNum; }
-	int GetPatternLength() { return d_gridSequencer.GetPatternLength(); }
-	void SetPatternLength(int value) { d_gridSequencer.SetPatternLength(value); }
+	int GetPatternLength() { return d_sequencer.GetPatternLength(); }
+	void SetPatternLength(int value) { d_sequencer.SetPatternLength(value); }
 
 	// sampler voices
 	void InitializeKit();
@@ -70,14 +70,36 @@ public:
 	wink::signal<wink::slot<void(int)>> d_patternDataChanged;
 	wink::signal<wink::slot<void(bool)>> d_playbackStateChanged;
 	wink::signal<wink::slot<void(int)>> d_playbackPositionChanged;
+	wink::signal<wink::slot<void()>> d_currentPatternChanged;
 
+	// BEGIN wave-table loader
 private:
+	bool d_loading = false;
+	int d_nextFileId = 0;
+	int d_nextWaveId = 1;
+	std::vector<std::string> d_filesToLoad;
+public:
+	wink::signal<wink::slot<void()>> d_loaderStateChanged;
+	float GetLoadingProgress();
+	const std::string GetLoadingName() {
+		if (d_nextFileId < d_filesToLoad.size()) {
+			return d_filesToLoad[d_nextFileId]; }
+		else {
+			return "";}}
+	bool IsLoading() { return d_loading; }
+private:
+	void BeginLoadingWaves();
+	void MakeProgressLoadingWaves();
+	void onWaveIOComplete(const std::vector<uint8_t>& data);
+	void onWaveIOError(int error);
+	//  END  wave-table loader
+
 	int d_kitNum = 0;
 	std::string d_kitName = "new kit";
 	int d_patternNum = 0;
 	ralw::WaveTable d_waveTable;
 	raldsp::BasicMixer d_mixer;
-	ralm::GridSequencer d_gridSequencer;
+	ralm::GridSequencer d_sequencer;
 	std::vector<raldsp::SingleSampler> d_voices; };
 
 

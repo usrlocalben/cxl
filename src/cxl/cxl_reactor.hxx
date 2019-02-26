@@ -3,8 +3,6 @@
 
 #include <functional>
 #include <vector>
-
-#define NOMINMAX
 #include <Windows.h>
 
 namespace rqdq {
@@ -23,9 +21,12 @@ public:
 	HANDLE GetHandle() { return d_event; }
 private:
 	HANDLE d_event; };
+
+
 struct ReactorEvent {
 	HANDLE event;
-	std::function<void()> func; };
+	std::function<void()> func;
+	bool keep = false; };
 
 
 class Reactor {
@@ -39,12 +40,22 @@ public:
 	void Stop() {
 		d_shouldQuit = true; }
 
-	void AddEvent(ReactorEvent re) {
-		d_events.emplace_back(re); }
+	void ListenForever(ReactorEvent re) {
+		d_events.emplace_back(re);
+		d_events.back().keep = true; }
+
+	void ListenOnce(ReactorEvent re) {
+		d_events.emplace_back(re);
+		d_events.back().keep = false; }
 
 	bool GetKeyState(int scanCode);
 
 	void DrawScreen();
+	void DrawScreenEventually();
+
+	void LoadFile(const std::string& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError);
+	void LoadFile(const std::wstring& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError);
+
 private:
 	bool HandleKeyboardInput();
 
@@ -53,6 +64,7 @@ public:
 
 private:
 	bool d_shouldQuit = false;
+	WindowsEvent d_redrawEvent;
 	std::vector<ReactorEvent> d_events; };
 
 

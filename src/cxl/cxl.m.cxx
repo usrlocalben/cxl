@@ -4,6 +4,7 @@
 #include "src/cxl/cxl_unit.hxx"
 #include "src/cxl/cxl_ui_root.hxx"
 #include "src/cxl/cxl_config.hxx"
+#include "src/cxl/cxl_log.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <algorithm>
@@ -13,9 +14,8 @@
 #include <mutex>
 #include <string>
 #include "3rdparty/fmt/include/fmt/format.h"
+#include "3rdparty/fmt/include/fmt/printf.h"
 #include "3rdparty/wink/wink/signal.hpp"
-
-#define NOMINMAX
 #include <Windows.h>
 
 
@@ -266,6 +266,9 @@ private:
 
 
 int main(int argc, char **argv) {
+	auto& log = Log::GetInstance();
+	log.info("Log started");
+
 	config::Load();
 
 	const array<string, 3> userDirs = {config::patternDir, config::sampleDir, config::kitDir};
@@ -395,7 +398,7 @@ int main(int argc, char **argv) {
 
 	connector.Connect(leftChannelIdx, rightChannelIdx);
 
-	cout << "starting in ";
+	cout << "Starting in ";
 	for (int i=3; i>=1; i--) {
 		cout << i << "...";
 		Sleep(1000); }
@@ -403,21 +406,14 @@ int main(int argc, char **argv) {
 
 	asio.Start();
 
-	auto& console = rclw::Console::GetInstance();
+	UIRoot uiRoot(unit);
 
+	auto& console = rclw::Console::GetInstance();
 	console.SetDimensions(80, 25);
 	console.Clear();
 
 	auto& reactor = Reactor::GetInstance();
-
-	UIRoot uiRoot(unit);
-
-	WindowsEvent forcedRedrawEvent;
-	reactor.AddEvent({ forcedRedrawEvent.GetHandle(),
-	                   [&]() { reactor.DrawScreen(); }});
-
-	forcedRedrawEvent.Set();
-
+	reactor.DrawScreenEventually();
 	reactor.d_widget = &uiRoot;
 	reactor.Run();
 

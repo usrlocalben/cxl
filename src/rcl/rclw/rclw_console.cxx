@@ -8,8 +8,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-#define NOMINMAX
 #include <Windows.h>
 
 namespace rqdq {
