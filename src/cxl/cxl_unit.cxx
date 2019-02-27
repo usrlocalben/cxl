@@ -27,18 +27,48 @@ constexpr int kNumVoices = 16;
 constexpr int kMaxWaves = 1024;
 constexpr int kDefaultTempo = 1200;
 constexpr float kInitialGain = 1.0f;
+constexpr float kMasterGain = 0.666;
 
 };
 namespace cxl {
+
+void CXLEffects::Update(int tempo) {
+	const int freq = d_lowpassFreq;
+	const int q = d_lowpassQ;
+	if (freq<127 || q>0) {
+		d_filter.SetBypass(false);
+		d_filter.SetCutoff(1.0 - sqrt((127-std::clamp(freq, 1, 126)) / 127.0));
+		d_filter.SetQ(1.0 - sqrt((127-std::clamp(q, 1, 126)) / 127.0)); }
+	else {
+		d_filter.SetBypass(true); }
+
+	d_filter.Update(tempo);
+
+	d_delay.SetTime(d_delayTime);
+	d_delay.SetFeedbackGain(d_delayFeedback / 127.0);
+	d_delay.Update(tempo); }
+
+
+void CXLEffects::Process(float* inputs, float* outputs) {
+	float filtered;
+	d_filter.Process(inputs, &filtered);
+
+	float delaySend = d_delaySend / 127.0;
+	float toDelay = filtered * delaySend;
+	float fromDelay;
+	d_delay.Process(&toDelay, &fromDelay);
+	*outputs = filtered + fromDelay; }
 
 
 CXLUnit::CXLUnit()
 	:d_waveTable(kMaxWaves) {
 	d_sequencer.SetTempo(kDefaultTempo);
 	d_voices.reserve(kNumVoices);
+	d_effects.reserve(kNumVoices);
 	for (int i=0; i<kNumVoices; i++) {
 		d_voices.emplace_back(d_waveTable);
-		d_mixer.AddChannel(d_voices.back(), kInitialGain);
+		d_effects.emplace_back();
+		d_mixer.AddChannel();
 		d_sequencer.AddTrack(d_voices.back()); }
 
 	BeginLoadingWaves(); }
@@ -127,45 +157,79 @@ int CXLUnit::GetTrackGridNote(int track, int pos) {
 	return d_sequencer.GetTrackGridNote(track, pos); }
 
 
-// sampler voices
 const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) {
 	// XXX track index is for future use
 	switch (pi) {
-	case 0: return "f.cutoff";
-	case 1: return "f.resonance";
-	case 2: return "attack";
-	case 3: return "decay";
-	case 4: return "wave#";
-	case 5: return "d.send";
-	case 6: return "d.time";
-	case 7: return "d.fbck";
-	default: return "unused"; }}
+	case 0: return "wav";
+	case 1: return "atk";
+	case 2: return "dcy";
+	default: return ""; }}
 
 
 int CXLUnit::GetVoiceParameterValue(int ti, int pi) {
 	// XXX track index is for future use
 	switch (pi) {
-	case 0: return d_voices[ti].d_params.cutoff;
-	case 1: return d_voices[ti].d_params.resonance;
-	case 2: return d_voices[ti].d_params.attackPct;
-	case 3: return d_voices[ti].d_params.decayPct;
-	case 4: return d_voices[ti].d_params.waveId;
-	case 5: return d_voices[ti].d_params.delaySend;
-	case 6: return d_voices[ti].d_params.delayTime;
-	case 7: return d_voices[ti].d_params.delayFeedback;
+	case 0: return d_voices[ti].d_waveId;
+	case 1: return d_voices[ti].d_attackPct;
+	case 2: return d_voices[ti].d_decayPct;
 	default: return 0; }}
 
 
 void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 	switch (pi) {
-	case 0: Adjust2(ti, d_voices[ti].d_params.cutoff,        0,  127, offset); break;
-	case 1: Adjust2(ti, d_voices[ti].d_params.resonance,     0,  127, offset); break;
-	case 2: Adjust2(ti, d_voices[ti].d_params.attackPct,     0,  100, offset); break;
-	case 3: Adjust2(ti, d_voices[ti].d_params.decayPct,      0,  100, offset); break;
-	case 4: Adjust2(ti, d_voices[ti].d_params.waveId,        0, 1000, offset); break;
-	case 5: Adjust2(ti, d_voices[ti].d_params.delaySend,     0,  127, offset); break;
-	case 6: Adjust2(ti, d_voices[ti].d_params.delayTime,     0,  127, offset); break;
-	case 7: Adjust2(ti, d_voices[ti].d_params.delayFeedback, 0,  127, offset); break;
+	case 0: Adjust2(ti, d_voices[ti].d_waveId,        0, 1000, offset); break;
+	case 1: Adjust2(ti, d_voices[ti].d_attackPct,     0,  100, offset); break;
+	case 2: Adjust2(ti, d_voices[ti].d_decayPct,      0,  100, offset); break;
+	default: break; }}
+
+
+const std::string CXLUnit::GetEffectParameterName(int ti, int pi) {
+	// XXX track index is for future use
+	switch (pi) {
+	case 0: return "cut";
+	case 1: return "rez";
+	case 2: return "dly";
+	case 3: return "dtm";
+	case 4: return "dfb";
+	default: return ""; }}
+
+
+int CXLUnit::GetEffectParameterValue(int ti, int pi) {
+	// XXX track index is for future use
+	switch (pi) {
+	case 0: return d_effects[ti].d_lowpassFreq;
+	case 1: return d_effects[ti].d_lowpassQ;
+	case 2: return d_effects[ti].d_delaySend;
+	case 3: return d_effects[ti].d_delayTime;
+	case 4: return d_effects[ti].d_delayFeedback;
+	default: return 0; }}
+
+
+void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
+	switch (pi) {
+	case 0: Adjust2(ti, d_effects[ti].d_lowpassFreq,   0,  127, offset); break;
+	case 1: Adjust2(ti, d_effects[ti].d_lowpassQ,      0,  127, offset); break;
+	case 2: Adjust2(ti, d_effects[ti].d_delaySend,     0,  127, offset); break;
+	case 3: Adjust2(ti, d_effects[ti].d_delayTime,     0,  127, offset); break;
+	case 4: Adjust2(ti, d_effects[ti].d_delayFeedback, 0,  127, offset); break;
+	default: break; }}
+
+
+const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
+	switch (pi) {
+	case 0: return "vol";
+	default: return ""; }}
+
+
+int CXLUnit::GetMixParameterValue(int ti, int pi) {
+	switch (pi) {
+	case 0: return d_mixer.d_channels[ti].d_gain;
+	default: return 0; }}
+
+
+void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
+	switch (pi) {
+	case 0: Adjust2(ti, d_mixer.d_channels[ti].d_gain, 0, 127, offset); break;
 	default: break; }}
 
 
@@ -196,28 +260,30 @@ void CXLUnit::SaveKit() {
 	fd << "Name: " << d_kitName << "\n";
 	for (int ti=0; ti<kNumVoices; ti++) {
 		fd << "Voice #" << ti << "\n";
-		fd << "  cutoff " << d_voices[ti].d_params.cutoff << "\n";
-		fd << "  resonance " << d_voices[ti].d_params.resonance << "\n";
-		fd << "  attack " << d_voices[ti].d_params.attackPct << "\n";
-		fd << "  decay " << d_voices[ti].d_params.decayPct << "\n";
+		fd << "  cutoff " << d_effects[ti].d_lowpassFreq << "\n";
+		fd << "  resonance " << d_effects[ti].d_lowpassQ << "\n";
+		fd << "  attack " << d_voices[ti].d_attackPct << "\n";
+		fd << "  decay " << d_voices[ti].d_decayPct << "\n";
 
 		fd << "  wave ";
-		auto& wave = d_waveTable.Get(d_voices[ti].d_params.waveId);
+		auto& wave = d_waveTable.Get(d_voices[ti].d_waveId);
 		if (wave.d_loaded) {
 			fd << "name=" << wave.d_descr; }
 		else {
 			fd << "none"; }
 		fd << "\n";
 
-		fd << "  delaySend " << d_voices[ti].d_params.delaySend << "\n";
-		fd << "  delayTime " << d_voices[ti].d_params.delayTime << "\n";
-		fd << "  delayFeedback " << d_voices[ti].d_params.delayFeedback << "\n"; }}
+		fd << "  delaySend " << d_effects[ti].d_delaySend << "\n";
+		fd << "  delayTime " << d_effects[ti].d_delayTime << "\n";
+		fd << "  delayFeedback " << d_effects[ti].d_delayFeedback << "\n"; }}
 
 
 void CXLUnit::InitializeKit() {
 	d_kitName = "new kit";
 	for (int i=0; i<kNumVoices; i++) {
-		d_voices[i].d_params = raldsp::VoiceParameters{}; }}
+		d_voices[i].Initialize();
+		d_effects[i].Initialize();
+		d_mixer.d_channels[i].Initialize(); }}
 
 
 void CXLUnit::LoadKit() {
@@ -234,27 +300,27 @@ void CXLUnit::LoadKit() {
 			else if (ConsumePrefix(line, "Voice #")) {
 				vid = stoi(line); }
 			else if (ConsumePrefix(line, "  cutoff ")) {
-				d_voices[vid].d_params.cutoff = stoi(line); }
+				d_effects[vid].d_lowpassFreq = stoi(line); }
 			else if (ConsumePrefix(line, "  resonance ")) {
-				d_voices[vid].d_params.resonance = stoi(line); }
+				d_effects[vid].d_lowpassQ = stoi(line); }
 			else if (ConsumePrefix(line, "  attack ")) {
-				d_voices[vid].d_params.attackPct = stoi(line); }
+				d_voices[vid].d_attackPct = stoi(line); }
 			else if (ConsumePrefix(line, "  decay ")) {
-				d_voices[vid].d_params.decayPct = stoi(line); }
+				d_voices[vid].d_decayPct = stoi(line); }
 			else if (ConsumePrefix(line, "  wave ")) {
 				if (line == "none") {
-					d_voices[vid].d_params.waveId = 0; }
+					d_voices[vid].d_waveId = 0; }
 				else if (ConsumePrefix(line, "name=")) {
-					d_voices[vid].d_params.waveId = d_waveTable.FindByName(line); }
+					d_voices[vid].d_waveId = d_waveTable.FindByName(line); }
 				else {
 					// XXX error? log
-					d_voices[vid].d_params.waveId = 0; }}
+					d_voices[vid].d_waveId = 0; }}
 			else if (ConsumePrefix(line, "  delaySend ")) {
-				d_voices[vid].d_params.delaySend = stoi(line); }
+				d_effects[vid].d_delaySend = stoi(line); }
 			else if (ConsumePrefix(line, "  delayTime ")) {
-				d_voices[vid].d_params.delayTime = stoi(line); }
+				d_effects[vid].d_delayTime = stoi(line); }
 			else if (ConsumePrefix(line, "  delayFeedback ")) {
-				d_voices[vid].d_params.delayFeedback = stoi(line); }
+				d_effects[vid].d_delayFeedback = stoi(line); }
 			else {
 				auto msg = fmt::format("unknown kit line \"{}\"", line);
 				throw std::runtime_error(msg); }}}}
@@ -264,16 +330,28 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 	bool stateChanged = d_sequencer.Update();
 	if (stateChanged) {
 		d_playbackStateChanged.emit(IsPlaying()); }
-	d_mixer.Update(GetTempo());
+
+	const auto tempo = GetTempo();
+	for (int i=0; i<kNumVoices; i++) {
+		d_voices[i].Update(tempo);
+		d_effects[i].Update(tempo); }
+	d_mixer.Update(tempo);
 
 	bool gridPositionUpdated = false;
 	for (int si = 0; si < numSamples; si++) {
 		bool updated = d_sequencer.Process();
 		gridPositionUpdated = gridPositionUpdated || updated;
-		std::array<float, 2> samples;
-		d_mixer.Process(nullptr, samples.data());
-		left[si] = samples[0];
-		right[si] = samples[1]; }
+
+		std::array<float, 2> masterOut;
+		std::array<float, kNumVoices> toMixer;
+		for (int i=0; i<kNumVoices; i++) {
+			float tmp;
+			d_voices[i].Process(nullptr, &tmp);
+			d_effects[i].Process(&tmp, &(toMixer[i])); }
+
+		d_mixer.Process(toMixer.data(), masterOut.data());
+		left[si] = masterOut[0] * kMasterGain;
+		right[si] = masterOut[1] * kMasterGain; }
 
 	if (gridPositionUpdated) {
 		d_playbackPositionChanged.emit(GetLastPlayedGridPosition()); }}

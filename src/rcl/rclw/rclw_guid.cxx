@@ -14,4 +14,4 @@ CLSID CLSIDSerializer::Deserialize(const std::wstring& data) {
 	return out; }
 
 }  // close package namespace
-}  // close enterprise namespace
+}  // namespace rqdq

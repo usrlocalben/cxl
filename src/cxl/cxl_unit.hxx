@@ -1,6 +1,9 @@
 #pragma once
+#include "src/ral/raldsp/raldsp_filter.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
+#include "src/ral/raldsp/raldsp_syncdelay.hxx"
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
@@ -14,6 +17,31 @@
 
 namespace rqdq {
 namespace cxl {
+
+
+class CXLEffects {
+public:
+	void Update(int);
+	void Process(float*, float*);
+
+	void Initialize() {
+		d_lowpassFreq = 127;
+		d_lowpassQ = 0;
+		d_delaySend = 0;
+		d_delayTime = 16;
+		d_delayFeedback = 0; }
+
+public:
+	int d_lowpassFreq = 127;
+	int d_lowpassQ = 0;
+
+	int d_delaySend = 0;      // 0-127 = 0...1.0
+	int d_delayTime = 16;     // 0-127, 128th notes
+	int d_delayFeedback = 0;  // 0-127 = 0...1.0
+
+private:
+	raldsp::CXLFilter d_filter{1};
+	raldsp::SyncDelay d_delay{1}; };
 
 
 class CXLUnit {
@@ -48,9 +76,22 @@ public:
 	void SwitchKit(int n);
 	int GetCurrentKitNumber() { return d_kitNum; }
 	const std::string& GetCurrentKitName() { return d_kitName; }
+
+	int GetVoiceLevel(int ti);
+	void AdjustVoiceLevel(int ti, int offset);
+
 	const std::string GetVoiceParameterName(int ti, int pi);
 	int GetVoiceParameterValue(int ti, int pi);
 	void AdjustVoiceParameter(int ti, int pi, int offset);
+
+	const std::string GetEffectParameterName(int ti, int pi);
+	int GetEffectParameterValue(int ti, int pi);
+	void AdjustEffectParameter(int ti, int pi, int offset);
+
+	const std::string GetMixParameterName(int ti, int pi);
+	int GetMixParameterValue(int ti, int pi);
+	void AdjustMixParameter(int ti, int pi, int offset);
+
 	const std::string& GetWaveName(int waveId);
 	void Trigger(int track);
 
@@ -102,7 +143,8 @@ private:
 	ralw::WaveTable d_waveTable;
 	raldsp::BasicMixer d_mixer;
 	ralm::GridSequencer d_sequencer;
-	std::vector<raldsp::SingleSampler> d_voices; };
+	std::vector<raldsp::SingleSampler> d_voices;
+	std::vector<CXLEffects> d_effects; };
 
 
 }  // namespace cxl

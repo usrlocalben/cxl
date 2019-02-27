@@ -1,34 +1,32 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_idspoutput.hxx"
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
 #include <utility>
+#include <vector>
 
 namespace rqdq {
 namespace raldsp {
 
-class CXLFilter : public IDSPOutput {
+class CXLFilter : public IAudioDevice {
 public:
-	// IDSPOutput
+	CXLFilter(int numChannels) {
+		d_buf0.resize(numChannels, 0);
+		d_buf1.resize(numChannels, 0); }
+
+	// IAudioDevice
 	void Update(int tempo) override {}
 	void Process(float* inputs, float* outputs) override {
-		auto& il = inputs[0];
-		auto& ir = inputs[1];
-		if (d_bypass) {
-			outputs[0] = il, outputs[1] = ir; }
-		else {
-			d_l0 = d_l0 + d_f * (il - d_l0 + d_fb * (d_l0 - d_l1));
-			d_l1 = d_l1 + d_f *                     (d_l0 - d_l1) ;
-
-			d_r0 = d_r0 + d_f * (ir - d_r0 + d_fb * (d_r0 - d_r1));
-			d_r1 = d_r1 + d_f *                     (d_r0 - d_r1) ;
-			outputs[0] = d_l1, outputs[1] = d_r1; }}
+		for (int i=0; i<GetNumChannels(); i++) {
+			d_buf0[i] = d_buf0[i] + d_f * (inputs[i] - d_buf0[i] + d_fb * (d_buf0[i] - d_buf1[i]));
+			d_buf1[i] = d_buf1[i] + d_f *                                 (d_buf0[i] - d_buf1[i]);
+			outputs[i] = d_bypass ? inputs[i] : d_buf1[i]; }}
 
 public:
 	void SetCutoff(double value) {
 		d_f = value;
 		UpdateInternal();}
 
-	void SetResonance(double value) {
+	void SetQ(double value) {
 		d_q = value;
 		UpdateInternal();}
 
@@ -37,11 +35,13 @@ public:
 			Reset(); }
 		d_bypass = value; }
 
+	int GetNumChannels() const {
+		return d_buf0.size(); }
+
 	void Reset() {
-		d_r0 = 0.0;
-		d_r1 = 0.0;
-		d_l0 = 0.0;
-		d_l1 = 0.0; }
+		for (int i=0; i<GetNumChannels(); i++) {
+			d_buf0[i] = 0.0;
+			d_buf1[i] = 0.0; }}
 
 private:
 	void UpdateInternal() {
@@ -49,8 +49,8 @@ private:
 
 private:
 	bool d_bypass;
-	double d_r0, d_r1;
-	double d_l0, d_l1;
+	std::vector<double> d_buf0;
+	std::vector<double> d_buf1;
 	double d_fb;
 	double d_f;
 	double d_q; };

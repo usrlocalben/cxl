@@ -1,5 +1,4 @@
 #include "src/ral/raldsp/raldsp_syncdelay.hxx"
-#include "src/ral/raldsp/raldsp_idspoutput.hxx"
 
 #include <algorithm>
 #include <utility>
@@ -16,9 +15,10 @@ constexpr int kSampleRate = 44100;
 
 namespace raldsp {
 
-SyncDelay::SyncDelay() {
-	d_bufLeft.resize(kMaxDelayInSamples, 0.0f);
-	d_bufRight.resize(kMaxDelayInSamples, 0.0f); }
+SyncDelay::SyncDelay(int numChannels) {
+	d_bufs.resize(numChannels);
+	for (auto& buf : d_bufs) {
+		buf.resize(kMaxDelayInSamples, 0.0f); }}
 
 
 void SyncDelay::Update(int tempo) {
@@ -29,19 +29,18 @@ void SyncDelay::Update(int tempo) {
 	d_valid = true; };
 
 
+int SyncDelay::GetNumChannels() {
+	return d_bufs.size(); }
+
+
 void SyncDelay::Process(float* inputs, float* outputs) {
-	auto& inLeft = inputs[0];
-	auto& inRight = inputs[1];
-	auto& outLeft = outputs[0];
-	auto& outRight = outputs[1];
-	if (!d_valid) {
-		outLeft = 0, outRight = 0;
-		return; }
 	int tail = (d_head + d_delayTimeInSamples) % kMaxDelayInSamples;
-	outLeft = d_bufLeft[d_head];
-	outRight = d_bufRight[d_head];
-	d_bufLeft[tail] = inLeft + outLeft*d_feedbackGain;
-	d_bufRight[tail] = inRight + outRight*d_feedbackGain;
+	for (int i = 0; i < GetNumChannels(); i++) {
+		auto& buf = d_bufs[i];
+		auto& input = inputs[i];
+		auto& output = outputs[i];
+		output = buf[d_head];
+		buf[tail] = input + output*d_feedbackGain; }
 	AdvanceHead(); }
 
 

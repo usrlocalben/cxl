@@ -1,7 +1,5 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_filter.hxx"
-#include "src/ral/raldsp/raldsp_idspoutput.hxx"
-#include "src/ral/raldsp/raldsp_syncdelay.hxx"
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 
@@ -56,58 +54,23 @@ private:
 	Enumerator e; };
 
 
-class VoiceState {
+class EnvelopeState {
 public:
 	enum Enumerator {
 		 Attack = 0
 		,Decay = 1
 		,Unknown };
-	VoiceState() :e(Unknown) {}
-	VoiceState(Enumerator val) :e(val){}
+	EnvelopeState() :e(Unknown) {}
+	EnvelopeState(Enumerator val) :e(val){}
 	operator Enumerator() const { assert(e!=Unknown); return e; }
 private:
 	Enumerator e; };
 
 
-struct VoiceParameters {
-	int waveId = 0;
-	int tuning = 0;         // pitch fine-tune in cents
-	int cutoff = 127;       // 0-127, 127=filter off
-	int resonance = 0;      // 0-127
-	LoopType loopType = LoopType::None;
-	int attackPct = 0;      // [0...100] % of sample duration
-	int decayPct = 90;      // [0...100] % of sample duration
-	DecayMode decayMode = DecayMode::End;
-	int gain = 10;          // [-600...+60] db gain*10
-	int pan = 0;            // [-63...+63] 0=center
 
-	int delaySend = 0;      // 0-127 = 0...1.0
-	int delayTime = 16;     // 0-127, 128th notes
-	int delayFeedback = 0;};// 0-127 = 0...1.0
-
-
-class PlayState {
+class SingleSampler : public IAudioDevice {
 public:
-	ralw::MPCWave *wavePtr;
-
-	bool active = false;
-
-	double position;
-	double delta;
-
-	double curGain;
-	double targetGain;
-	VoiceState state;
-	double attackVelocity;
-	double decayVelocity;
-	int decayBegin;
-
-	CXLFilter filter; };
-
-
-class SingleSampler : public IDSPOutput {
-public:
-	// IDSPOutput
+	// IAudioDevice
 	void Update(int) override;
 	void Process(float*, float*) override;
 
@@ -118,11 +81,39 @@ public:
 	void Trigger(int note, double velocity, int ppqstamp);
 	void Stop();
 
+	void Initialize() {
+		d_waveId = 0;
+		d_tuning = 0;
+		d_loopType = LoopType::None;
+		d_attackPct = 0;
+		d_decayPct = 90;
+		d_decayMode = DecayMode::End;
+		d_gain = 10; }
+
 public:
-	PlayState d_state;
-	ralw::WaveTable& d_waveTable;
-	VoiceParameters d_params;
-	SyncDelay d_delay; };
+	// parameters
+	int d_waveId = 0;
+	int d_tuning = 0;         // pitch fine-tune in cents
+	LoopType d_loopType = LoopType::None;
+	int d_attackPct = 0;      // [0...100] % of sample duration
+	int d_decayPct = 90;      // [0...100] % of sample duration
+	DecayMode d_decayMode = DecayMode::End;
+	int d_gain = 10;          // [-600...+60] db gain*10
+
+private:
+	// playing state
+	ralw::MPCWave *d_wavePtr;
+	bool d_isActive = false;
+	double d_position;
+	double d_delta;
+	double d_curGain;
+	double d_targetGain;
+	EnvelopeState d_envState;
+	double d_attackVelocity;
+	double d_decayVelocity;
+	int d_decayBegin;
+
+	ralw::WaveTable& d_waveTable; };
 
 
 }  // close package namespace

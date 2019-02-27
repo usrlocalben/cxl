@@ -50,7 +50,7 @@ void EnsureDirectoryExists(const std::string& path) {
 	size_t pos = 0;
 	do {
 		pos = path.find_first_of("\\/", pos+1);
-		CreateDirectoryA(path.substr(0, pos).c_str(), NULL);
+		CreateDirectoryA(path.substr(0, pos).c_str(), nullptr);
 	} while (pos != std::string::npos); }
 
 

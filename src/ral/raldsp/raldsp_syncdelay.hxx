@@ -1,21 +1,22 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_idspoutput.hxx"
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
 #include <vector>
 
 namespace rqdq {
 namespace raldsp {
 
-class SyncDelay : public IDSPOutput {
+class SyncDelay : public IAudioDevice {
 public:
-	SyncDelay();
+	SyncDelay(int numChannels);
 
-	// IDSPOutput
+	// IAudioDevice
 	void Update(int) override;
 	void Process(float*, float*) override;
 
 	void SetTime(int t) { d_delayTime = t; }
 	void SetFeedbackGain(float amt) { d_feedbackGain = amt; }
+	int GetNumChannels();
 
 private:
 	void AdvanceHead();
@@ -32,8 +33,7 @@ private:
 	// updated per samples
 	int d_head = 0;
 
-	std::vector<float> d_bufLeft;
-	std::vector<float> d_bufRight; };
+	std::vector<std::vector<float>> d_bufs; };
 
 }  // namespace raldsp
 }  // namespace rqdq

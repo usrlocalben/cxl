@@ -20,8 +20,7 @@ std::optional<std::wstring> GetEnvVar(const std::wstring& key) {
 	if (needed == 0) {
 		if (GetLastError() == ERROR_ENVVAR_NOT_FOUND) {
 			return {}; }  // not found...
-		else {
-			throw std::runtime_error("GetEnvironmentVariableW failure"); }}
+		throw std::runtime_error("GetEnvironmentVariableW failure"); }
 	else {
 		std::wstring buf;
 		buf.resize(needed);
@@ -29,9 +28,8 @@ std::optional<std::wstring> GetEnvVar(const std::wstring& key) {
 		if ((stored+1) == needed) {
 			buf.resize(needed - 1);  // remove null terminator
 			return buf; }
-		else {
-			//std::cout << "needed:" << needed << ", stored: " << stored << "\n";
-			throw std::runtime_error("GetEnvironmentVariableW failure: size changed?"); }}}
+		//std::cout << "needed:" << needed << ", stored: " << stored << "\n";
+		throw std::runtime_error("GetEnvironmentVariableW failure: size changed?"); }}
 
 }  // namespace
 

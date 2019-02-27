@@ -83,6 +83,10 @@ private:
 	const rclw::ConsoleCanvas& DrawTransportIndicator(int width);
 
 private:
+	const std::string GetPageParameterName(int pageNum, int trackNum, int paramNum);
+	int GetPageParameterValue(int pageNum, int trackNum, int paramNum);
+	void AdjustPageParameter(int pageNum, int trackNum, int paramNum, int offset);
+
 	WindowsEvent d_playbackStateChangedEvent;
 	WindowsEvent d_playbackPositionChangedEvent;
 	void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
@@ -96,7 +100,7 @@ private:
 	bool d_editPatternLength = false;
 	int d_selectedTrack = 0;
 	int d_selectedGridPage = 0;
-	int d_selectedParameterPage = 0;
+	int d_selectedVoicePage = 0;
 	bool d_isRecording = false;
 	bool d_enableKeyDebug = true;
 	std::deque<std::string> d_keyHistory; };

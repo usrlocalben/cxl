@@ -1,5 +1,5 @@
 #include "src/ral/raldsp/raldsp_mixer.hxx"
-#include "src/ral/raldsp/raldsp_idspoutput.hxx"
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
 #include <algorithm>
 #include <array>
@@ -8,35 +8,52 @@
 #include <vector>
 
 namespace rqdq {
+namespace {
+
+class PanningLUT {
+public:
+	PanningLUT() {
+		for (int i=0; i<101; i++) {
+			left[i] = sqrt( (101-i)/101.0 );
+			right[i] = sqrt(      i /101.0 );
+		}}
+private:
+	std::array<double, 101> left;
+	std::array<double, 101> right;
+};
+
+PanningLUT panningLUT;
+
+}  // namespace
 namespace raldsp {
 
 
-void BasicMixer::AddChannel(IDSPOutput& input, float gain) {
-	auto match = std::find_if(begin(d_channels), end(d_channels),
-	                          [&](const auto& item) { return &item.input == &input; });
-	if (match != d_channels.end()) {
-		throw new std::runtime_error("attempted to add same input twice to mixer"); }
-
-	d_channels.emplace_back(BasicMixerChannel{ input, gain, false }); }
+void BasicMixerChannel::Update(int tempo) {}
 
 
-void BasicMixer::Update(int tempo) {
-	for (auto& channel : d_channels) {
-		channel.input.Update(tempo); }}
+void BasicMixerChannel::Process(float* inputs, float* outputs) {
+	outputs[0] = inputs[0] * (d_gain / float(100.0));
+	outputs[1] = inputs[0] * (d_gain / float(100.0)); }
+
+
+void BasicMixer::AddChannel() {
+	d_channels.emplace_back(BasicMixerChannel{}); }
+
+
+void BasicMixer::Update(int tempo) {}
 
 
 void BasicMixer::Process(float* inputs, float* outputs) {
-	float& c0 = outputs[0];
-	float& c1 = outputs[1];
-	c0 = 0, c1 = 0;
-	for (auto& channel : d_channels) {
-		std::array<float, 2> sub;
-		channel.input.Process(nullptr, sub.data());
-		if (!channel.mute) {
-			c0 += sub[0] * channel.gain;
-			c1 += sub[1] * channel.gain; }}}
+	float& sumLeft = outputs[0];
+	float& sumRight = outputs[1];
+	sumLeft = 0;
+	sumRight = 0;
+	for (int i=0; i<d_channels.size(); i++) {
+		float sub[2];
+		d_channels[i].Process(&(inputs[i]), sub);
+		sumLeft  += sub[0];
+		sumRight += sub[1]; }}
 
 
 }  // namespace raldsp
 }  // namespace rqdq
-

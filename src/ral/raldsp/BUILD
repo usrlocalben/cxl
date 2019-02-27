@@ -3,9 +3,9 @@ load("//:copts.bzl", "RSR_DEFAULT_COPTS")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name="idspoutput",
-    srcs=["raldsp_idspoutput.cxx"],
-    hdrs=["raldsp_idspoutput.hxx"],
+    name="iaudiodevice",
+    srcs=["raldsp_iaudiodevice.cxx"],
+    hdrs=["raldsp_iaudiodevice.hxx"],
     deps=[],
     copts = RSR_DEFAULT_COPTS,
     )
@@ -23,7 +23,7 @@ cc_library(
     srcs=["raldsp_filter.cxx"],
     hdrs=["raldsp_filter.hxx"],
     deps=[
-        ":idspoutput",
+        ":iaudiodevice",
         ],
     copts = RSR_DEFAULT_COPTS,
     )
@@ -33,7 +33,7 @@ cc_library(
     srcs=["raldsp_mixer.cxx"],
     hdrs=["raldsp_mixer.hxx"],
     deps=[
-        ":idspoutput",
+        ":iaudiodevice",
         ],
     copts = RSR_DEFAULT_COPTS,
     )
@@ -43,7 +43,7 @@ cc_library(
     srcs=["raldsp_syncdelay.cxx"],
     hdrs=["raldsp_syncdelay.hxx"],
     deps=[
-        ":idspoutput",
+        ":iaudiodevice",
         ],
     copts = RSR_DEFAULT_COPTS,
     )
@@ -56,7 +56,7 @@ cc_library(
         "//src/ral/ralw:mpcwave",
         "//src/ral/ralw:wavetable",
         ":filter",
-        ":idspoutput",
+        ":iaudiodevice",
         ":syncdelay",
         ],
     copts = RSR_DEFAULT_COPTS,

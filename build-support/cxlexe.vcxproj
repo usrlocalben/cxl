@@ -114,7 +114,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_ENABLE_EXTENDED_ALIGNED_STORAGE;NOMINMAX</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
@@ -180,7 +180,7 @@
     <ClCompile Include="..\src\cxl\cxl_unit.cxx" />
     <ClCompile Include="..\src\cxl\cxl_widget.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx" />
-    <ClCompile Include="..\src\ral\raldsp\raldsp_idspoutput.cxx" />
+    <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_sampler.cxx" />

@@ -202,18 +202,77 @@ const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
 	return out; }
 
 
+const std::string UIRoot::GetPageParameterName(int pageNum, int trackNum, int paramNum) {
+	if (pageNum == 0) {
+		return d_unit.GetVoiceParameterName(trackNum, paramNum); }
+	else if (pageNum == 1) {
+		return d_unit.GetEffectParameterName(trackNum, paramNum); }
+	else if (pageNum == 2) {
+		return d_unit.GetMixParameterName(trackNum, paramNum); }
+	else {
+		auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
+		throw std::runtime_error(msg); }}
+
+
+int UIRoot::GetPageParameterValue(int pageNum, int trackNum, int paramNum) {
+	if (pageNum == 0) {
+		return d_unit.GetVoiceParameterValue(trackNum, paramNum); }
+	else if (pageNum == 1) {
+		return d_unit.GetEffectParameterValue(trackNum, paramNum); }
+	else if (pageNum == 2) {
+		return d_unit.GetMixParameterValue(trackNum, paramNum); }
+	else {
+		auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
+		throw std::runtime_error(msg); }}
+
+
+void UIRoot::AdjustPageParameter(int pageNum, int trackNum, int paramNum, int offset) {
+	if (pageNum == 0) {
+		d_unit.AdjustVoiceParameter(trackNum, paramNum, offset); }
+	else if (pageNum == 1) {
+		d_unit.AdjustEffectParameter(trackNum, paramNum, offset); }
+	else if (pageNum == 2) {
+		d_unit.AdjustMixParameter(trackNum, paramNum, offset); }
+	else {
+		auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
+		throw std::runtime_error(msg); }}
+
+
 const rclw::ConsoleCanvas& UIRoot::DrawParameters() {
-	static rclw::ConsoleCanvas out{ 30, 8 };
+	static rclw::ConsoleCanvas out{ 7*4, 1+2*2+1 };
 	out.Clear();
 	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
-	for (int i = 0; i < 8; i++) {
-		int paramNum = d_selectedParameterPage*8+i;
-		auto& paramName = d_unit.GetVoiceParameterName(d_selectedTrack, paramNum);
-		int value = d_unit.GetVoiceParameterValue(d_selectedTrack, paramNum);
-		WriteXY(out, 0, i, fmt::sprintf("% 12s : % 3d", paramName, value)); }
-	int waveId = d_unit.GetVoiceParameterValue(d_selectedTrack, 4);
+
+	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
+	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
+
+	WriteXY(out, 0, 0, "Voice", d_selectedVoicePage==0?hi:lo);
+	WriteXY(out, 7, 0, "Effect", d_selectedVoicePage==1?hi:lo);
+	WriteXY(out, 15, 0, "Mix", d_selectedVoicePage==2?hi:lo);
+
+	// row 1
+	int page = d_selectedVoicePage;
+
+	int row = 0;
+	for (int pi=0; pi<4; pi++) {
+		const auto paramName = GetPageParameterName(page, d_selectedTrack, pi);
+		if (!paramName.empty()) {
+			int value = GetPageParameterValue(page, d_selectedTrack, pi);
+			WriteXY(out, 7*pi+2, row*2+0+1, paramName);
+			WriteXY(out, 7*pi+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
+
+	// row 2
+	row = 1;
+	for (int pi=4; pi<8; pi++) {
+		const auto paramName = GetPageParameterName(page, d_selectedTrack, pi);
+		if (!paramName.empty()) {
+			int value = GetPageParameterValue(page, d_selectedTrack, pi);
+			WriteXY(out, 7*(pi-4)+2, row*2+0+1, paramName);
+			WriteXY(out, 7*(pi-4)+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
+
+	int waveId = d_unit.GetVoiceParameterValue(d_selectedTrack, 0);
 	std::string waveName = d_unit.GetWaveName(waveId);
-	WriteXY(out, 19, 4, waveName);
+	WriteXY(out, 0, 4+1, fmt::sprintf("Wave: %s", waveName));
 	return out; }
 
 
@@ -334,6 +393,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 			if (d_selectedGridPage >= d_unit.GetPatternLength()/16) {
 				d_selectedGridPage = 0; }
 			return true; }
+		if (e.wVirtualScanCode == ScanCode::Backspace) { d_selectedVoicePage += 1; if (d_selectedVoicePage >= 3) d_selectedVoicePage = 0; return true; }
 		if (e.wVirtualScanCode == ScanCode::L) { d_isRecording = !d_isRecording; d_unit.CommitPattern(); return true; }
 		if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Play(); return true; }
 		if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Stop(); return true; }
@@ -353,7 +413,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 								   [&](auto& item) { return reactor.GetKeyState(item); });
 			if (it != end(kParamScanLUT)) {
 				int idx = std::distance(begin(kParamScanLUT), it);
-				d_unit.AdjustVoiceParameter(d_selectedTrack, d_selectedParameterPage*8+idx, offset); }
+				AdjustPageParameter(d_selectedVoicePage, d_selectedTrack, idx, offset); }
 			else if (reactor.GetKeyState(ScanCode::Equals)) {
 				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
 

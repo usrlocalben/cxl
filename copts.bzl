@@ -11,6 +11,8 @@ MSVC_FLAGS = [
     "/wd4005",  # macro redefinition
     "/wd4267",  # conversion from 'size_t' to 'type', possible loss of data
 
+    #"/wd4065",  # switch with no case labels
+
     # for clang-cl
     #"-Wno-builtin-macro-redefined",
     #"-Wno-unused-local-typedef",

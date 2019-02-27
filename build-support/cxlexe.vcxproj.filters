@@ -12,9 +12,6 @@
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_idspoutput.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
@@ -79,6 +76,9 @@
       <Filter>cxx</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cxl\cxl_log.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
   </ItemGroup>

@@ -18,7 +18,7 @@ Console::Console(HANDLE hStdout, HANDLE hStdin)
 	:d_stdout{hStdout}, d_stdin{hStdin}, d_activeKeys(65536, false) {}
 
 
-Console::~Console() {}
+Console::~Console() = default;
 
 
 Console& Console::GetInstance() {
@@ -38,7 +38,7 @@ void Console::UnmapKey(uint16_t scanCode) {
 
 std::pair<int, int> Console::GetDimensions() {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	if (!GetConsoleScreenBufferInfo(d_stdout, &csbi)) {
+	if (GetConsoleScreenBufferInfo(d_stdout, &csbi) == 0) {
 		throw std::runtime_error("GetConsoleScreenBufferInfo failure"); }
 	return { csbi.dwSize.X, csbi.dwSize.Y }; }
 
@@ -46,18 +46,18 @@ std::pair<int, int> Console::GetDimensions() {
 void Console::SetDimensions(int width, int height) {
 	const SMALL_RECT tiny{ 0, 0, 1, 1 };
 	BOOL success = SetConsoleWindowInfo(d_stdout, TRUE, &tiny);
-	if (!success) {
+	if (success == 0) {
 		throw std::runtime_error("SetConsoleWindowInfo tiny failure"); }
 
 	COORD newSize;
 	newSize.X = width;
 	newSize.Y = height;
-	if (!SetConsoleScreenBufferSize(d_stdout, newSize)) {
+	if (SetConsoleScreenBufferSize(d_stdout, newSize) == 0) {
 		throw std::runtime_error("SetConsoleScreenBufferSize failure"); }
 
 	const SMALL_RECT window{ 0, 0, static_cast<short>(width-1), static_cast<short>(height-1) };
 	success = SetConsoleWindowInfo(d_stdout, TRUE, &window);
-	if (!success) {
+	if (success == 0) {
 		throw std::runtime_error("SetConsoleWindowInfo tiny failure"); }
 	d_width = width;
 	d_height = height; }
@@ -65,7 +65,7 @@ void Console::SetDimensions(int width, int height) {
 
 std::pair<int, int> Console::GetCursorPosition() {
 	CONSOLE_SCREEN_BUFFER_INFO csbi;
-	if (!GetConsoleScreenBufferInfo(d_stdout, &csbi)) {
+	if (GetConsoleScreenBufferInfo(d_stdout, &csbi) == 0) {
 		throw std::runtime_error("GetConsoleScreenBufferInfo failure"); }
 	return { csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y }; }
 
@@ -102,5 +102,5 @@ Console& Console::Clear() {
 	return *this; }
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace rclw
+}  // namespace rqdq
