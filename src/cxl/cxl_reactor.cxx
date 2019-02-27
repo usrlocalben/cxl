@@ -33,8 +33,7 @@ struct FileOp {
 		onError(std::move(other.onError))
 	{
 		other.request.hEvent = 0;
-		other.fd = 0;
-	}
+		other.fd = 0; }
 
 	OVERLAPPED request;
 	HANDLE fd = nullptr;
