@@ -8,12 +8,12 @@ namespace rcls {
 
 std::vector<std::string> FindGlob(const std::string& pathpat);
 
-long long GetFileMTime(const std::string& fn);
+int64_t GetMTime(const std::string& path);
 
-std::vector<char> GetFileContents(const std::string& fn);
-void GetFileContents(const std::string& fn, std::vector<char>& buf);
+std::vector<char> LoadBytes(const std::string& path);
+void LoadBytes(const std::string& path, std::vector<char>& buf);
 
-std::vector<std::string> GetFileLines(const std::string& filename);
+std::vector<std::string> LoadLines(const std::string& path);
 
 }  // close package namespace
 }  // close enterprise namespace
