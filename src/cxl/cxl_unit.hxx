@@ -48,9 +48,22 @@ public:
 	void SwitchKit(int n);
 	int GetCurrentKitNumber() { return d_kitNum; }
 	const std::string& GetCurrentKitName() { return d_kitName; }
+
+	int GetVoiceLevel(int ti);
+	void AdjustVoiceLevel(int ti, int offset);
+
 	const std::string GetVoiceParameterName(int ti, int pi);
 	int GetVoiceParameterValue(int ti, int pi);
 	void AdjustVoiceParameter(int ti, int pi, int offset);
+
+	const std::string GetEffectParameterName(int ti, int pi);
+	int GetEffectParameterValue(int ti, int pi);
+	void AdjustEffectParameter(int ti, int pi, int offset);
+
+	const std::string GetMixParameterName(int ti, int pi);
+	int GetMixParameterValue(int ti, int pi);
+	void AdjustMixParameter(int ti, int pi, int offset);
+
 	const std::string& GetWaveName(int waveId);
 	void Trigger(int track);
 

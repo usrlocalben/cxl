@@ -127,45 +127,78 @@ int CXLUnit::GetTrackGridNote(int track, int pos) {
 	return d_sequencer.GetTrackGridNote(track, pos); }
 
 
-// sampler voices
 const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) {
 	// XXX track index is for future use
 	switch (pi) {
-	case 0: return "f.cutoff";
-	case 1: return "f.resonance";
-	case 2: return "attack";
-	case 3: return "decay";
-	case 4: return "wave#";
-	case 5: return "d.send";
-	case 6: return "d.time";
-	case 7: return "d.fbck";
-	default: return "unused"; }}
+	case 0: return "wav";
+	case 1: return "atk";
+	case 2: return "dcy";
+	default: return ""; }}
 
 
 int CXLUnit::GetVoiceParameterValue(int ti, int pi) {
 	// XXX track index is for future use
 	switch (pi) {
-	case 0: return d_voices[ti].d_params.cutoff;
-	case 1: return d_voices[ti].d_params.resonance;
-	case 2: return d_voices[ti].d_params.attackPct;
-	case 3: return d_voices[ti].d_params.decayPct;
-	case 4: return d_voices[ti].d_params.waveId;
-	case 5: return d_voices[ti].d_params.delaySend;
-	case 6: return d_voices[ti].d_params.delayTime;
-	case 7: return d_voices[ti].d_params.delayFeedback;
+	case 0: return d_voices[ti].d_params.waveId;
+	case 1: return d_voices[ti].d_params.attackPct;
+	case 2: return d_voices[ti].d_params.decayPct;
 	default: return 0; }}
 
 
 void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 	switch (pi) {
+	case 0: Adjust2(ti, d_voices[ti].d_params.waveId,        0, 1000, offset); break;
+	case 1: Adjust2(ti, d_voices[ti].d_params.attackPct,     0,  100, offset); break;
+	case 2: Adjust2(ti, d_voices[ti].d_params.decayPct,      0,  100, offset); break;
+	default: break; }}
+
+
+const std::string CXLUnit::GetEffectParameterName(int ti, int pi) {
+	// XXX track index is for future use
+	switch (pi) {
+	case 0: return "cut";
+	case 1: return "rez";
+	case 2: return "dly";
+	case 3: return "dtm";
+	case 4: return "dfb";
+	default: return ""; }}
+
+
+int CXLUnit::GetEffectParameterValue(int ti, int pi) {
+	// XXX track index is for future use
+	switch (pi) {
+	case 0: return d_voices[ti].d_params.cutoff;
+	case 1: return d_voices[ti].d_params.resonance;
+	case 2: return d_voices[ti].d_params.delaySend;
+	case 3: return d_voices[ti].d_params.delayTime;
+	case 4: return d_voices[ti].d_params.delayFeedback;
+	default: return 0; }}
+
+
+void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
+	switch (pi) {
 	case 0: Adjust2(ti, d_voices[ti].d_params.cutoff,        0,  127, offset); break;
 	case 1: Adjust2(ti, d_voices[ti].d_params.resonance,     0,  127, offset); break;
-	case 2: Adjust2(ti, d_voices[ti].d_params.attackPct,     0,  100, offset); break;
-	case 3: Adjust2(ti, d_voices[ti].d_params.decayPct,      0,  100, offset); break;
-	case 4: Adjust2(ti, d_voices[ti].d_params.waveId,        0, 1000, offset); break;
-	case 5: Adjust2(ti, d_voices[ti].d_params.delaySend,     0,  127, offset); break;
-	case 6: Adjust2(ti, d_voices[ti].d_params.delayTime,     0,  127, offset); break;
-	case 7: Adjust2(ti, d_voices[ti].d_params.delayFeedback, 0,  127, offset); break;
+	case 2: Adjust2(ti, d_voices[ti].d_params.delaySend,     0,  127, offset); break;
+	case 3: Adjust2(ti, d_voices[ti].d_params.delayTime,     0,  127, offset); break;
+	case 4: Adjust2(ti, d_voices[ti].d_params.delayFeedback, 0,  127, offset); break;
+	default: break; }}
+
+
+const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
+	// XXX track index is for future use
+	switch (pi) {
+	default: return ""; }}
+
+
+int CXLUnit::GetMixParameterValue(int ti, int pi) {
+	// XXX track index is for future use
+	switch (pi) {
+	default: return 0; }}
+
+
+void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
+	switch (pi) {
 	default: break; }}
 
 
