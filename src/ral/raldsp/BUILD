@@ -34,6 +34,7 @@ cc_library(
     hdrs=["raldsp_mixer.hxx"],
     deps=[
         ":iaudiodevice",
+        ":distortion",
         ],
     copts = RSR_DEFAULT_COPTS,
     )
@@ -42,6 +43,16 @@ cc_library(
     name="syncdelay",
     srcs=["raldsp_syncdelay.cxx"],
     hdrs=["raldsp_syncdelay.hxx"],
+    deps=[
+        ":iaudiodevice",
+        ],
+    copts = RSR_DEFAULT_COPTS,
+    )
+
+cc_library(
+    name="distortion",
+    srcs=["raldsp_distortion.cxx"],
+    hdrs=["raldsp_distortion.hxx"],
     deps=[
         ":iaudiodevice",
         ],

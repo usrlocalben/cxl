@@ -1,5 +1,6 @@
 #pragma once
 #include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
+#include "src/ral/raldsp/raldsp_distortion.hxx"
 
 #include <stdexcept>
 #include <vector>
@@ -14,10 +15,14 @@ struct BasicMixerChannel {
 	void Initialize() {
 		d_gain = 100;
 		d_mute = false;
-		d_pan = 0; }
+		d_pan = 0;
+		d_distortion = 0; }
 	int d_gain = 100;
 	bool d_mute = false;
-	int d_pan =0; };
+	int d_pan =0;
+	int d_distortion = 0;
+
+	Distortor d_distortor{1}; };
 
 
 class BasicMixer : public IAudioDevice {

@@ -38,7 +38,13 @@ void BasicMixerChannel::Update(int tempo) {}
 
 
 void BasicMixerChannel::Process(float* inputs, float* outputs) {
-	float in = inputs[0];
+	float& in = inputs[0];
+	float tmp = 0;
+
+	d_distortor.d_threshold = 127 - d_distortion;
+	d_distortor.Process(inputs, &tmp);
+	inputs[0] = tmp;
+
 	in *= (d_gain / float(100.0));
 	panningLUT.Pan(&in, outputs, d_pan); }
 
