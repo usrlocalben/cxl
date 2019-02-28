@@ -229,6 +229,8 @@ const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
 	case 0: return "dis";
 	case 1: return "vol";
 	case 2: return "pan";
+	case 3: return "dly";
+	case 4: return "rev";
 	default: return ""; }}
 
 
@@ -237,6 +239,8 @@ int CXLUnit::GetMixParameterValue(int ti, int pi) {
 	case 0: return d_mixer.d_channels[ti].d_distortion;
 	case 1: return d_mixer.d_channels[ti].d_gain;
 	case 2: return d_mixer.d_channels[ti].d_pan;
+	case 3: return d_mixer.d_channels[ti].d_send1;
+	case 4: return d_mixer.d_channels[ti].d_send2;
 	default: return 0; }}
 
 
@@ -245,6 +249,8 @@ void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
 	case 0: Adjust2(ti, d_mixer.d_channels[ti].d_distortion, 0, 127, offset); break;
 	case 1: Adjust2(ti, d_mixer.d_channels[ti].d_gain, 0, 127, offset); break;
 	case 2: Adjust2(ti, d_mixer.d_channels[ti].d_pan, -64, 63, offset); break;
+	case 3: Adjust2(ti, d_mixer.d_channels[ti].d_send1, 0, 127, offset); break;
+	case 4: Adjust2(ti, d_mixer.d_channels[ti].d_send2, 0, 127, offset); break;
 	default: break; }}
 
 

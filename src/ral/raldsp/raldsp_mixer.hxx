@@ -16,11 +16,15 @@ struct BasicMixerChannel {
 		d_gain = 100;
 		d_mute = false;
 		d_pan = 0;
-		d_distortion = 0; }
+		d_distortion = 0;
+		d_send1 = 0;
+		d_send2 = 0; }
 	int d_gain = 100;
 	bool d_mute = false;
 	int d_pan =0;
 	int d_distortion = 0;
+	int d_send1 = 0;
+	int d_send2 = 0;
 
 	Distortor d_distortor{1}; };
 

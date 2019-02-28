@@ -46,7 +46,11 @@ void BasicMixerChannel::Process(float* inputs, float* outputs) {
 	inputs[0] = tmp;
 
 	in *= (d_gain / float(100.0));
-	panningLUT.Pan(&in, outputs, d_pan); }
+	panningLUT.Pan(&in, outputs, d_pan);
+	outputs[2] = outputs[0] * (d_send1/127.0);
+	outputs[3] = outputs[1] * (d_send1/127.0);
+	outputs[4] = outputs[0] * (d_send2/127.0);
+	outputs[5] = outputs[1] * (d_send2/127.0); }
 
 
 void BasicMixer::AddChannel() {
@@ -57,15 +61,25 @@ void BasicMixer::Update(int tempo) {}
 
 
 void BasicMixer::Process(float* inputs, float* outputs) {
-	float& sumLeft = outputs[0];
-	float& sumRight = outputs[1];
-	sumLeft = 0;
-	sumRight = 0;
+	std::array<float, 6> sums;
+
+	std::fill(sums.begin(), sums.end(), 0);
 	for (int i=0; i<d_channels.size(); i++) {
-		float sub[2];
-		d_channels[i].Process(&(inputs[i]), sub);
-		sumLeft  += sub[0];
-		sumRight += sub[1]; }}
+		std::array<float, 6> channelOut;
+		d_channels[i].Process(&(inputs[i]), channelOut.data());
+		for (int oi=0; oi<6; oi++) {
+			sums[oi] += channelOut[oi]; }}
+
+	// std::array<float, 2> fxOut;
+	// d_delay.Process(&sums[2], fxOut.data());
+	// sums[0] += fxOut[0];
+	// sums[1] += fxOut[1];
+	// d_reverb.Process(&sums[4], fxOut.data());
+	// sums[0] += fxOut[0];
+	// sums[1] += fxOut[1];
+
+	outputs[0] = sums[0];
+	outputs[1] = sums[1]; }
 
 
 }  // namespace raldsp
