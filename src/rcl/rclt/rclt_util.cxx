@@ -7,11 +7,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#undef min
-#undef max
 
 namespace rqdq {
 namespace rclt {
@@ -39,7 +35,7 @@ std::string UTF8Codec::Encode(const std::wstring& str) {
 	return out; }
 
 
-std::vector<std::string> Explode(const std::string& str, char ch) {
+std::vector<std::string> Split(const std::string& str, char ch) {
 	std::vector<std::string> items;
 	std::string src(str);
 	auto nextmatch = src.find(ch);

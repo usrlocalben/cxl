@@ -5,7 +5,7 @@
 namespace rqdq {
 namespace rclt {
 
-std::vector<std::string> Explode(const std::string& str, char ch);
+std::vector<std::string> Split(const std::string& str, char ch);
 
 std::string Trim(const std::string& s);
 
