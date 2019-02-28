@@ -83,7 +83,8 @@ public:
 
 	void Initialize() {
 		d_waveId = 0;
-		d_tuning = 0;
+		d_tuningInNotes = 0;
+		d_tuningInCents = 0;
 		d_loopType = LoopType::None;
 		d_attackPct = 0;
 		d_decayPct = 90;
@@ -93,7 +94,8 @@ public:
 public:
 	// parameters
 	int d_waveId = 0;
-	int d_tuning = 0;         // pitch fine-tune in cents
+	int d_tuningInNotes = 0;  // [-64...63] pitch semitone offset
+	int d_tuningInCents = 0;  // pitch fine-tune in cents
 	LoopType d_loopType = LoopType::None;
 	int d_attackPct = 0;      // [0...100] % of sample duration
 	int d_decayPct = 90;      // [0...100] % of sample duration

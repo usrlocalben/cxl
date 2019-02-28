@@ -4,6 +4,12 @@
 #include <utility>
 
 namespace rqdq {
+namespace {
+
+constexpr int kMidiC3 = 48;
+constexpr int kSamplerRootNote = kMidiC3;
+
+}  // namespace
 namespace raldsp {
 
 
@@ -17,7 +23,7 @@ void SingleSampler::Trigger(int note, double velocity, int ppqstamp) {
 		d_isActive = false; }
 
 	// https://forum.juce.com/t/mapping-frequencies-to-midi-notes/1762/2
-	d_delta = pow(2.0, d_tuning / 1200.0);
+	d_delta = pow(2.0, (note+d_tuningInNotes-kSamplerRootNote)/12.0 + (d_tuningInCents / 1200.0));
 	d_delta *= wave.d_freq / 44100.0;  // XXX
 	d_wavePtr = &wave;
 	d_isActive = true;

@@ -163,6 +163,9 @@ const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) {
 	case 0: return "wav";
 	case 1: return "atk";
 	case 2: return "dcy";
+
+	case 4: return "tun";
+	case 5: return "fin";
 	default: return ""; }}
 
 
@@ -172,14 +175,20 @@ int CXLUnit::GetVoiceParameterValue(int ti, int pi) {
 	case 0: return d_voices[ti].d_waveId;
 	case 1: return d_voices[ti].d_attackPct;
 	case 2: return d_voices[ti].d_decayPct;
+
+	case 4: return d_voices[ti].d_tuningInNotes;
+	case 5: return d_voices[ti].d_tuningInCents;
 	default: return 0; }}
 
 
 void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 	switch (pi) {
-	case 0: Adjust2(ti, d_voices[ti].d_waveId,        0, 1000, offset); break;
-	case 1: Adjust2(ti, d_voices[ti].d_attackPct,     0,  100, offset); break;
-	case 2: Adjust2(ti, d_voices[ti].d_decayPct,      0,  100, offset); break;
+	case 0: Adjust2(ti, d_voices[ti].d_waveId,          0, 1000, offset); break;
+	case 1: Adjust2(ti, d_voices[ti].d_attackPct,       0,  100, offset); break;
+	case 2: Adjust2(ti, d_voices[ti].d_decayPct,        0,  100, offset); break;
+
+	case 4: Adjust2(ti, d_voices[ti].d_tuningInNotes, -64,   63, offset); break;
+	case 5: Adjust2(ti, d_voices[ti].d_tuningInCents,-100,  100, offset); break;
 	default: break; }}
 
 
@@ -364,7 +373,7 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 
 
 void CXLUnit::Trigger(int track) {
-	d_voices[track].Trigger(36, 1.0, 0); }
+	d_voices[track].Trigger(48, 1.0, 0); }
 
 
 void CXLUnit::CommitPattern() {
