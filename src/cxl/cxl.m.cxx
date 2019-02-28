@@ -106,26 +106,30 @@ public:
 				//cout << "CT(" << int(channelInfos[i].type) << ")";
 				// OK do processing for the outputs only
 				switch (channelInfos[i].type) {
-				case ASIOSTInt16LSB:
-					{auto dst = reinterpret_cast<int16_t*>(bufferInfos[i].buffers[index]);
+				case ASIOSTInt16LSB: {
+					auto dst = reinterpret_cast<int16_t*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
 						dst[si] = srcPtr[si] * std::numeric_limits<int16_t>::max();}}
 					break;
 				case ASIOSTInt24LSB:		// used for 20 bits as well
 					memset (bufferInfos[i].buffers[index], 0, buffSize * 3);
 					break;
-				case ASIOSTInt32LSB:
-					{auto dst = reinterpret_cast<int32_t*>(bufferInfos[i].buffers[index]);
+				case ASIOSTInt32LSB: { 
+					auto dst = reinterpret_cast<int32_t*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
 						dst[si] = srcPtr[si] * std::numeric_limits<int32_t>::max();}}
 					break;
-				case ASIOSTFloat32LSB:		// IEEE 754 32 bit float, as found on Intel x86 architecture
-					{auto dst = reinterpret_cast<float*>(bufferInfos[i].buffers[index]);
-					for (int si=0; si<buffSize; si++) { dst[si] = dl[si];}}
+				case ASIOSTFloat32LSB: {
+					// IEEE 754 32 bit float, as found on Intel x86 architecture
+					auto dst = reinterpret_cast<float*>(bufferInfos[i].buffers[index]);
+					for (int si=0; si<buffSize; si++) {
+						dst[si] = srcPtr[si];}}
 					break;
-				case ASIOSTFloat64LSB: 		// IEEE 754 64 bit double float, as found on Intel x86 architecture
-					{auto dst = reinterpret_cast<double*>(bufferInfos[i].buffers[index]);
-					for (int si=0; si<buffSize; si++) { dst[si] = dl[si];}}
+				case ASIOSTFloat64LSB: {
+					// IEEE 754 64 bit double float, as found on Intel x86 architecture
+					auto dst = reinterpret_cast<double*>(bufferInfos[i].buffers[index]);
+					for (int si=0; si<buffSize; si++) {
+						dst[si] = srcPtr[si];}}
 					break;
 
 					// these are used for 32 bit data buffer, with different alignment of the data inside
