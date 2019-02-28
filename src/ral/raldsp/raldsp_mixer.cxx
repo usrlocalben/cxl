@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <array>
+#include <cassert>
+#include <iostream>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -13,14 +15,18 @@ namespace {
 class PanningLUT {
 public:
 	PanningLUT() {
-		for (int i=0; i<101; i++) {
-			left[i] = sqrt( (101-i)/101.0 );
-			right[i] = sqrt(      i /101.0 );
-		}}
+		for (int i=0; i<128; i++) {
+			leftGain[i]  = sqrt((128-i)/128.0);
+			rightGain[i] = sqrt(     i /128.0); }}
+
+	void Pan(float* inputs, float* outputs, int setting) {
+		assert(-64 <= setting && setting <= 63);
+		outputs[0] = inputs[0] * leftGain[setting+64];
+		outputs[1] = inputs[0] * rightGain[setting+64]; }
+
 private:
-	std::array<double, 101> left;
-	std::array<double, 101> right;
-};
+	std::array<float, 128> leftGain;
+	std::array<float, 128> rightGain; };
 
 PanningLUT panningLUT;
 
@@ -32,8 +38,9 @@ void BasicMixerChannel::Update(int tempo) {}
 
 
 void BasicMixerChannel::Process(float* inputs, float* outputs) {
-	outputs[0] = inputs[0] * (d_gain / float(100.0));
-	outputs[1] = inputs[0] * (d_gain / float(100.0)); }
+	float in = inputs[0];
+	in *= (d_gain / float(100.0));
+	panningLUT.Pan(&in, outputs, d_pan); }
 
 
 void BasicMixer::AddChannel() {

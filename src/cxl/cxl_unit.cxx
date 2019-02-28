@@ -218,18 +218,21 @@ void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
 const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
 	switch (pi) {
 	case 0: return "vol";
+	case 1: return "pan";
 	default: return ""; }}
 
 
 int CXLUnit::GetMixParameterValue(int ti, int pi) {
 	switch (pi) {
 	case 0: return d_mixer.d_channels[ti].d_gain;
+	case 1: return d_mixer.d_channels[ti].d_pan;
 	default: return 0; }}
 
 
 void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
 	switch (pi) {
 	case 0: Adjust2(ti, d_mixer.d_channels[ti].d_gain, 0, 127, offset); break;
+	case 1: Adjust2(ti, d_mixer.d_channels[ti].d_pan, -64, 63, offset); break;
 	default: break; }}
 
 
@@ -388,7 +391,7 @@ void CXLUnit::SwitchPattern(int pid) {
 				SetPatternLength(stoi(line)); }
 			else if (rclt::ConsumePrefix(line, "Track ")) {
 				// "Track NN: X..X.XX"
-				auto segs = rclt::Explode(line, ':');
+				auto segs = rclt::Split(line, ':');
 				auto trackId = std::stoi(segs[0]);
 				auto grid = rclt::Trim(segs[1]);
 				int pos = 0;

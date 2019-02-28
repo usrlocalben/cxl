@@ -13,9 +13,11 @@ struct BasicMixerChannel {
 	void Process(float* inputs, float* outputs);
 	void Initialize() {
 		d_gain = 100;
-		d_mute = false; }
+		d_mute = false;
+		d_pan = 0; }
 	int d_gain = 100;
-	bool d_mute = false; };
+	bool d_mute = false;
+	int d_pan =0; };
 
 
 class BasicMixer : public IAudioDevice {
@@ -27,15 +29,21 @@ public:
 public:
 	void AddChannel();
 	int GetNumChannels() { return d_channels.size(); }
-	void SetChannelGain(int ch, float value) {
+	void SetChannelGain(int ch, int value) {
 		EnsureValidChannelId(ch);
 		d_channels[ch].d_gain = value; }
+	void SetChannelPan(int ch, int value) {
+		EnsureValidChannelId(ch);
+		d_channels[ch].d_pan = value; }
 	void SetChannelMute(int ch, bool value) {
 		EnsureValidChannelId(ch);
 		d_channels[ch].d_mute = value; }
 	float GetChannelGain(int ch) {
 		EnsureValidChannelId(ch);
 		return d_channels[ch].d_gain; }
+	float GetChannelPan(int ch) {
+		EnsureValidChannelId(ch);
+		return d_channels[ch].d_pan; }
 	bool GetChannelMute(int ch) {
 		EnsureValidChannelId(ch);
 		return d_channels[ch].d_mute; }
