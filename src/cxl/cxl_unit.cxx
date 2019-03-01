@@ -120,14 +120,15 @@ float CXLUnit::GetLoadingProgress() {
 
 
 void CXLUnit::onWaveIOComplete(const std::vector<uint8_t>& data) {
-	auto& fileName = d_filesToLoad[d_nextFileId];
+	const int fileId = d_nextFileId++;
+	const int waveId = d_nextWaveId++;
+	MakeProgressLoadingWaves();
+
+	auto& fileName = d_filesToLoad[fileId];
 	auto baseName = fileName.substr(0, fileName.size() - 4);
-	d_waveTable.Get(d_nextWaveId) = ralw::MPCWave::Load(data, baseName);
+	d_waveTable.Get(waveId) = ralw::MPCWave::Load(data, baseName);
 	Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
-	d_loaderStateChanged.emit();
-	d_nextFileId++;
-	d_nextWaveId++;
-	MakeProgressLoadingWaves(); }
+	d_loaderStateChanged.emit(); }
 
 
 void CXLUnit::onWaveIOError(int error) {
@@ -449,7 +450,7 @@ void CXLUnit::SwitchPattern(int pid) {
 		auto msg = fmt::sprintf("loaded pattern %d from \"%s\"", pid, path);
 		Log::GetInstance().info(msg); }
 	else {
-		auto msg = fmt::sprintf("pattern %d could not be read, using init pattern", pid);
+		auto msg = fmt::sprintf("pattern %s could not be read, using init pattern", path);
 		Log::GetInstance().info(msg); }}
 
 
