@@ -78,5 +78,7 @@ cc_library(
     hdrs = ["cxl_log.hxx"],
     deps = [
         "//3rdparty/wink",
+        "//src/rcl/rcls:file",
+        ":config",
         ],
     copts = RSR_DEFAULT_COPTS,)

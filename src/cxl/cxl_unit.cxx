@@ -32,15 +32,15 @@ constexpr int kMaxKitNum = 99;
 
 
 const std::string& MakeKitPath(int n) {
-	static std::string tmp;
-	tmp = rcls::JoinPath(cxl::config::kitDir, fmt::sprintf("kit_%2d.txt", n));
-	return tmp; }
+	static std::string out;
+	out = rcls::JoinPath(cxl::config::kitDir, fmt::sprintf("%02d.kit", n));
+	return out; }
 
 
 const std::string& MakePatternPath(int n) {
-	static std::string tmp;
-	tmp = rcls::JoinPath(cxl::config::patternDir, fmt::sprintf("pattern_A%02d.txt", n));
-	return tmp; }
+	static std::string out;
+	out = rcls::JoinPath(cxl::config::patternDir, fmt::sprintf("A%02d.pattern", n));
+	return out; }
 
 
 }  // namespace
@@ -210,7 +210,7 @@ void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 const std::string CXLUnit::GetEffectParameterName(int ti, int pi) {
 	// XXX track index is for future use
 	switch (pi) {
-	case 0: return "cut";
+	case 0: return "flt";
 	case 1: return "rez";
 	case 2: return "dly";
 	case 3: return "dtm";
@@ -290,30 +290,38 @@ void CXLUnit::SwitchKit(int n) {
 	LoadKit(); }
 
 
-
-
 void CXLUnit::SaveKit() {
 	const auto& path = MakeKitPath(d_kitNum);
 	auto fd = std::ofstream(path.c_str());
 	fd << "Name: " << d_kitName << "\n";
 	for (int ti=0; ti<kNumVoices; ti++) {
 		fd << "Voice #" << ti << "\n";
-		fd << "  cutoff " << d_effects[ti].d_lowpassFreq << "\n";
-		fd << "  resonance " << d_effects[ti].d_lowpassQ << "\n";
-		fd << "  attack " << d_voices[ti].d_attackPct << "\n";
-		fd << "  decay " << d_voices[ti].d_decayPct << "\n";
 
-		fd << "  wave ";
-		auto& wave = d_waveTable.Get(d_voices[ti].d_waveId);
-		if (wave.d_loaded) {
-			fd << "name=" << wave.d_descr; }
-		else {
-			fd << "none"; }
-		fd << "\n";
+		for (int pi=0; pi<8; pi++) {
+			const auto paramName = GetVoiceParameterName(ti, pi);
+			if (paramName == "wav") {
+				auto& wave = d_waveTable.Get(d_voices[ti].d_waveId);
+				if (wave.d_loaded) {
+					fd << "  voice.wav name=" << wave.d_descr << "\n"; }
+				else {
+					fd << "  voice.wav none\n"; }}
+			else {
+				const auto paramValue = GetVoiceParameterValue(ti, pi);
+				if (!paramName.empty()) {
+					fd << fmt::sprintf("  voice.%s %d", paramName, paramValue) << "\n"; }}}
 
-		fd << "  delaySend " << d_effects[ti].d_delaySend << "\n";
-		fd << "  delayTime " << d_effects[ti].d_delayTime << "\n";
-		fd << "  delayFeedback " << d_effects[ti].d_delayFeedback << "\n"; }
+		for (int pi=0; pi<8; pi++) {
+			const auto paramName = GetEffectParameterName(ti, pi);
+			const auto paramValue = GetEffectParameterValue(ti, pi);
+			if (!paramName.empty()) {
+				fd << fmt::sprintf("  effect.%s %d", paramName, paramValue) << "\n"; }}
+
+		for (int pi=0; pi<8; pi++) {
+			const auto paramName = GetMixParameterName(ti, pi);
+			const auto paramValue = GetMixParameterValue(ti, pi);
+			if (!paramName.empty()) {
+				fd << fmt::sprintf("  mix.%s %d", paramName, paramValue) << "\n"; }}}
+
 	Log::GetInstance().info(fmt::sprintf("saved %s", path)); }
 
 
@@ -328,51 +336,55 @@ void CXLUnit::InitializeKit() {
 void CXLUnit::LoadKit() {
 	using rclt::ConsumePrefix;
 	const auto path = MakeKitPath(d_kitNum);
-	auto fd = std::ifstream(path.c_str());
-	InitializeKit();
-	int vid = 0;
-	if (fd.good()) {
-		std::string line;
-		while (getline(fd, line)) {
-			if (ConsumePrefix(line, "Name: ")) {
-				d_kitName = line; }
-			else if (ConsumePrefix(line, "Voice #")) {
-				vid = stoi(line); }
-			else if (ConsumePrefix(line, "  cutoff ")) {
-				d_effects[vid].d_lowpassFreq = stoi(line); }
-			else if (ConsumePrefix(line, "  resonance ")) {
-				d_effects[vid].d_lowpassQ = stoi(line); }
-			else if (ConsumePrefix(line, "  attack ")) {
-				d_voices[vid].d_attackPct = stoi(line); }
-			else if (ConsumePrefix(line, "  decay ")) {
-				d_voices[vid].d_decayPct = stoi(line); }
-			else if (ConsumePrefix(line, "  wave ")) {
-				if (line == "none") {
-					d_voices[vid].d_waveId = 0; }
-				else if (ConsumePrefix(line, "name=")) {
-					int waveId = d_waveTable.FindByName(line);
-					if (waveId == 0) {
-						auto msg = fmt::sprintf("waveTable entry with name \"%s\" not found", line);
-						Log::GetInstance().info(msg); }
-					d_voices[vid].d_waveId = waveId; }
+	try {
+		auto fd = std::ifstream(path.c_str());
+		InitializeKit();
+		int vid = 0;
+		if (fd.good()) {
+			std::string line;
+			while (getline(fd, line)) {
+				if (ConsumePrefix(line, "Name: ")) {
+					d_kitName = line; }
+				else if (ConsumePrefix(line, "Voice #")) {
+					vid = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.wav ")) {
+					if (line == "none") {
+						d_voices[vid].d_waveId = 0; }
+					else if (ConsumePrefix(line, "name=")) {
+						int waveId = d_waveTable.FindByName(line);
+						if (waveId == 0) {
+							auto msg = fmt::sprintf("waveTable entry with name \"%s\" not found", line);
+							Log::GetInstance().info(msg); }
+						d_voices[vid].d_waveId = waveId; }
+					else {
+						auto msg = fmt::sprintf("invalid wave reference \"%s\"", line);
+						Log::GetInstance().info(msg);
+						d_voices[vid].d_waveId = 0; }}
+				else if (ConsumePrefix(line, "  voice.atk ")) { d_voices[vid].d_attackPct = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.dcy ")) { d_voices[vid].d_decayPct = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.tun ")) { d_voices[vid].d_tuningInNotes = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.fin ")) { d_voices[vid].d_tuningInCents = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.flt ")) { d_effects[vid].d_lowpassFreq = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.rez ")) { d_effects[vid].d_lowpassQ = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.dly ")) { d_effects[vid].d_delaySend = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.dtm ")) { d_effects[vid].d_delayTime = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.dfb ")) { d_effects[vid].d_delayFeedback = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.dis ")) { d_mixer.d_channels[vid].d_distortion = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.vol ")) { d_mixer.d_channels[vid].d_gain = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.pan ")) { d_mixer.d_channels[vid].d_pan = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.dly ")) { d_mixer.d_channels[vid].d_send1 = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.rev ")) { d_mixer.d_channels[vid].d_send2 = stoi(line); }
 				else {
-					auto msg = fmt::sprintf("invalid wave reference \"%s\"", line);
-					Log::GetInstance().info(msg);
-					d_voices[vid].d_waveId = 0; }}
-			else if (ConsumePrefix(line, "  delaySend ")) {
-				d_effects[vid].d_delaySend = stoi(line); }
-			else if (ConsumePrefix(line, "  delayTime ")) {
-				d_effects[vid].d_delayTime = stoi(line); }
-			else if (ConsumePrefix(line, "  delayFeedback ")) {
-				d_effects[vid].d_delayFeedback = stoi(line); }
-			else {
-				auto msg = fmt::sprintf("unknown kit line \"%s\"", line);
-				throw std::runtime_error(msg); }}
-		auto msg = fmt::sprintf("kit %d loaded from %s", d_kitNum, path);
-		Log::GetInstance().info(msg); }
-	else {
-		auto msg = fmt::sprintf("kit %d could not be read, using init kit", d_kitNum);
-		Log::GetInstance().info(msg); }}
+					auto msg = fmt::sprintf("unknown kit line \"%s\"", line);
+					throw std::runtime_error(msg); }}
+			auto msg = fmt::sprintf("kit %d loaded from %s", d_kitNum, path);
+			Log::GetInstance().info(msg); }
+		else {
+			auto msg = fmt::sprintf("kit %d could not be read, using init kit", d_kitNum);
+			Log::GetInstance().info(msg); }}
+	catch (const std::exception& err) {
+		Log::GetInstance().info(err.what());
+		throw; }}
 
 
 void CXLUnit::Render(float* left, float* right, int numSamples) {
@@ -416,6 +428,7 @@ void CXLUnit::CommitPattern() {
 	auto fd = std::ofstream(path.c_str());
 	fd << "Kit: " << d_kitNum << "\n";
 	fd << "Length: " << patternLength << "\n";
+	fd << "Tempo: " << (GetTempo()/10) << "." << (GetTempo()%10) << "\n";
 	for (int ti=0; ti<kNumVoices; ti++) {
 		fd << "Track " << ti << ": ";
 		for (int pos=0; pos<patternLength; pos++) {
@@ -428,30 +441,38 @@ void CXLUnit::SwitchPattern(int pid) {
 	const auto& path = MakePatternPath(pid);
 	d_sequencer.InitializePattern();
 	d_patternNum = pid;
-	auto fd = std::ifstream(path.c_str());
-	if (fd.good()) {
-		std::string line;
-		while (getline(fd, line)) {
-			if (rclt::ConsumePrefix(line, "Kit: ")) {
-				SwitchKit(stoi(line)); }
-			else if (rclt::ConsumePrefix(line, "Length: ")) {
-				SetPatternLength(stoi(line)); }
-			else if (rclt::ConsumePrefix(line, "Track ")) {
-				// "Track NN: X..X.XX"
-				auto segs = rclt::Split(line, ':');
-				auto trackId = std::stoi(segs[0]);
-				auto grid = rclt::Trim(segs[1]);
-				int pos = 0;
-				for (auto ch : grid) {
-					bool on = (ch == 'X');
-					if (on) {
-						ToggleTrackGridNote(trackId, pos); }
-					pos++; }}}
-		auto msg = fmt::sprintf("loaded pattern %d from \"%s\"", pid, path);
-		Log::GetInstance().info(msg); }
-	else {
-		auto msg = fmt::sprintf("pattern %s could not be read, using init pattern", path);
-		Log::GetInstance().info(msg); }}
+	try {
+		auto fd = std::ifstream(path.c_str());
+		if (fd.good()) {
+			std::string line;
+			while (getline(fd, line)) {
+				if (rclt::ConsumePrefix(line, "Kit: ")) {
+					SwitchKit(stoi(line)); }
+				else if (rclt::ConsumePrefix(line, "Length: ")) {
+					SetPatternLength(stoi(line)); }
+				else if (rclt::ConsumePrefix(line, "Tempo: ")) {
+					auto segs = rclt::Split(line, '.');
+					int tempo = stoi(segs[0])*10 + stoi(segs[1]);
+					SetTempo(tempo); }
+				else if (rclt::ConsumePrefix(line, "Track ")) {
+					// "Track NN: X..X.XX"
+					auto segs = rclt::Split(line, ':');
+					auto trackId = std::stoi(segs[0]);
+					auto grid = rclt::Trim(segs[1]);
+					int pos = 0;
+					for (auto ch : grid) {
+						bool on = (ch == 'X');
+						if (on) {
+							ToggleTrackGridNote(trackId, pos); }
+						pos++; }}}
+			auto msg = fmt::sprintf("loaded pattern %d from \"%s\"", pid, path);
+			Log::GetInstance().info(msg); }
+		else {
+			auto msg = fmt::sprintf("pattern %s could not be read, using init pattern", path);
+			Log::GetInstance().info(msg); }}
+	catch (const std::exception& err) {
+		Log::GetInstance().info(err.what());
+		throw; }}
 
 
 }  // namespace cxl

@@ -10,22 +10,12 @@ namespace cxl {
 
 class Log {
 private:
-	Log() {
-		d_buf.resize(1024); }
+	Log();
+
 public:
-	static Log& GetInstance() {
-		static Log log;
-		return log; }
-
-	void warn(const std::string& msg) {
-		return info(msg); }
-
-	void info(const std::string& msg) {
-		d_buf[d_head].assign(msg);
-		d_head++;
-		if (d_head >= 1024) {
-			d_head = 0; }
-		d_updated.emit(); }
+	static Log& GetInstance();
+	void warn(const std::string& msg);
+	void info(const std::string& msg);
 
 	int GetHeadIdx() {
 		return d_head; }

@@ -270,10 +270,10 @@ private:
 
 
 int main(int argc, char **argv) {
+	config::Load();
 	auto& log = Log::GetInstance();
 	log.info("Log started");
 
-	config::Load();
 
 	const array<string, 3> userDirs = {config::patternDir, config::sampleDir, config::kitDir};
 	for_each(userDirs.begin(), userDirs.end(), EnsureDirectoryExists);
