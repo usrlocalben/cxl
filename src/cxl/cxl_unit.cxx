@@ -101,9 +101,6 @@ void CXLUnit::BeginLoadingWaves() {
 
 void CXLUnit::MakeProgressLoadingWaves() {
 	if (d_nextFileId >= d_filesToLoad.size()) {
-		d_loading = false;
-		d_loaderStateChanged.emit();
-		SwitchPattern(0);
 		return; }
 	auto& reactor = Reactor::GetInstance();
 	const auto wavPath = rcls::JoinPath(config::sampleDir, d_filesToLoad[d_nextFileId]);
@@ -129,7 +126,16 @@ void CXLUnit::onWaveIOComplete(const std::vector<uint8_t>& data) {
 	auto baseName = fileName.substr(0, fileName.size() - 4);
 	d_waveTable.Get(waveId) = ralw::MPCWave::Load(data, baseName);
 	Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
-	d_loaderStateChanged.emit(); }
+	d_loaderStateChanged.emit();
+
+	if (d_nextFileId >= d_filesToLoad.size()) {
+		onLoadingComplete(); }}
+
+
+void CXLUnit::onLoadingComplete() {
+	d_loading = false;
+	d_loaderStateChanged.emit();
+	SwitchPattern(0); }
 
 
 void CXLUnit::onWaveIOError(int error) {

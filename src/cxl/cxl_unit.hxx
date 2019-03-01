@@ -135,6 +135,7 @@ private:
 	void MakeProgressLoadingWaves();
 	void onWaveIOComplete(const std::vector<uint8_t>& data);
 	void onWaveIOError(int error);
+	void onLoadingComplete();
 	//  END  wave-table loader
 
 	int d_kitNum = 0;
