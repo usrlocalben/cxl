@@ -179,6 +179,10 @@ int CXLUnit::GetTrackGridNote(int track, int pos) {
 	return d_sequencer.GetTrackGridNote(track, pos); }
 
 
+void CXLUnit::SetTrackGridNote(int track, int pos, int note) {
+	return d_sequencer.SetTrackGridNote(track, pos, note); }
+
+
 const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) {
 	// XXX track index is for future use
 	switch (pi) {

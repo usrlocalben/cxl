@@ -274,6 +274,15 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		editor->onCancel = [&]() {
 			d_popup.reset(); };
 		return true; }
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::L && d_isRecording) {
+		CopyTrackPage();  // copy page 
+		return true; }
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Semicolon && d_isRecording) {
+		ClearTrackPage();  // clear page 
+		return true; }
+	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Quote && d_isRecording) {
+		PasteTrackPage();  // paste page 
+		return true; }
 
 	// xxx if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCK
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
@@ -288,7 +297,7 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 			d_selectedVoicePage = (d_selectedVoicePage+1)%3;
 			return true; }
 
-		// transport controls
+		// transport controls, copy/clear/paste
 		if (e.wVirtualScanCode == ScanCode::L) {
 			d_isRecording = !d_isRecording;
 			d_unit.CommitPattern();
@@ -350,6 +359,23 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 			return true; }}
 
 	return false; }
+
+
+void PatternEditor::CopyTrackPage() {
+	for (int i=0; i<16; i++) {
+		auto note = d_unit.GetTrackGridNote(d_selectedTrack, d_selectedGridPage*16+i);
+		d_clipboard[i] = note; }}
+
+
+void PatternEditor::ClearTrackPage() {
+	for (int i=0; i<16; i++) {
+		d_unit.SetTrackGridNote(d_selectedTrack, d_selectedGridPage*16+i, 0); }}
+
+
+void PatternEditor::PasteTrackPage() {
+	for (int i=0; i<16; i++) {
+		d_unit.SetTrackGridNote(d_selectedTrack, d_selectedGridPage*16+i, d_clipboard[i]); }}
+
 
 
 }  // namespace cxl

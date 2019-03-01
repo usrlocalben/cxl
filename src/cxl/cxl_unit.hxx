@@ -59,6 +59,7 @@ public:
 	// pattern editing
 	void ToggleTrackGridNote(int track, int pos);
 	int GetTrackGridNote(int track, int pos);
+	void SetTrackGridNote(int track, int pos, int note);
 	void SwitchPattern(int pid);
 	void CommitPattern();
 	int GetCurrentPatternNumber() { return d_patternNum; }

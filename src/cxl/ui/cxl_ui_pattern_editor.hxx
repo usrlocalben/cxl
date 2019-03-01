@@ -38,6 +38,11 @@ private:
 	int GetPageParameterValue(int pageNum, int trackNum, int paramNum);
 	void AdjustPageParameter(int pageNum, int trackNum, int paramNum, int offset);
 
+private:
+	void CopyTrackPage();
+	void ClearTrackPage();
+	void PasteTrackPage();
+
 	WindowsEvent d_playbackPositionChangedEvent;
 
 	std::shared_ptr<Widget> d_popup;
@@ -48,6 +53,7 @@ private:
 	int d_selectedTrack = 0;
 	int d_selectedGridPage = 0;
 	int d_selectedVoicePage = 0;
+	std::array<int, 16> d_clipboard;
 	bool d_isRecording = false; };
 
 
