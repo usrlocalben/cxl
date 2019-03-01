@@ -49,12 +49,13 @@ namespace cxl {
 void CXLEffects::Update(int tempo) {
 	const int freq = d_lowpassFreq;
 	const int q = d_lowpassQ;
-	if (freq<127 || q>0) {
-		d_filter.SetBypass(false);
-		d_filter.SetCutoff(1.0 - sqrt((127-std::clamp(freq, 1, 127)) / 127.0));
-		d_filter.SetQ(1.0 - sqrt((127-std::clamp(q, 1, 127)) / 127.0)); }
-	else {
+	if (freq == 127) {
 		d_filter.SetBypass(true); }
+	else {
+		d_filter.SetBypass(false);
+		d_filter.SetCutoff(sqrt(freq/127.0f));
+		// scale Q-max slightly under 1.0
+		d_filter.SetQ(sqrt(q/128.9f)); }
 
 	d_filter.Update(tempo);
 
