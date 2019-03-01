@@ -1,7 +1,7 @@
-#include "src/cxl/cxl_ui_root.hxx"
+#include "src/cxl/ui/cxl_ui_pattern_editor.hxx"
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_log.hxx"
+#include "src/cxl/ui/cxl_ui_pattern_length_edit.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
 
@@ -62,79 +62,42 @@ namespace cxl {
 
 using ScanCode = rclw::ScanCode;
 
-UIRoot::UIRoot(CXLUnit& unit)
+
+PatternEditor::PatternEditor(CXLUnit& unit)
 	:d_unit(unit) {
 	auto& reactor = Reactor::GetInstance();
 
-	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedMT);
-	reactor.ListenForever({ d_playbackStateChangedEvent.GetHandle(),
-	                        [&]() { onCXLUnitPlaybackStateChanged(); }});
-
 	// XXX dtor should stop listening to these!
-	d_unit.d_playbackPositionChanged.connect(this, &UIRoot::onCXLUnitPlaybackPositionChangedMT);
+	d_unit.d_playbackPositionChanged.connect(this, &PatternEditor::onCXLUnitPlaybackPositionChangedMT);
 	reactor.ListenForever({ d_playbackPositionChangedEvent.GetHandle(),
-	                        [&]() { onCXLUnitPlaybackPositionChanged(); }});
+	                        [&]() { onCXLUnitPlaybackPositionChanged(); }});}
 
-	d_unit.d_loaderStateChanged.connect(this, &UIRoot::onLoaderStateChange);
-
-	d_loading = std::make_shared<LineBox>(
-		std::make_shared<LoadingStatus>(d_unit)
-		);
-
-	auto& log = Log::GetInstance();
-	log.d_updated.connect([&]() { onLogWrite(); }); }
-
-
-/**
- * the playback signal handlers are called from the ASIO
- * thread.  set the associated event, and it will be
- * handled by the main thread.
- */
-void UIRoot::onCXLUnitPlaybackStateChangedMT(bool isPlaying) {
-	d_playbackStateChangedEvent.Set(); }
-void UIRoot::onCXLUnitPlaybackStateChanged() {
-	Reactor::GetInstance().DrawScreenEventually(); }
-
-
-void UIRoot::onCXLUnitPlaybackPositionChangedMT(int pos) {
+void PatternEditor::onCXLUnitPlaybackPositionChangedMT(int pos) {
+	// this is called from the ASIO thread.
+	// use a Reactor event to bounce to main
 	d_playbackPositionChangedEvent.Set(); }
-void UIRoot::onCXLUnitPlaybackPositionChanged() {
+void PatternEditor::onCXLUnitPlaybackPositionChanged() {
 	Reactor::GetInstance().DrawScreenEventually(); }
 
 
-void UIRoot::onLogWrite() {
-	Reactor::GetInstance().DrawScreenEventually(); }
+std::pair<int, int> PatternEditor::Pack(int w, int h) {
+	return {80, 23}; }
 
 
-void UIRoot::onLoaderStateChange() {
-	Reactor::GetInstance().DrawScreenEventually(); }
-
-
-std::pair<int, int> UIRoot::Pack(int w, int h) {
-	return {80, 25}; }
-
-
-int UIRoot::GetType() {
+int PatternEditor::GetType() {
 	return WT_BOX; }
 
 
-const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
+const rclw::ConsoleCanvas& PatternEditor::Draw(int width, int height) {
 	auto& out = d_canvas;
 	out.Resize(width, height);
 	out.Clear();
-	WriteXY(out, 0, 0, DrawHeader(width));
-	WriteXY(out, 1, 2, DrawTrackSelection());
+	WriteXY(out, 1, 1, DrawTrackSelection());
 
-	WriteXY(out, 1, height-4, DrawGrid());
-	WriteXY(out, 68, height-3, DrawPageIndicator());
+	WriteXY(out, 1, height-3, DrawGrid());
+	WriteXY(out, 68, height-2, DrawPageIndicator());
 
-	if (d_enableKeyDebug) {
-		WriteXY(out, width-20, height-15, DrawKeyHistory()); }
-
-	WriteXY(out, 8, 6, DrawParameters());
-	WriteXY(out, 0, height-1, DrawTransportIndicator(width));
-
-	// WriteXY(out, 1, height-12, DrawLog());
+	WriteXY(out, 8, 5, DrawParameters());
 
 	if (d_popup) {
 		auto attr = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
@@ -145,45 +108,10 @@ const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }
 
-	if (d_unit.IsLoading()) {
-		auto attr = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
-		Fill(out, attr);
-		auto [sx, sy] = d_loading->Pack(-1, -1);
-		const auto& overlay = d_loading->Draw(sx, sy);
-		int xc = (width - overlay.d_width) / 2;
-		int yc = (height - overlay.d_height) / 2;
-		WriteXY(out, xc, yc, overlay); }
-
 	return out; }
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawLog() {
-	auto& log = Log::GetInstance();
-	static rclw::ConsoleCanvas out;
-	out.Resize(78, 6);
-	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack));
-	int head = log.GetHeadIdx();
-	WriteXY(out, 0, 0, log.GetEntry(5, head));
-	WriteXY(out, 0, 1, log.GetEntry(4, head));
-	WriteXY(out, 0, 2, log.GetEntry(3, head));
-	WriteXY(out, 0, 3, log.GetEntry(2, head));
-	WriteXY(out, 0, 4, log.GetEntry(1, head));
-	WriteXY(out, 0, 5, log.GetEntry(0, head));
-	return out; }
-
-
-const rclw::ConsoleCanvas& UIRoot::DrawHeader(int width) {
-	static rclw::ConsoleCanvas out(width, 1);
-	out.Resize(width, 1);
-	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Red, rclw::Color::Black));
-	WriteXY(out, 1, 0, "cxl 0.1.0");
-	WriteXY(out, width-9-1, 0, "anix/rqdq");
-	return out; }
-
-
-const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
+const rclw::ConsoleCanvas& PatternEditor::DrawTrackSelection() {
 	static rclw::ConsoleCanvas out{ 25, 2 };
 	out.Clear();
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
@@ -202,7 +130,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawTrackSelection() {
 	return out; }
 
 
-const std::string UIRoot::GetPageParameterName(int pageNum, int trackNum, int paramNum) {
+const std::string PatternEditor::GetPageParameterName(int pageNum, int trackNum, int paramNum) {
 	if (pageNum == 0) {
 		return d_unit.GetVoiceParameterName(trackNum, paramNum); }
 	else if (pageNum == 1) {
@@ -214,7 +142,7 @@ const std::string UIRoot::GetPageParameterName(int pageNum, int trackNum, int pa
 		throw std::runtime_error(msg); }}
 
 
-int UIRoot::GetPageParameterValue(int pageNum, int trackNum, int paramNum) {
+int PatternEditor::GetPageParameterValue(int pageNum, int trackNum, int paramNum) {
 	if (pageNum == 0) {
 		return d_unit.GetVoiceParameterValue(trackNum, paramNum); }
 	else if (pageNum == 1) {
@@ -226,7 +154,7 @@ int UIRoot::GetPageParameterValue(int pageNum, int trackNum, int paramNum) {
 		throw std::runtime_error(msg); }}
 
 
-void UIRoot::AdjustPageParameter(int pageNum, int trackNum, int paramNum, int offset) {
+void PatternEditor::AdjustPageParameter(int pageNum, int trackNum, int paramNum, int offset) {
 	if (pageNum == 0) {
 		d_unit.AdjustVoiceParameter(trackNum, paramNum, offset); }
 	else if (pageNum == 1) {
@@ -238,7 +166,7 @@ void UIRoot::AdjustPageParameter(int pageNum, int trackNum, int paramNum, int of
 		throw std::runtime_error(msg); }}
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawParameters() {
+const rclw::ConsoleCanvas& PatternEditor::DrawParameters() {
 	static rclw::ConsoleCanvas out{ 7*4, 1+2*2+1 };
 	out.Clear();
 	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
@@ -276,7 +204,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawParameters() {
 	return out; }
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawGrid() {
+const rclw::ConsoleCanvas& PatternEditor::DrawGrid() {
 	static rclw::ConsoleCanvas out{ 65, 2 };
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
@@ -298,7 +226,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawGrid() {
 	return out; }
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawPageIndicator() {
+const rclw::ConsoleCanvas& PatternEditor::DrawPageIndicator() {
 	static rclw::ConsoleCanvas out{ 9, 1 };
 	int curPage = d_selectedGridPage;
 	int playingPage = d_unit.GetLastPlayedGridPosition() / 16;
@@ -320,58 +248,13 @@ const rclw::ConsoleCanvas& UIRoot::DrawPageIndicator() {
 	return out; }
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawKeyHistory() {
-	static rclw::ConsoleCanvas out{ 10, 8 };
-	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue));
-	int row = 0;
-	for (const auto& item : d_keyHistory) {
-		WriteXY(out, 0, row++, item); }
-	return out; }
-
-
-const rclw::ConsoleCanvas& UIRoot::DrawTransportIndicator(int width) {
-	static rclw::ConsoleCanvas out{ width, 1 };
-	out.Clear();
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
-	auto higreen = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongGreen);
-	auto hired = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
-
-	//Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue));
-	std::string s;
-	WriteXY(out, 1, 0, "Pattern: ", lo);
-	WriteXY(out, 10, 0, fmt::sprintf("A-%d", d_unit.GetCurrentPatternNumber()+1), hi);
-
-	WriteXY(out, 14, 0, "| Kit: ", lo);
-	WriteXY(out, 21, 0, fmt::sprintf("%d", d_unit.GetCurrentKitNumber()+1), hi);
-
-	int tempo = d_unit.GetTempo();
-	int whole = tempo/10;
-	int tenths = tempo%10;
-
-	WriteXY(out, width-33, 0, "Tempo:", lo);
-	s = fmt::sprintf("%3d.%d bpm", whole, tenths);
-	WriteXY(out, width-26, 0, s, hi);
-	WriteXY(out, width-16, 0, "|", lo);
-	WriteXY(out, width-14, 0, d_unit.IsPlaying() ? "PLAYING" : "STOPPED", d_unit.IsPlaying() ? higreen : lo);
-	WriteXY(out, width-6, 0, "|", lo);
-	WriteXY(out, width-4, 0, d_isRecording ? "REC" : "rec", d_isRecording ? hired : lo);
-	return out; }
-
-
-bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
-	AddKeyDebuggerEvent(e);
-
+bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 	if (d_popup) {
 		bool handled = d_popup->HandleKeyEvent(e);
 		if (handled) {
 			return true; }}
 
 	auto& reactor = Reactor::GetInstance();
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Q) {
-		reactor.Stop();
-		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
 		// Ctrl+1...Ctrl+8
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
@@ -434,109 +317,6 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 					d_unit.Trigger(idx); }
 				return true; }}
 	return false; }
-
-
-void UIRoot::AddKeyDebuggerEvent(KEY_EVENT_RECORD e) {
-	if (d_enableKeyDebug) {
-		auto s = fmt::sprintf("%c %c % 3d",
-		                      (e.bKeyDown != 0?'D':'U'),
-		                      //e.dwControlKeyState,
-		                      e.uChar.AsciiChar,
-		                      //e.wRepeatCount,
-		                      //e.wVirtualKeyCode,
-		                      e.wVirtualScanCode);
-		d_keyHistory.emplace_back(s);
-		if (d_keyHistory.size() > 8) {
-			d_keyHistory.pop_front(); }}}
-
-
-PatternLengthEdit::PatternLengthEdit(int value) :d_value(value) {}
-
-
-std::pair<int, int> PatternLengthEdit::Pack(int w, int h) {
-	return {std::string("Pattern Length").length(), 2};}
-
-
-int PatternLengthEdit::GetType() {
-	return WT_FIXED; }
-
-
-bool PatternLengthEdit::HandleKeyEvent(KEY_EVENT_RECORD e) {
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
-		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
-
-			int offset = (e.wVirtualScanCode == ScanCode::Comma ? -16 : 16);
-			int newValue = std::clamp(d_value+offset, 16, 64);
-			if (newValue != d_value) {
-				d_value = newValue;
-				d_dirty = true; }
-			return true; }
-		if (e.wVirtualScanCode == ScanCode::Enter) {
-			if (onSuccess) {
-				onSuccess(d_value);}
-			return true; }
-		if (e.wVirtualScanCode == ScanCode::Esc) {
-			if (onCancel) {
-				onCancel(); }
-			return true;}}
-	return false; }
-
-
-const rclw::ConsoleCanvas& PatternLengthEdit::Draw(int width, int height) {
-	const auto mySize = Pack(-1, -1);
-	if (width != mySize.first || height != mySize.second) {
-		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
-
-	auto& out = d_canvas;
-	if (d_dirty) {
-		d_dirty = false;
-		out.Resize(width, height);
-		out.Clear();
-		auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
-		Fill(out, lo);
-		WriteXY(out, 0, 0, "Pattern Length");
-		WriteXY(out, 6, 1, fmt::sprintf("%d", d_value)); }
-
-	return out; }
-
-
-LoadingStatus::LoadingStatus(CXLUnit& unit) :d_unit(unit) {
-	d_unit.d_loaderStateChanged.connect(this, &LoadingStatus::onLoaderStateChange); }
-
-
-void LoadingStatus::onLoaderStateChange() {
-	d_dirty = true; }
-
-
-std::pair<int, int> LoadingStatus::Pack(int w, int h) {
-	return {60, 4}; }
-
-
-int LoadingStatus::GetType() {
-	return WT_FIXED; }
-
-
-bool LoadingStatus::HandleKeyEvent(KEY_EVENT_RECORD e) {
-	return false; }
-
-
-const rclw::ConsoleCanvas& LoadingStatus::Draw(int width, int height) {
-	const auto mySize = Pack(-1, -1);
-	if (width != mySize.first || height != mySize.second) {
-		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
-
-	auto& out = d_canvas;
-	if (d_dirty) {
-		d_dirty = false;
-		out.Resize(width, height);
-		out.Clear();
-		auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
-		Fill(out, lo);
-		WriteXY(out, 0, 0, fmt::sprintf("Loading...", width, height));
-		WriteXY(out, 0, 1, d_unit.GetLoadingName());
-		DrawPercentageBar(out, 0, 2, 60, d_unit.GetLoadingProgress()); }
-
-	return out; }
 
 
 }  // namespace cxl

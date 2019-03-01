@@ -55,20 +55,6 @@ cc_library(
     copts = RSR_DEFAULT_COPTS,)
 
 
-cc_library(
-    name = "ui_root",
-    srcs = ["cxl_ui_root.cxx"],
-    hdrs = ["cxl_ui_root.hxx"],
-    deps = [
-        "//src/rcl/rclw:console",
-        ":log",
-        ":reactor",
-        ":unit",
-        ":widget",
-        ],
-    copts = RSR_DEFAULT_COPTS,)
-
-
 cc_binary(
     name = "cxl",
     srcs = ["cxl.m.cxx"],
@@ -77,11 +63,11 @@ cc_binary(
         "//3rdparty/wink",
         "//src/ral/ralio:asio",
         "//src/rcl/rclw:console",
+        "//src/cxl/ui:root",
         ":config",
-        ":ui_root",
+        ":log",
         ":reactor",
         ":unit",
-        ":log",
         ],
     copts = RSR_DEFAULT_COPTS,)
 
