@@ -2,7 +2,7 @@
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_ui_root.hxx"
+#include "src/cxl/ui/cxl_ui_root.hxx"
 #include "src/cxl/cxl_config.hxx"
 #include "src/cxl/cxl_log.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
