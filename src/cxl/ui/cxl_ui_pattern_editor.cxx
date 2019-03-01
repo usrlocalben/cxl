@@ -205,10 +205,11 @@ const rclw::ConsoleCanvas& PatternEditor::DrawParameters() {
 
 
 const rclw::ConsoleCanvas& PatternEditor::DrawGrid() {
-	static rclw::ConsoleCanvas out{ 65, 2 };
+	static rclw::ConsoleCanvas out{ 65, 3 };
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
 	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+	auto dark = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
 	const int curPos = d_unit.GetLastPlayedGridPosition();
@@ -223,6 +224,11 @@ const rclw::ConsoleCanvas& PatternEditor::DrawGrid() {
 		auto value = d_unit.GetTrackGridNote(d_selectedTrack, d_selectedGridPage*16+i);
 		WriteXY(out, i*4+2, 1, value != 0 ? "X" : " ", red);
 		WriteXY(out, i*4+4, 1, "|", lo); }
+
+	if (d_isRecording) {
+		WriteXY(out, 0, 2, "REC", red); }
+	else {
+		WriteXY(out, 0, 2, "rec", dark); }
 	return out; }
 
 
@@ -276,14 +282,39 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 			if (d_selectedGridPage >= d_unit.GetPatternLength()/16) {
 				d_selectedGridPage = 0; }
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::Backspace) { d_selectedVoicePage += 1; if (d_selectedVoicePage >= 3) d_selectedVoicePage = 0; return true; }
-		if (e.wVirtualScanCode == ScanCode::L) { d_isRecording = !d_isRecording; d_unit.CommitPattern(); return true; }
-		if (e.wVirtualScanCode == ScanCode::Semicolon) { d_unit.Play(); return true; }
-		if (e.wVirtualScanCode == ScanCode::Quote) { d_unit.Stop(); return true; }
-		if (e.wVirtualScanCode == ScanCode::F5) { d_unit.SaveKit(); return true; }
-		if (e.wVirtualScanCode == ScanCode::F6) { d_unit.LoadKit(); return true; }
-		if (e.wVirtualScanCode == ScanCode::F7) { d_unit.DecrementKit(); return true; }
-		if (e.wVirtualScanCode == ScanCode::F8) { d_unit.IncrementKit(); return true; }
+
+		// parameter edit page
+		if (e.wVirtualScanCode == ScanCode::Backspace) {
+			d_selectedVoicePage = (d_selectedVoicePage+1)%3;
+			return true; }
+
+		// transport controls
+		if (e.wVirtualScanCode == ScanCode::L) {
+			d_isRecording = !d_isRecording;
+			d_unit.CommitPattern();
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::Semicolon) {
+			d_unit.Play();
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::Quote) {
+			d_unit.Stop();
+			return true; }
+
+		// kit load/save/change
+		if (e.wVirtualScanCode == ScanCode::F5) {
+			d_unit.SaveKit();
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::F6) {
+			d_unit.LoadKit();
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::F7) {
+			d_unit.DecrementKit();
+			return true; }
+		if (e.wVirtualScanCode == ScanCode::F8) {
+			d_unit.IncrementKit();
+			return true; }
+
+		// value inc/dec
 		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
 
 			int offset = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
@@ -303,19 +334,21 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 			// indicate handled even if not paired with a valid key
 			return true; }
 
-			auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
-								   [&](auto &item) { return e.wVirtualScanCode == item; });
-			if (it != end(kGridScanLUT)) {
-				const int idx = std::distance(begin(kGridScanLUT), it);
-				if (reactor.GetKeyState(ScanCode::P)) {
-					d_unit.SwitchPattern(idx); }
-				else if (reactor.GetKeyState(ScanCode::M)) {
-					d_unit.ToggleTrackMute(idx); }
-				else if (d_isRecording) {
-					d_unit.ToggleTrackGridNote(d_selectedTrack, d_selectedGridPage*16+idx); }
-				else {
-					d_unit.Trigger(idx); }
-				return true; }}
+		// grid/track matrix keys 1-16
+		auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
+							   [&](auto &item) { return e.wVirtualScanCode == item; });
+		if (it != end(kGridScanLUT)) {
+			const int idx = std::distance(begin(kGridScanLUT), it);
+			if (reactor.GetKeyState(ScanCode::P)) {
+				d_unit.SwitchPattern(idx); }
+			else if (reactor.GetKeyState(ScanCode::M)) {
+				d_unit.ToggleTrackMute(idx); }
+			else if (d_isRecording) {
+				d_unit.ToggleTrackGridNote(d_selectedTrack, d_selectedGridPage*16+idx); }
+			else {
+				d_unit.Trigger(idx); }
+			return true; }}
+
 	return false; }
 
 
