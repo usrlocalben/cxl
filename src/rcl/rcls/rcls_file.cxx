@@ -82,5 +82,26 @@ vector<string> LoadLines(const string& path) {
 	return out; }
 
 
+std::string JoinPath(const std::string& a, const std::string& b) {
+	std::string out(a);
+	if (out.back() != '\\') {
+		out.push_back('\\'); }
+
+	if (b.empty()) {
+		return out; }
+
+	if (b.front() == '\\') {
+		out.assign(b); }
+	else {
+		out += b; }
+
+	return out; }
+
+
+std::string JoinPath(const std::string& a, const std::string& b, const std::string& c) {
+	std::string out = JoinPath(a, b);
+	return JoinPath(out, c); }
+
+
 }  // namespace rcls
 }  // namespace rqdq

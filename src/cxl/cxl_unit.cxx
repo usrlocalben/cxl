@@ -28,8 +28,22 @@ constexpr int kMaxWaves = 1024;
 constexpr int kDefaultTempo = 1200;
 constexpr float kInitialGain = 1.0f;
 constexpr float kMasterGain = 0.666;
+constexpr int kMaxKitNum = 99;
 
-};
+
+const std::string& MakeKitPath(int n) {
+	static std::string tmp;
+	tmp = rcls::JoinPath(cxl::config::kitDir, fmt::sprintf("kit_%2d.txt", n));
+	return tmp; }
+
+
+const std::string& MakePatternPath(int n) {
+	static std::string tmp;
+	tmp = rcls::JoinPath(cxl::config::patternDir, fmt::sprintf("pattern_A%02d.txt", n));
+	return tmp; }
+
+
+}  // namespace
 namespace cxl {
 
 void CXLEffects::Update(int tempo) {
@@ -37,8 +51,8 @@ void CXLEffects::Update(int tempo) {
 	const int q = d_lowpassQ;
 	if (freq<127 || q>0) {
 		d_filter.SetBypass(false);
-		d_filter.SetCutoff(1.0 - sqrt((127-std::clamp(freq, 1, 126)) / 127.0));
-		d_filter.SetQ(1.0 - sqrt((127-std::clamp(q, 1, 126)) / 127.0)); }
+		d_filter.SetCutoff(1.0 - sqrt((127-std::clamp(freq, 1, 127)) / 127.0));
+		d_filter.SetQ(1.0 - sqrt((127-std::clamp(q, 1, 127)) / 127.0)); }
 	else {
 		d_filter.SetBypass(true); }
 
@@ -76,7 +90,7 @@ CXLUnit::CXLUnit()
 
 void CXLUnit::BeginLoadingWaves() {
 	d_loading = true;
-	d_filesToLoad = rcls::FindGlob(config::sampleDir + R"(\*.wav)");
+	d_filesToLoad = rcls::FindGlob(rcls::JoinPath(config::sampleDir, R"(*.wav)"));
 	sort(begin(d_filesToLoad), end(d_filesToLoad));
 	d_nextFileId = 0;
 	d_nextWaveId = 1;
@@ -91,7 +105,7 @@ void CXLUnit::MakeProgressLoadingWaves() {
 		SwitchPattern(0);
 		return; }
 	auto& reactor = Reactor::GetInstance();
-	const auto wavPath = config::sampleDir + "\\" + d_filesToLoad[d_nextFileId];
+	const auto wavPath = rcls::JoinPath(config::sampleDir, d_filesToLoad[d_nextFileId]);
 	reactor.LoadFile(wavPath,
 	                 [&](const std::vector<uint8_t>& data) {
 	                     this->onWaveIOComplete(data); },
@@ -265,7 +279,7 @@ void CXLUnit::DecrementKit() {
 
 
 void CXLUnit::IncrementKit() {
-	if (d_kitNum < 99) {
+	if (d_kitNum < kMaxKitNum) {
 		d_kitNum++;
 		LoadKit(); }}
 
@@ -275,8 +289,10 @@ void CXLUnit::SwitchKit(int n) {
 	LoadKit(); }
 
 
+
+
 void CXLUnit::SaveKit() {
-	const auto path = fmt::format("{}\\kit_{}.txt", config::kitDir, d_kitNum);
+	const auto& path = MakeKitPath(d_kitNum);
 	auto fd = std::ofstream(path.c_str());
 	fd << "Name: " << d_kitName << "\n";
 	for (int ti=0; ti<kNumVoices; ti++) {
@@ -296,7 +312,8 @@ void CXLUnit::SaveKit() {
 
 		fd << "  delaySend " << d_effects[ti].d_delaySend << "\n";
 		fd << "  delayTime " << d_effects[ti].d_delayTime << "\n";
-		fd << "  delayFeedback " << d_effects[ti].d_delayFeedback << "\n"; }}
+		fd << "  delayFeedback " << d_effects[ti].d_delayFeedback << "\n"; }
+	Log::GetInstance().info(fmt::sprintf("saved %s", path)); }
 
 
 void CXLUnit::InitializeKit() {
@@ -309,7 +326,7 @@ void CXLUnit::InitializeKit() {
 
 void CXLUnit::LoadKit() {
 	using rclt::ConsumePrefix;
-	const auto path = fmt::format("{}\\kit_{}.txt", config::kitDir, d_kitNum);
+	const auto path = MakeKitPath(d_kitNum);
 	auto fd = std::ifstream(path.c_str());
 	InitializeKit();
 	int vid = 0;
@@ -332,9 +349,14 @@ void CXLUnit::LoadKit() {
 				if (line == "none") {
 					d_voices[vid].d_waveId = 0; }
 				else if (ConsumePrefix(line, "name=")) {
-					d_voices[vid].d_waveId = d_waveTable.FindByName(line); }
+					int waveId = d_waveTable.FindByName(line);
+					if (waveId == 0) {
+						auto msg = fmt::sprintf("waveTable entry with name \"%s\" not found", line);
+						Log::GetInstance().info(msg); }
+					d_voices[vid].d_waveId = waveId; }
 				else {
-					// XXX error? log
+					auto msg = fmt::sprintf("invalid wave reference \"%s\"", line);
+					Log::GetInstance().info(msg);
 					d_voices[vid].d_waveId = 0; }}
 			else if (ConsumePrefix(line, "  delaySend ")) {
 				d_effects[vid].d_delaySend = stoi(line); }
@@ -343,8 +365,13 @@ void CXLUnit::LoadKit() {
 			else if (ConsumePrefix(line, "  delayFeedback ")) {
 				d_effects[vid].d_delayFeedback = stoi(line); }
 			else {
-				auto msg = fmt::format("unknown kit line \"{}\"", line);
-				throw std::runtime_error(msg); }}}}
+				auto msg = fmt::sprintf("unknown kit line \"%s\"", line);
+				throw std::runtime_error(msg); }}
+		auto msg = fmt::sprintf("kit %d loaded from %s", d_kitNum, path);
+		Log::GetInstance().info(msg); }
+	else {
+		auto msg = fmt::sprintf("kit %d could not be read, using init kit", d_kitNum);
+		Log::GetInstance().info(msg); }}
 
 
 void CXLUnit::Render(float* left, float* right, int numSamples) {
@@ -383,7 +410,7 @@ void CXLUnit::Trigger(int track) {
 
 
 void CXLUnit::CommitPattern() {
-	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, d_patternNum);
+	const auto& path = MakePatternPath(d_patternNum);
 	int patternLength = GetPatternLength();
 	auto fd = std::ofstream(path.c_str());
 	fd << "Kit: " << d_kitNum << "\n";
@@ -392,11 +419,12 @@ void CXLUnit::CommitPattern() {
 		fd << "Track " << ti << ": ";
 		for (int pos=0; pos<patternLength; pos++) {
 			fd << (GetTrackGridNote(ti, pos) != 0 ? "X" : ".");}
-		fd << "\n"; }}
+		fd << "\n"; }
+	Log::GetInstance().info(fmt::sprintf("saved pattern %d to \"%s\"", d_patternNum, path)); }
 
 
 void CXLUnit::SwitchPattern(int pid) {
-	const auto path = fmt::format("{}\\pattern_{}.txt", config::patternDir, pid);
+	const auto& path = MakePatternPath(pid);
 	d_sequencer.InitializePattern();
 	d_patternNum = pid;
 	auto fd = std::ifstream(path.c_str());
@@ -417,7 +445,13 @@ void CXLUnit::SwitchPattern(int pid) {
 					bool on = (ch == 'X');
 					if (on) {
 						ToggleTrackGridNote(trackId, pos); }
-					pos++; }}}}}
+					pos++; }}}
+		auto msg = fmt::sprintf("loaded pattern %d from \"%s\"", pid, path);
+		Log::GetInstance().info(msg); }
+	else {
+		auto msg = fmt::sprintf("pattern %d could not be read, using init pattern", pid);
+		Log::GetInstance().info(msg); }}
+
 
 }  // namespace cxl
 }  // namespace rqdq

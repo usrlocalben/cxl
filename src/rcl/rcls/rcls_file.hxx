@@ -15,5 +15,8 @@ void LoadBytes(const std::string& path, std::vector<char>& buf);
 
 std::vector<std::string> LoadLines(const std::string& path);
 
+std::string JoinPath(const std::string& a, const std::string& b);
+std::string JoinPath(const std::string& a, const std::string& b, const std::string& c);
+
 }  // close package namespace
 }  // close enterprise namespace
