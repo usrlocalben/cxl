@@ -61,7 +61,10 @@ void CXLEffects::Update(int tempo) {
 
 	d_delay.SetTime(d_delayTime);
 	d_delay.SetFeedbackGain(d_delayFeedback / 127.0);
-	d_delay.Update(tempo); }
+	d_delay.Update(tempo);
+
+	d_reducer.d_midi = d_reduce;
+	d_reducer.Update(tempo); }
 
 
 void CXLEffects::Process(float* inputs, float* outputs) {
@@ -72,7 +75,9 @@ void CXLEffects::Process(float* inputs, float* outputs) {
 	float toDelay = filtered * delaySend;
 	float fromDelay;
 	d_delay.Process(&toDelay, &fromDelay);
-	*outputs = filtered + fromDelay; }
+
+	float filteredPlusDelay = filtered + fromDelay;
+	d_reducer.Process(&filteredPlusDelay, outputs); }
 
 
 CXLUnit::CXLUnit()
@@ -226,6 +231,8 @@ const std::string CXLUnit::GetEffectParameterName(int ti, int pi) {
 	case 2: return "dly";
 	case 3: return "dtm";
 	case 4: return "dfb";
+
+	case 7: return "red";
 	default: return ""; }}
 
 
@@ -237,6 +244,8 @@ int CXLUnit::GetEffectParameterValue(int ti, int pi) {
 	case 2: return d_effects[ti].d_delaySend;
 	case 3: return d_effects[ti].d_delayTime;
 	case 4: return d_effects[ti].d_delayFeedback;
+
+	case 7: return d_effects[ti].d_reduce;
 	default: return 0; }}
 
 
@@ -247,6 +256,8 @@ void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
 	case 2: Adjust2(ti, d_effects[ti].d_delaySend,     0,  127, offset); break;
 	case 3: Adjust2(ti, d_effects[ti].d_delayTime,     0,  127, offset); break;
 	case 4: Adjust2(ti, d_effects[ti].d_delayFeedback, 0,  127, offset); break;
+
+	case 7: Adjust2(ti, d_effects[ti].d_reduce,        0,  127, offset); break;
 	default: break; }}
 
 
