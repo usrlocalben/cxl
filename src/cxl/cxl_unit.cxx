@@ -391,6 +391,7 @@ void CXLUnit::LoadKit() {
 				else if (ConsumePrefix(line, "  effect.dly ")) { d_effects[vid].d_delaySend = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.dtm ")) { d_effects[vid].d_delayTime = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.dfb ")) { d_effects[vid].d_delayFeedback = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.red ")) { d_effects[vid].d_reduce = stoi(line); }
 				else if (ConsumePrefix(line, "  mix.dis ")) { d_mixer.d_channels[vid].d_distortion = stoi(line); }
 				else if (ConsumePrefix(line, "  mix.vol ")) { d_mixer.d_channels[vid].d_gain = stoi(line); }
 				else if (ConsumePrefix(line, "  mix.pan ")) { d_mixer.d_channels[vid].d_pan = stoi(line); }
