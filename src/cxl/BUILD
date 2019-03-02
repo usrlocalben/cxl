@@ -43,8 +43,11 @@ cc_library(
     deps = [
         "//3rdparty/fmt",
         "//3rdparty/wink",
+        "//src/ral/raldsp:filter",
         "//src/ral/raldsp:mixer",
+        "//src/ral/raldsp:ratereducer",
         "//src/ral/raldsp:sampler",
+        "//src/ral/raldsp:syncdelay",
         "//src/ral/ralm:grid_sequencer",
         "//src/ral/ralw:wavetable",
         "//src/rcl/rcls:file",

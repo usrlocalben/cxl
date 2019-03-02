@@ -60,15 +60,23 @@ cc_library(
     )
 
 cc_library(
+    name="ratereducer",
+    srcs=["raldsp_ratereducer.cxx"],
+    hdrs=["raldsp_ratereducer.hxx"],
+    deps=[
+        ":iaudiodevice",
+        ],
+    copts = RSR_DEFAULT_COPTS,
+    )
+
+cc_library(
     name="sampler",
     srcs=["raldsp_sampler.cxx"],
     hdrs=["raldsp_sampler.hxx"],
     deps=[
         "//src/ral/ralw:mpcwave",
         "//src/ral/ralw:wavetable",
-        ":filter",
         ":iaudiodevice",
-        ":syncdelay",
         ],
     copts = RSR_DEFAULT_COPTS,
     )
