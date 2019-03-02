@@ -25,11 +25,13 @@ cc_library(
     hdrs = ["cxl_ui_pattern_editor.hxx"],
     deps = [
         "//3rdparty/fmt",
-        "//src/rcl/rclw:console",
+        "//src/cxl:log",
         "//src/cxl:reactor",
         "//src/cxl:unit",
         "//src/cxl:widget",
+        "//src/rcl/rclw:console",
         ":pattern_length_edit",
+        ":alert",
         ],
     copts = RSR_DEFAULT_COPTS,)
 
@@ -52,6 +54,18 @@ cc_library(
     name = "pattern_length_edit",
     srcs = ["cxl_ui_pattern_length_edit.cxx"],
     hdrs = ["cxl_ui_pattern_length_edit.hxx"],
+    deps = [
+        "//3rdparty/fmt",
+        "//src/rcl/rclw:console",
+        "//src/cxl:widget",
+        ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "alert",
+    srcs = ["cxl_ui_alert.cxx"],
+    hdrs = ["cxl_ui_alert.hxx"],
     deps = [
         "//3rdparty/fmt",
         "//src/rcl/rclw:console",

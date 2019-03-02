@@ -266,5 +266,35 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 	// Log::GetInstance().info(fmt::sprintf("ReadFile success, listening"));
 	ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpEvent(op.id); } }); }
 
+
+/**
+ * Delay()
+ * similar to Twisted callLater() or JavaScript's setTimeout()
+ *
+ * todo: eventPtr can be leaked, probably in more ways than one
+ * todo: interface/impl for canceling events
+ * todo: keeping events in a pool could reduce OS calls
+ */
+void Reactor::Delay(const double millis, const std::function<void()> func) {
+	const int64_t t = -millis*10000;
+	//Timeout t;
+	const HANDLE eventPtr = CreateWaitableTimerW(nullptr, TRUE, nullptr);
+	if (eventPtr == nullptr) {
+		const auto error = GetLastError();
+		const auto msg = fmt::sprintf("CreateWaitableTimer error %d", error);
+		throw std::runtime_error(msg); }
+
+	const auto result = SetWaitableTimer(eventPtr, reinterpret_cast<const LARGE_INTEGER*>(&t), 0, NULL, NULL, 0);
+	if (result == 0) {
+		const auto error = GetLastError();
+		const auto msg = fmt::sprintf("SetWaitableTimer error %d", error);
+		throw std::runtime_error(msg); }
+
+	ListenOnce(ReactorEvent{ eventPtr, [=](){
+		CloseHandle(eventPtr);
+		func();
+		} }); }
+
+
 }  // namespace cxl
 }  // namespace rqdq

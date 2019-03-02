@@ -56,6 +56,8 @@ public:
 	void LoadFile(const std::string& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError);
 	void LoadFile(const std::wstring& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError);
 
+	void Delay(double millis, std::function<void()> func);
+
 private:
 	bool HandleKeyboardInput();
 

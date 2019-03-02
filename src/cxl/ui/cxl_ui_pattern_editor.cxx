@@ -1,6 +1,10 @@
 #include "src/cxl/ui/cxl_ui_pattern_editor.hxx"
+
+#include "src/cxl/cxl_log.hxx"
 #include "src/cxl/cxl_reactor.hxx"
 #include "src/cxl/cxl_unit.hxx"
+#include "src/cxl/cxl_widget.hxx"
+#include "src/cxl/ui/cxl_ui_alert.hxx"
 #include "src/cxl/ui/cxl_ui_pattern_length_edit.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
@@ -10,12 +14,15 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include <Windows.h>
 #include "3rdparty/fmt/include/fmt/printf.h"
 
 namespace rqdq {
 
 namespace {
+
+const int kAlertDurationInMillis = 500;
 
 using SC = rclw::ScanCode;
 
@@ -255,12 +262,12 @@ const rclw::ConsoleCanvas& PatternEditor::DrawPageIndicator() {
 
 
 bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
+	auto& reactor = Reactor::GetInstance();
 	if (d_popup) {
 		bool handled = d_popup->HandleKeyEvent(e);
 		if (handled) {
 			return true; }}
 
-	auto& reactor = Reactor::GetInstance();
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
 		// Ctrl+1...Ctrl+8
 		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
@@ -276,12 +283,24 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::L && d_isRecording) {
 		CopyTrackPage();  // copy page 
+		d_popup = MakeAlert("copy page");
+		reactor.Delay(kAlertDurationInMillis, [&]() {
+			d_popup.reset();
+			reactor.DrawScreenEventually(); });
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Semicolon && d_isRecording) {
 		ClearTrackPage();  // clear page 
+		d_popup = MakeAlert("clear page");
+		reactor.Delay(kAlertDurationInMillis, [&]() {
+			d_popup.reset();
+			reactor.DrawScreenEventually(); });
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Quote && d_isRecording) {
 		PasteTrackPage();  // paste page 
+		d_popup = MakeAlert("paste page");
+		reactor.Delay(kAlertDurationInMillis, [&]() {
+			d_popup.reset();
+			reactor.DrawScreenEventually(); });
 		return true; }
 
 	// xxx if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCK
