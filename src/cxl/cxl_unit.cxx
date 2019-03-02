@@ -53,7 +53,7 @@ void CXLEffects::Update(int tempo) {
 		d_filter.SetBypass(true); }
 	else {
 		d_filter.SetBypass(false);
-		d_filter.SetCutoff(sqrt(freq/127.0f));
+		d_filter.SetCutoff(pow(freq/127.0f, 2.0f));
 		// scale Q-max slightly under 1.0
 		d_filter.SetQ(sqrt(q/128.9f)); }
 
