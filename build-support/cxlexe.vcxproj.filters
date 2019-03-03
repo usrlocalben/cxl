@@ -4,6 +4,9 @@
     <Filter Include="cxx">
       <UniqueIdentifier>{c1b71232-3764-46b7-b5fe-2891a86882e8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cxx\ui">
+      <UniqueIdentifier>{a2355a47-d3cb-44e4-82cf-61b6266e938c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx">
@@ -48,9 +51,6 @@
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_ui_root.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\cxl\cxl_widget.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
@@ -80,6 +80,21 @@
     </ClCompile>
     <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx">
       <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\cxl_ui_alert.cxx">
+      <Filter>cxx\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\cxl_ui_loading_status.cxx">
+      <Filter>cxx\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\cxl_ui_pattern_editor.cxx">
+      <Filter>cxx\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\cxl_ui_pattern_length_edit.cxx">
+      <Filter>cxx\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\cxl_ui_root.cxx">
+      <Filter>cxx\ui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
