@@ -1,15 +1,52 @@
 #include "src/cxl/cxl_reactor.hxx"
+
 #include "src/cxl/cxl_log.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <algorithm>
 #include <functional>
+#include <utility>
 #include <vector>
+
 #include "3rdparty/fmt/include/fmt/printf.h"
 #include <Windows.h>
 
 namespace rqdq {
 namespace {
+
+// delay
+struct DelayInfo {
+	bool inUse = false;
+	bool canceled = false;
+	int id = 0;
+	cxl::WindowsEvent event; };
+
+std::vector<DelayInfo> delays;
+
+int delaySeq = 1;
+
+std::pair<int, cxl::WindowsEvent&> GetDelay() {
+	const int id = delaySeq++;
+	for (int i=0; i<delays.size(); i++) {
+		auto& item = delays[i];
+		if (item.inUse == false) {
+			item.inUse = true;
+			item.id = delaySeq;
+			return {i, item.event}; }}
+	delays.emplace_back(DelayInfo{true, false, id, cxl::WindowsEvent::MakeTimer()});
+	return {id, delays.back().event}; };
+
+
+bool ReleaseTimer(HANDLE h) {
+	auto found = std::find_if(delays.begin(), delays.end(), [=](auto& item) { return item.event.GetHandle() == h; });
+	if (found == delays.end()) {
+		throw std::runtime_error("ReleaseTimer called with handle not found in delays collection"); }
+	bool canceled = found->canceled;
+	found->inUse = false;
+	found->id = 0;
+	found->canceled = false;
+	return canceled; }
+
 
 // keyboard i/o
 std::vector<bool> keyState(256, false);
@@ -146,7 +183,7 @@ void Reactor::Run() {
 		pendingEvents.clear();
 		pendingEvents.emplace_back(GetStdHandle(STD_INPUT_HANDLE));
 		for (auto& re : d_events) {
-			pendingEvents.emplace_back(re.event); }
+			pendingEvents.emplace_back(re.handle); }
 		DWORD result = WaitForMultipleObjects(pendingEvents.size(), pendingEvents.data(), FALSE, 1000);
 		if (result == WAIT_TIMEOUT) {
 			// nothing
@@ -163,7 +200,7 @@ void Reactor::Run() {
 				auto& re = d_events[eventIdx];
 				if (re.func) {
 					re.func(); }
-				if (!re.keep) {
+				if (!re.persist) {
 					d_events.erase(d_events.begin() + eventIdx); }}}
 		else {
 			auto err = GetLastError();
@@ -270,30 +307,33 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 /**
  * Delay()
  * similar to Twisted callLater() or JavaScript's setTimeout()
- *
- * todo: eventPtr can be leaked, probably in more ways than one
- * todo: interface/impl for canceling events
- * todo: keeping events in a pool could reduce OS calls
  */
-void Reactor::Delay(const double millis, const std::function<void()> func) {
-	const int64_t t = -millis*10000;
-	//Timeout t;
-	const HANDLE eventPtr = CreateWaitableTimerW(nullptr, TRUE, nullptr);
-	if (eventPtr == nullptr) {
-		const auto error = GetLastError();
-		const auto msg = fmt::sprintf("CreateWaitableTimer error %d", error);
-		throw std::runtime_error(msg); }
+int Reactor::Delay(const double millis, const std::function<void()> func) {
+	auto [id, timer] = GetDelay();
+	timer.SetIn(millis);
+	auto rawHandle = timer.GetHandle();
+	ListenOnce(ReactorEvent{ rawHandle, [=](){
+		bool canceled = ReleaseTimer(rawHandle);
+		if (!canceled) {
+			func(); }
+		} });
+	return id; };
 
-	const auto result = SetWaitableTimer(eventPtr, reinterpret_cast<const LARGE_INTEGER*>(&t), 0, NULL, NULL, 0);
-	if (result == 0) {
-		const auto error = GetLastError();
-		const auto msg = fmt::sprintf("SetWaitableTimer error %d", error);
-		throw std::runtime_error(msg); }
 
-	ListenOnce(ReactorEvent{ eventPtr, [=](){
-		CloseHandle(eventPtr);
-		func();
-		} }); }
+void Reactor::CancelDelay(int id) {
+	auto found = std::find_if(delays.begin(), delays.end(), [=](auto& item) { return item.id = id; });
+	if (found == delays.end()) {
+		return; }  // not found is a no-op
+	else {
+		found->canceled = true;
+		auto handle = found->event.GetHandle();
+		auto result = CancelWaitableTimer(handle);
+		if (result != 0) {
+			auto error = GetLastError();
+			auto msg = fmt::sprintf("CancelWaitableTimer error %d", error);
+			throw std::runtime_error(msg); }
+		RemoveEventByHandle(handle);
+		found->inUse = false; }}
 
 
 }  // namespace cxl
