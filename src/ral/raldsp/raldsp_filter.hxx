@@ -36,7 +36,7 @@ public:
 		d_bypass = value; }
 
 	int GetNumChannels() const {
-		return d_buf0.size(); }
+		return static_cast<int>(d_buf0.size()); }
 
 	void Reset() {
 		for (int i=0; i<GetNumChannels(); i++) {
@@ -49,8 +49,8 @@ private:
 
 private:
 	bool d_bypass;
-	std::vector<double> d_buf0;
-	std::vector<double> d_buf1;
+	std::vector<float> d_buf0;
+	std::vector<float> d_buf1;
 	double d_fb;
 	double d_f;
 	double d_q; };

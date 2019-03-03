@@ -37,7 +37,7 @@ public:
 
 public:
 	void AddChannel();
-	int GetNumChannels() { return d_channels.size(); }
+	int GetNumChannels() { return static_cast<int>(d_channels.size()); }
 	void SetChannelGain(int ch, int value) {
 		EnsureValidChannelId(ch);
 		d_channels[ch].d_gain = value; }
@@ -47,10 +47,10 @@ public:
 	void SetChannelMute(int ch, bool value) {
 		EnsureValidChannelId(ch);
 		d_channels[ch].d_mute = value; }
-	float GetChannelGain(int ch) {
+	int GetChannelGain(int ch) {
 		EnsureValidChannelId(ch);
 		return d_channels[ch].d_gain; }
-	float GetChannelPan(int ch) {
+	int GetChannelPan(int ch) {
 		EnsureValidChannelId(ch);
 		return d_channels[ch].d_pan; }
 	bool GetChannelMute(int ch) {

@@ -184,7 +184,8 @@ void Reactor::Run() {
 		pendingEvents.emplace_back(GetStdHandle(STD_INPUT_HANDLE));
 		for (auto& re : d_events) {
 			pendingEvents.emplace_back(re.handle); }
-		DWORD result = WaitForMultipleObjects(pendingEvents.size(), pendingEvents.data(), FALSE, 1000);
+		DWORD result = WaitForMultipleObjects(static_cast<DWORD>(pendingEvents.size()),
+		                                      pendingEvents.data(), FALSE, 1000);
 		if (result == WAIT_TIMEOUT) {
 			// nothing
 			}
@@ -324,7 +325,7 @@ void Reactor::CancelDelay(int id) {
 	auto found = std::find_if(delays.begin(), delays.end(), [=](auto& item) { return item.id = id; });
 	if (found == delays.end()) {
 		return; }  // not found is a no-op
-	
+
 	found->canceled = true;
 	auto handle = found->event.GetHandle();
 	auto result = CancelWaitableTimer(handle);

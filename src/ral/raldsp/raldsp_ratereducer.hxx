@@ -11,7 +11,7 @@ class RateReducer : public IAudioDevice {
 public:
 	RateReducer(int numChannels);
 	int GetNumChannels() const {
-		return d_bufs.size(); }
+		return static_cast<int>(d_bufs.size()); }
 
 	// IAudioDevice
 	void Update(int) override;

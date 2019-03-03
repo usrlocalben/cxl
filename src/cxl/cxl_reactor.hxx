@@ -40,7 +40,7 @@ public:
 		SetEvent(d_handle); }
 
 	void SetIn(double millis) {
-		const int64_t t = -millis * 10000;
+		const auto t = static_cast<int64_t>(-millis * 10000);
 		const auto result = SetWaitableTimer(d_handle, reinterpret_cast<const LARGE_INTEGER*>(&t), 0, NULL, NULL, 0);
 		if (result == 0) {
 			const auto error = GetLastError();

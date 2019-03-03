@@ -27,7 +27,7 @@ constexpr int kNumVoices = 16;
 constexpr int kMaxWaves = 1024;
 constexpr int kDefaultTempo = 1200;
 constexpr float kInitialGain = 1.0f;
-constexpr float kMasterGain = 0.666;
+constexpr float kMasterGain = 0.666f;
 constexpr int kMaxKitNum = 99;
 
 

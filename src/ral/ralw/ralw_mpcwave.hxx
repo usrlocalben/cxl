@@ -27,7 +27,8 @@ public:
 	int d_loopBegin;
 	int d_loopEnd;
 public:
-	int GetNumSamples() const { return d_dataLeft.size(); }
+	int GetNumSamples() const {
+		return static_cast<int>(d_dataLeft.size()); }
 
 	// seletion editing
 public:
@@ -45,7 +46,7 @@ private:
 	//void region_clamp_and_shift(const int rnum);
 public:
 	void ResetRegions(int wanted);
-	int GetNumRegions() const { return d_markers.size() - 1; }
+	int GetNumRegions() const { return static_cast<int>(d_markers.size() - 1); }
 	int GetRegionBegin(int rnum) const { return d_markers[rnum]; }
 	int GetRegionEnd(int rnum) const { return d_markers[rnum+1]; }
 	// int setRegionBegin(int r, int sample );
@@ -57,7 +58,7 @@ public:
 
 	std::pair<float, float> Sample(double t) const {
 		int idx = int(t);  // XXX long long?
-		double fract = t - idx;
+		auto fract = t - idx;
 
 		float vl, vr;
 		vl = (d_dataLeft[idx]  + fract*(d_dataLeft[idx+1] -d_dataLeft[idx] )) / 32767.0;
