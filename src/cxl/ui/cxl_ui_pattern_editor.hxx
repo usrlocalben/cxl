@@ -49,7 +49,6 @@ private:
 
 	CXLUnit& d_unit;
 	rclw::ConsoleCanvas d_canvas;
-	bool d_editPatternLength = false;
 	int d_selectedTrack = 0;
 	int d_selectedGridPage = 0;
 	int d_selectedVoicePage = 0;

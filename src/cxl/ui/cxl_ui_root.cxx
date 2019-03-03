@@ -123,7 +123,7 @@ const rclw::ConsoleCanvas& UIRoot::DrawTransportIndicator(int width) {
 	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
 	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
 	auto higreen = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongGreen);
-	auto hired = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+	// auto hired = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
 
 	//Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue));
 	std::string s;
