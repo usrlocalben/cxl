@@ -11,7 +11,7 @@ namespace cxl {
 
 class Alert : public Widget {
 public:
-	Alert(const std::string& text);
+	Alert(std::string text);
 
 	// Widget
 	bool HandleKeyEvent(KEY_EVENT_RECORD) override;

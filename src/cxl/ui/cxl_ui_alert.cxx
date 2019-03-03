@@ -13,7 +13,7 @@ namespace cxl {
 
 using ScanCode = rclw::ScanCode;
 
-Alert::Alert(const std::string& text) :d_text(text) {}
+Alert::Alert(std::string text) :d_text(std::move(text)) {}
 
 
 std::pair<int, int> Alert::Pack(int w, int h) {

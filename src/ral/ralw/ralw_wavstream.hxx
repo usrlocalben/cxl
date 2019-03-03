@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdio>
 #include <cstdint>
+#include <string>
 
 namespace rqdq {
 namespace ralw {

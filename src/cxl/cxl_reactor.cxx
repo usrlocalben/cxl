@@ -29,7 +29,7 @@ std::pair<int, cxl::WindowsEvent&> GetDelay() {
 	const int id = delaySeq++;
 	for (int i=0; i<delays.size(); i++) {
 		auto& item = delays[i];
-		if (item.inUse == false) {
+		if (!item.inUse) {
 			item.inUse = true;
 			item.id = delaySeq;
 			return {i, item.event}; }}
@@ -58,19 +58,19 @@ struct FileOp {
 	FileOp() = default;
 	FileOp(const FileOp&) = delete;
 	FileOp& operator=(const FileOp&) = delete;
-	FileOp(FileOp&& other)
-		:request(std::move(other.request)),
-		fd(std::move(other.fd)),
-		id(std::move(other.id)),
+	FileOp(FileOp&& other) noexcept
+		:request(other.request),
+		fd(other.fd),
+		id(other.id),
 		buffer(std::move(other.buffer)),
-		good(std::move(other.good)),
-		bytesRead(std::move(other.bytesRead)),
-		expectedSizeInBytes(std::move(other.expectedSizeInBytes)),
+		good(other.good),
+		bytesRead(other.bytesRead),
+		expectedSizeInBytes(other.expectedSizeInBytes),
 		onComplete(std::move(other.onComplete)),
 		onError(std::move(other.onError))
 	{
-		other.request.hEvent = 0;
-		other.fd = 0; }
+		other.request.hEvent = nullptr;
+		other.fd = nullptr; }
 
 	OVERLAPPED request;
 	HANDLE fd = nullptr;
@@ -86,10 +86,10 @@ struct FileOp {
 	~FileOp() {
 		if (fd != nullptr) {
 			CloseHandle(fd);
-			fd = 0; }
+			fd = nullptr; }
 		if (request.hEvent != nullptr) {
 			CloseHandle(request.hEvent);
-			request.hEvent = 0; }} };
+			request.hEvent = nullptr; }} };
 
 std::list<FileOp> fileOps;
 int fileOpSeq = 0;
@@ -219,7 +219,7 @@ bool Reactor::HandleKeyboardInput() {
 			keyState[e.wVirtualScanCode] = (e.bKeyDown != 0); }
 
 		bool handled = false;
-		if (d_widget) {
+		if (d_widget != nullptr) {
 			handled = d_widget->HandleKeyEvent(e); }
 		return handled; }
 	return false; }
@@ -244,16 +244,16 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 	op.fd = CreateFileW(path.c_str(),
 	                    GENERIC_READ,
 	                    FILE_SHARE_READ,
-	                    NULL,
+	                    nullptr,
 	                    OPEN_EXISTING,
 	                    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED,
-	                    NULL);
+	                    nullptr);
 	if (op.fd == INVALID_HANDLE_VALUE) {
 		op.error = GetLastError();
-		op.fd = 0;
+		op.fd = nullptr;
 		// Log::GetInstance().info(fmt::sprintf("CreateFileW() failed with %d", op.error));
 		op.good = false;
-		op.request.hEvent = CreateEventW(NULL, TRUE, TRUE, NULL);
+		op.request.hEvent = CreateEventW(nullptr, TRUE, TRUE, nullptr);
 		ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpError(op.id); } });
 		return; }
 
@@ -262,12 +262,12 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 		op.error = GetLastError();
 		// Log::GetInstance().info(fmt::sprintf("GetFileSizeEx() failed with %d", op.error));
 		op.good = false;
-		op.request.hEvent = CreateEventW(NULL, TRUE, TRUE, NULL);
+		op.request.hEvent = CreateEventW(nullptr, TRUE, TRUE, nullptr);
 		ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpError(op.id); } });
 		return; }
 
 	op.buffer.resize(op.expectedSizeInBytes);
-	op.request.hEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+	op.request.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
 	if (op.request.hEvent == nullptr) {
 		auto err = GetLastError();
 		auto msg = fmt::sprintf("CreateEventW failed with %d", err);
@@ -284,7 +284,7 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 		// error...
 		// Log::GetInstance().info(fmt::sprintf("ReadFile failed with %d", op.error));
 		CloseHandle(op.request.hEvent);
-		op.request.hEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
+		op.request.hEvent = CreateEvent(nullptr, TRUE, TRUE, nullptr);
 		ListenOnce(ReactorEvent{ op.request.hEvent,
 		                         [&](){ onFileOpError(op.id); }});
 		return; }
@@ -294,7 +294,7 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 		// read was processed synchronously
 		op.error = 0;
 		CloseHandle(op.request.hEvent);
-		op.request.hEvent = CreateEvent(NULL, TRUE, TRUE, NULL);
+		op.request.hEvent = CreateEvent(nullptr, TRUE, TRUE, nullptr);
 		ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpComplete(op.id); } });
 		return; }
 
@@ -324,16 +324,16 @@ void Reactor::CancelDelay(int id) {
 	auto found = std::find_if(delays.begin(), delays.end(), [=](auto& item) { return item.id = id; });
 	if (found == delays.end()) {
 		return; }  // not found is a no-op
-	else {
-		found->canceled = true;
-		auto handle = found->event.GetHandle();
-		auto result = CancelWaitableTimer(handle);
-		if (result != 0) {
-			auto error = GetLastError();
-			auto msg = fmt::sprintf("CancelWaitableTimer error %d", error);
-			throw std::runtime_error(msg); }
-		RemoveEventByHandle(handle);
-		found->inUse = false; }}
+	
+	found->canceled = true;
+	auto handle = found->event.GetHandle();
+	auto result = CancelWaitableTimer(handle);
+	if (result != 0) {
+		auto error = GetLastError();
+		auto msg = fmt::sprintf("CancelWaitableTimer error %d", error);
+		throw std::runtime_error(msg); }
+	RemoveEventByHandle(handle);
+	found->inUse = false; }
 
 
 }  // namespace cxl

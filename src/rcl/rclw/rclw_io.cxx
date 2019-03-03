@@ -17,8 +17,8 @@ void EnsureOpenable(const std::wstring& path) {
 	memset(&ofs, 0, sizeof(OFSTRUCT));
 	ofs.cBytes = sizeof(OFSTRUCT);
 	hfile = OpenFile(pathPtr, &ofs, OF_EXIST);
-	if (!hfile) {
+	if (hfile == 0) {
 		throw std::runtime_error("file is not openable");}}
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace rclw
+}  // namespace rqdq

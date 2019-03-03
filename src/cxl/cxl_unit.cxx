@@ -357,7 +357,7 @@ void CXLUnit::InitializeKit() {
 
 void CXLUnit::LoadKit() {
 	using rclt::ConsumePrefix;
-	const auto path = MakeKitPath(d_kitNum);
+	const auto& path = MakeKitPath(d_kitNum);
 	try {
 		auto fd = std::ifstream(path.c_str());
 		InitializeKit();

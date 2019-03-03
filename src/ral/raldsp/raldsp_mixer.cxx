@@ -19,7 +19,7 @@ public:
 			leftGain[i]  = sqrt((128-i)/128.0);
 			rightGain[i] = sqrt(     i /128.0); }}
 
-	void Pan(float* inputs, float* outputs, int setting) {
+	void Pan(const float* inputs, float* outputs, int setting) {
 		assert(-64 <= setting && setting <= 63);
 		outputs[0] = inputs[0] * leftGain[setting+64];
 		outputs[1] = inputs[0] * rightGain[setting+64]; }

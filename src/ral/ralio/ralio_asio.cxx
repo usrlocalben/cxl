@@ -170,10 +170,9 @@ bool ASIOSystem::SignalOutputReady() {
 	int result = theAsioDriver->outputReady();
 	if (result == ASE_NotPresent) {
 		return false; }
-	else if (result == ASE_OK) {
+	if (result == ASE_OK) {
 		return true; }
-	else {
-		throw ASIOException("outputReady failed", result); }}
+	throw ASIOException("outputReady failed", result); }
 
 
 void bufferSwitchJmp(long arg1, ASIOBool arg2) {

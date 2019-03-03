@@ -4,17 +4,18 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
 
 namespace rqdq {
 namespace cxl {
 
 
 LineBox::LineBox(std::shared_ptr<Widget> widget)
-	:d_widget(widget) {}
+	:d_widget(std::move(widget)) {}
 
 
 LineBox::LineBox(std::shared_ptr<Widget> widget, const std::string& title)
-	:d_widget(widget), d_title(title) {}
+	:d_widget(std::move(widget)), d_title(title) {}
 
 
 bool LineBox::HandleKeyEvent(KEY_EVENT_RECORD e) {

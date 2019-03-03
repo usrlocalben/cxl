@@ -6,8 +6,9 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>
-        $(SolutionDir)\3rdparty\winreg;
         $(SolutionDir)\3rdparty\asiosdk\common;
+        $(SolutionDir)\3rdparty\wink;
+        $(SolutionDir)\3rdparty\winreg;
 	%(AdditionalIncludeDirectories)
       </AdditionalIncludeDirectories>
     </ClCompile>

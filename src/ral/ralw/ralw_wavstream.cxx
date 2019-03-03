@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include <string>
 
 namespace rqdq {
 namespace ralw {

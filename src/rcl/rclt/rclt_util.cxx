@@ -39,7 +39,7 @@ std::vector<std::string> Split(const std::string& str, char ch) {
 	std::vector<std::string> items;
 	std::string src(str);
 	auto nextmatch = src.find(ch);
-	while (1) {
+	while (true) {
 		auto item = src.substr(0, nextmatch);
 		items.push_back(item);
 		if (nextmatch == std::string::npos) { break; }

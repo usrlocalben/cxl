@@ -140,25 +140,23 @@ const rclw::ConsoleCanvas& PatternEditor::DrawTrackSelection() {
 const std::string PatternEditor::GetPageParameterName(int pageNum, int trackNum, int paramNum) {
 	if (pageNum == 0) {
 		return d_unit.GetVoiceParameterName(trackNum, paramNum); }
-	else if (pageNum == 1) {
+	if (pageNum == 1) {
 		return d_unit.GetEffectParameterName(trackNum, paramNum); }
-	else if (pageNum == 2) {
+	if (pageNum == 2) {
 		return d_unit.GetMixParameterName(trackNum, paramNum); }
-	else {
-		auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
-		throw std::runtime_error(msg); }}
+	auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
+	throw std::runtime_error(msg); }
 
 
 int PatternEditor::GetPageParameterValue(int pageNum, int trackNum, int paramNum) {
 	if (pageNum == 0) {
 		return d_unit.GetVoiceParameterValue(trackNum, paramNum); }
-	else if (pageNum == 1) {
+	if (pageNum == 1) {
 		return d_unit.GetEffectParameterValue(trackNum, paramNum); }
-	else if (pageNum == 2) {
+	if (pageNum == 2) {
 		return d_unit.GetMixParameterValue(trackNum, paramNum); }
-	else {
-		auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
-		throw std::runtime_error(msg); }}
+	auto msg = fmt::sprintf("invalid parameter page %d", pageNum);
+	throw std::runtime_error(msg); }
 
 
 void PatternEditor::AdjustPageParameter(int pageNum, int trackNum, int paramNum, int offset) {

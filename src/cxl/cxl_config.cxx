@@ -21,15 +21,15 @@ std::optional<std::wstring> GetEnvVar(const std::wstring& key) {
 		if (GetLastError() == ERROR_ENVVAR_NOT_FOUND) {
 			return {}; }  // not found...
 		throw std::runtime_error("GetEnvironmentVariableW failure"); }
-	else {
-		std::wstring buf;
-		buf.resize(needed);
-		auto stored = GetEnvironmentVariableW(keyPtr, buf.data(), needed);
-		if ((stored+1) == needed) {
-			buf.resize(needed - 1);  // remove null terminator
-			return buf; }
-		//std::cout << "needed:" << needed << ", stored: " << stored << "\n";
-		throw std::runtime_error("GetEnvironmentVariableW failure: size changed?"); }}
+
+	std::wstring buf;
+	buf.resize(needed);
+	auto stored = GetEnvironmentVariableW(keyPtr, buf.data(), needed);
+	if ((stored+1) == needed) {
+		buf.resize(needed - 1);  // remove null terminator
+		return buf; }
+	//std::cout << "needed:" << needed << ", stored: " << stored << "\n";
+	throw std::runtime_error("GetEnvironmentVariableW failure: size changed?"); }
 
 }  // namespace
 
