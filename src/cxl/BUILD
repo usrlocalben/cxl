@@ -9,6 +9,7 @@ cc_library(
     deps = [
         "//3rdparty/fmt",
         "//src/rcl/rclt:util",
+        "//src/rcl/rclw:winfile",
         ":widget",
         ":log",
         ],

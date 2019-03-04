@@ -45,3 +45,10 @@ cc_library(
     deps=[],
     copts = RSR_DEFAULT_COPTS,
     )
+
+cc_library(
+    name = "winfile",
+    srcs = ["rclw_winfile.cxx"],
+    hdrs = ["rclw_winfile.hxx"],
+    copts = RSR_DEFAULT_COPTS,
+    )

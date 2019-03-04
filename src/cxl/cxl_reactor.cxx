@@ -2,6 +2,7 @@
 
 #include "src/cxl/cxl_log.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
+#include "src/rcl/rclw/rclw_winfile.hxx"
 
 #include <algorithm>
 #include <functional>
@@ -70,7 +71,7 @@ struct FileOp {
 		deferred(std::move(other.deferred)) {}
 
 	int id = -1;
-	cxl::WinFile fd;
+	rclw::WinFile fd;
 	cxl::WinEvent event;
 	std::shared_ptr<cxl::LoadFileDeferred> deferred;
 
