@@ -4,6 +4,7 @@
 #include "src/cxl/cxl_widget.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rclw/rclw_winevent.hxx"
 
 #include <deque>
 #include <memory>
@@ -43,7 +44,7 @@ private:
 	void ClearTrackPage();
 	void PasteTrackPage();
 
-	WinEvent d_playbackPositionChangedEvent = WinEvent::MakeEvent();
+	rclw::WinEvent d_playbackPositionChangedEvent = rclw::WinEvent::MakeEvent();
 
 	std::shared_ptr<Widget> d_popup;
 

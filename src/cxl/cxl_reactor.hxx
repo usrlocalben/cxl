@@ -1,98 +1,19 @@
 #pragma once
 #include "src/cxl/cxl_widget.hxx"
+#include "src/rcl/rclw/rclw_winevent.hxx"
 #include "src/rcl/rclw/rclw_winfile.hxx"
+#include "src/rcl/rclmt/rclmt_deferred.hxx"
 
 #include <functional>
 #include <iostream>
 #include <vector>
 
-#include "3rdparty/fmt/include/fmt/printf.h"
 #include <Windows.h>
 
 namespace rqdq {
 namespace cxl {
 
-template <typename GoodT, typename BadT>
-struct Deferred {
-	using goodfunc = std::function<void(GoodT)>;
-	using badfunc = std::function<void(BadT)>;
-
-	void Callback(GoodT data) {
-		if (callback) {
-			callback(data); }}
-
-	void Errback(BadT data) {
-		if (errback) {
-			errback(data); }}
-
-	void AddCallbacks(goodfunc f1, badfunc f2) {
-		callback = std::move(f1);
-		errback = std::move(f2); }
-
-	goodfunc callback;
-	badfunc errback; };
-
-
-using LoadFileDeferred = Deferred<std::vector<uint8_t>&, uint32_t>;
-
-
-class WinEvent {
-public:
-	// lifecycle
-	WinEvent(HANDLE event=nullptr) :d_handle(event) {}
-	WinEvent(const WinEvent& other) = delete;
-	WinEvent& operator=(const WinEvent& other) = delete;
-	WinEvent(WinEvent&& other) noexcept {
-		other.Swap(*this); }
-	WinEvent& operator=(WinEvent&& other) noexcept {
-		other.Swap(*this);
-		return *this; }
-	void Swap(WinEvent& other) noexcept {
-		std::swap(d_handle, other.d_handle); }
-	~WinEvent() {
-		if (d_handle != nullptr) {
-			CloseHandle(d_handle); }}
-	HANDLE Release() {
-		auto tmp = d_handle;
-		d_handle = nullptr;
-		return tmp; }
-	HANDLE Get() const {
-		assert(d_handle != nullptr);
-		return d_handle; }
-
-	// actions
-	void Signal() {
-		SetEvent(d_handle); }
-
-	void SignalIn(double millis) {
-		const auto t = static_cast<int64_t>(-millis * 10000);
-		const auto result = SetWaitableTimer(d_handle, reinterpret_cast<const LARGE_INTEGER*>(&t), 0, NULL, NULL, 0);
-		if (result == 0) {
-			const auto error = GetLastError();
-			const auto msg = fmt::sprintf("SetWaitableTimer error %d", error);
-			throw std::runtime_error(msg); }}
-
-	// factories
-	static WinEvent MakeEvent(bool initialState=false) {
-		const auto event = CreateEventW(nullptr, FALSE, initialState, nullptr);
-		if (event == nullptr) {
-			const auto error = GetLastError();
-			const auto msg = fmt::sprintf("CreateEventW error %d", error);
-			throw std::runtime_error(msg); }
-		auto instance = WinEvent(event);
-		return instance; }
-
-	static WinEvent MakeTimer() {
-		const auto event = CreateWaitableTimerW(nullptr, FALSE, nullptr);
-		if (event == nullptr) {
-			const auto error = GetLastError();
-			const auto msg = fmt::sprintf("CreateWaitableTimerW error %d", error);
-			throw std::runtime_error(msg); }
-		auto instance = WinEvent(event);
-		return instance; }
-
-private:
-	HANDLE d_handle = nullptr; };
+using LoadFileDeferred = rclmt::Deferred<std::vector<uint8_t>&, uint32_t>;
 
 
 struct ReactorEvent {
@@ -112,11 +33,11 @@ public:
 	void Stop() {
 		d_shouldQuit = true; }
 
-	void ListenForever(const WinEvent& we, std::function<void()> cb) {
+	void ListenForever(const rclw::WinEvent& we, std::function<void()> cb) {
 		d_events.emplace_back(ReactorEvent{ we.Get(), cb });
 		d_events.back().persist = true; }
 
-	void ListenOnce(const WinEvent& we, std::function<void()> cb) {
+	void ListenOnce(const rclw::WinEvent& we, std::function<void()> cb) {
 		d_events.emplace_back(ReactorEvent{ we.Get(), cb });
 		d_events.back().persist = false; }
 
@@ -146,7 +67,7 @@ public:
 
 private:
 	bool d_shouldQuit = false;
-	WinEvent d_redrawEvent = WinEvent::MakeEvent();
+	rclw::WinEvent d_redrawEvent = rclw::WinEvent::MakeEvent();
 	std::vector<ReactorEvent> d_events; };
 
 

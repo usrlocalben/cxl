@@ -52,3 +52,13 @@ cc_library(
     hdrs = ["rclw_winfile.hxx"],
     copts = RSR_DEFAULT_COPTS,
     )
+
+cc_library(
+    name = "winevent",
+    srcs = ["rclw_winevent.cxx"],
+    hdrs = ["rclw_winevent.hxx"],
+    deps = [
+        "//3rdparty/fmt",
+        ],
+    copts = RSR_DEFAULT_COPTS,
+    )

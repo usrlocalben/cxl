@@ -29,3 +29,10 @@ cc_test(
         ],
     copts = RSR_DEFAULT_COPTS,
     )
+
+cc_library(
+    name = "deferred",
+    srcs = ["rclmt_deferred.cxx"],
+    hdrs = ["rclmt_deferred.hxx"],
+    copts = RSR_DEFAULT_COPTS,
+    )

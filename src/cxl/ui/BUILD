@@ -9,6 +9,8 @@ cc_library(
     deps = [
         "//3rdparty/fmt",
         "//src/rcl/rclw:console",
+        "//src/rcl/rclw:console_canvas",
+        "//src/rcl/rclw:winevent",
         "//src/cxl:log",
         "//src/cxl:reactor",
         "//src/cxl:unit",
@@ -25,11 +27,13 @@ cc_library(
     hdrs = ["cxl_ui_pattern_editor.hxx"],
     deps = [
         "//3rdparty/fmt",
+        "//src/rcl/rclw:console",
+        "//src/rcl/rclw:console_canvas",
+        "//src/rcl/rclw:winevent",
         "//src/cxl:log",
         "//src/cxl:reactor",
         "//src/cxl:unit",
         "//src/cxl:widget",
-        "//src/rcl/rclw:console",
         ":pattern_length_edit",
         ":alert",
         ],

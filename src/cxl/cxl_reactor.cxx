@@ -20,13 +20,13 @@ struct DelayInfo {
 	bool inUse = false;
 	bool canceled = false;
 	int id = 0;
-	cxl::WinEvent event; };
+	rclw::WinEvent event; };
 
 std::vector<DelayInfo> delays;
 
 int delaySeq = 1;
 
-std::pair<int, cxl::WinEvent&> GetDelay() {
+std::pair<int, rclw::WinEvent&> GetDelay() {
 	const int id = delaySeq++;
 	for (int i=0; i<delays.size(); i++) {
 		auto& item = delays[i];
@@ -34,7 +34,7 @@ std::pair<int, cxl::WinEvent&> GetDelay() {
 			item.inUse = true;
 			item.id = delaySeq;
 			return {i, item.event}; }}
-	delays.emplace_back(DelayInfo{true, false, id, cxl::WinEvent::MakeTimer()});
+	delays.emplace_back(DelayInfo{true, false, id, rclw::WinEvent::MakeTimer()});
 	return {id, delays.back().event}; };
 
 
@@ -72,7 +72,7 @@ struct FileOp {
 
 	int id = -1;
 	rclw::WinFile fd;
-	cxl::WinEvent event;
+	rclw::WinEvent event;
 	std::shared_ptr<cxl::LoadFileDeferred> deferred;
 
 	bool good = true;
@@ -242,7 +242,7 @@ std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::wstring& path) {
 		op.error = GetLastError();
 		// Log::GetInstance().info(fmt::sprintf("CreateFileW() failed with %d", op.error));
 		op.good = false;
-		op.event = WinEvent::MakeEvent(true);
+		op.event = rclw::WinEvent::MakeEvent(true);
 		ListenOnce(op.event, [&](){ onFileOpError(op.id); });
 		return d; }
 
@@ -251,12 +251,12 @@ std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::wstring& path) {
 		op.error = GetLastError();
 		// Log::GetInstance().info(fmt::sprintf("GetFileSizeEx() failed with %d", op.error));
 		op.good = false;
-		op.event = WinEvent::MakeEvent(true);
+		op.event = rclw::WinEvent::MakeEvent(true);
 		ListenOnce(op.event, [&](){ onFileOpError(op.id); });
 		return d; }
 
 	op.buffer.resize(op.expectedSizeInBytes);
-	op.event = WinEvent::MakeEvent(false);
+	op.event = rclw::WinEvent::MakeEvent(false);
 	op.request.hEvent = op.event.Get();
 
 	DWORD bytesRead;
@@ -270,14 +270,14 @@ std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::wstring& path) {
 
 	if (result == 0 && op.error != ERROR_IO_PENDING) {
 		// error...
-		op.event = WinEvent::MakeEvent(true);
+		op.event = rclw::WinEvent::MakeEvent(true);
 		ListenOnce(op.event, [&](){ onFileOpError(op.id); });
 		return d; }
 
 	if (result != 0) {
 		// read was processed synchronously
 		op.error = 0;
-		op.event = WinEvent::MakeEvent(true);
+		op.event = rclw::WinEvent::MakeEvent(true);
 		ListenOnce(op.event, [&](){ onFileOpComplete(op.id); });
 		return d; }
 

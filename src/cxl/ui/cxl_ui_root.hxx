@@ -5,6 +5,7 @@
 #include "src/cxl/ui/cxl_ui_pattern_editor.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rclw/rclw_winevent.hxx"
 
 #include <deque>
 #include <memory>
@@ -38,7 +39,7 @@ private:
 	const rclw::ConsoleCanvas& DrawTransportIndicator(int width);
 
 private:
-	WinEvent d_playbackStateChangedEvent = WinEvent::MakeEvent();
+	rclw::WinEvent d_playbackStateChangedEvent = rclw::WinEvent::MakeEvent();
 	void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 
 	std::shared_ptr<Widget> d_loading;

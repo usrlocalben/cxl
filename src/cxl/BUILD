@@ -8,7 +8,9 @@ cc_library(
     hdrs = ["cxl_reactor.hxx"],
     deps = [
         "//3rdparty/fmt",
+        "//src/rcl/rclmt:deferred",
         "//src/rcl/rclt:util",
+        "//src/rcl/rclw:winevent",
         "//src/rcl/rclw:winfile",
         ":widget",
         ":log",
