@@ -76,8 +76,8 @@ PatternEditor::PatternEditor(CXLUnit& unit)
 
 	// XXX dtor should stop listening to these!
 	d_unit.d_playbackPositionChanged.connect(this, &PatternEditor::onCXLUnitPlaybackPositionChangedMT);
-	reactor.ListenForever({ d_playbackPositionChangedEvent.GetHandle(),
-	                        [&]() { onCXLUnitPlaybackPositionChanged(); }});}
+	reactor.ListenForever(d_playbackPositionChangedEvent,
+	                      [&]() { onCXLUnitPlaybackPositionChanged(); });}
 
 void PatternEditor::onCXLUnitPlaybackPositionChangedMT(int pos) {
 	// this is called from the ASIO thread.
@@ -280,21 +280,21 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 			d_popup.reset(); };
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::L && d_isRecording) {
-		CopyTrackPage();  // copy page 
+		CopyTrackPage();  // copy page
 		d_popup = MakeAlert("copy page");
 		reactor.Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
 			reactor.DrawScreenEventually(); });
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Semicolon && d_isRecording) {
-		ClearTrackPage();  // clear page 
+		ClearTrackPage();  // clear page
 		d_popup = MakeAlert("clear page");
 		reactor.Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
 			reactor.DrawScreenEventually(); });
 		return true; }
 	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Quote && d_isRecording) {
-		PasteTrackPage();  // paste page 
+		PasteTrackPage();  // paste page
 		d_popup = MakeAlert("paste page");
 		reactor.Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();

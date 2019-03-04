@@ -43,7 +43,7 @@ private:
 	void ClearTrackPage();
 	void PasteTrackPage();
 
-	WindowsEvent d_playbackPositionChangedEvent = WindowsEvent::MakeEvent();
+	WinEvent d_playbackPositionChangedEvent = WinEvent::MakeEvent();
 
 	std::shared_ptr<Widget> d_popup;
 

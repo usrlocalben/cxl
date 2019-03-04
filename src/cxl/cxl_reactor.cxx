@@ -19,13 +19,13 @@ struct DelayInfo {
 	bool inUse = false;
 	bool canceled = false;
 	int id = 0;
-	cxl::WindowsEvent event; };
+	cxl::WinEvent event; };
 
 std::vector<DelayInfo> delays;
 
 int delaySeq = 1;
 
-std::pair<int, cxl::WindowsEvent&> GetDelay() {
+std::pair<int, cxl::WinEvent&> GetDelay() {
 	const int id = delaySeq++;
 	for (int i=0; i<delays.size(); i++) {
 		auto& item = delays[i];
@@ -33,12 +33,12 @@ std::pair<int, cxl::WindowsEvent&> GetDelay() {
 			item.inUse = true;
 			item.id = delaySeq;
 			return {i, item.event}; }}
-	delays.emplace_back(DelayInfo{true, false, id, cxl::WindowsEvent::MakeTimer()});
+	delays.emplace_back(DelayInfo{true, false, id, cxl::WinEvent::MakeTimer()});
 	return {id, delays.back().event}; };
 
 
 bool ReleaseTimer(HANDLE h) {
-	auto found = std::find_if(delays.begin(), delays.end(), [=](auto& item) { return item.event.GetHandle() == h; });
+	auto found = std::find_if(delays.begin(), delays.end(), [=](auto& item) { return item.event.Get() == h; });
 	if (found == delays.end()) {
 		throw std::runtime_error("ReleaseTimer called with handle not found in delays collection"); }
 	bool canceled = found->canceled;
@@ -58,85 +58,74 @@ struct FileOp {
 	FileOp() = default;
 	FileOp(const FileOp&) = delete;
 	FileOp& operator=(const FileOp&) = delete;
+
 	FileOp(FileOp&& other) noexcept
-		:request(other.request),
-		fd(other.fd),
+		:fd(std::move(other.fd)),
+		event(std::move(other.event)),
+		request(other.request),
 		id(other.id),
 		buffer(std::move(other.buffer)),
 		good(other.good),
-		bytesRead(other.bytesRead),
 		expectedSizeInBytes(other.expectedSizeInBytes),
-		onComplete(std::move(other.onComplete)),
-		onError(std::move(other.onError))
-	{
-		other.request.hEvent = nullptr;
-		other.fd = nullptr; }
+		deferred(std::move(other.deferred)) {}
 
-	OVERLAPPED request;
-	HANDLE fd = nullptr;
 	int id = -1;
-	std::vector<uint8_t> buffer;
-	bool good = true;
-	DWORD error;
-	DWORD bytesRead;
-	int64_t expectedSizeInBytes;
-	std::function<void(const std::vector<uint8_t>&)> onComplete;
-	std::function<void(uint32_t)> onError;
+	cxl::WinFile fd;
+	cxl::WinEvent event;
+	std::shared_ptr<cxl::LoadFileDeferred> deferred;
 
-	~FileOp() {
-		if (fd != nullptr) {
-			CloseHandle(fd);
-			fd = nullptr; }
-		if (request.hEvent != nullptr) {
-			CloseHandle(request.hEvent);
-			request.hEvent = nullptr; }} };
+	bool good = true;
+	int64_t expectedSizeInBytes;
+	DWORD error;
+	std::vector<uint8_t> buffer;
+	OVERLAPPED request; };
+
 
 std::list<FileOp> fileOps;
 int fileOpSeq = 0;
-
 int GetNextOpId() { return fileOpSeq++; };
+auto FindOpById(int id) {
+	return std::find_if(begin(fileOps), end(fileOps),
+	                    [=](auto& item) { return item.id == id; }); }
 
 void onFileOpError(int id) {
-	auto op = std::find_if(begin(fileOps), end(fileOps),
-	                       [=](auto& item) { return item.id == id; });
-	if (op == fileOps.end()) {
-		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when error", id)); }
-
-	if (op->onError) {
-		op->onError(op->error); }
-	fileOps.erase(op); }
+	if (auto op = FindOpById(id); op!=fileOps.end()) {
+		op->deferred->Errback(op->error);
+		fileOps.erase(op); }
+	else {
+		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when error", id)); }}
 
 
 void onFileOpComplete(int id) {
-	auto op = std::find_if(begin(fileOps), end(fileOps),
-	                       [=](auto& item) { return item.id == id; });
-	if (op == fileOps.end()) {
-		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when complete", id)); }
-
-	if (op->onComplete) {
-		op->onComplete(op->buffer); }
-	fileOps.erase(op); }
+	if (auto op = FindOpById(id); op!=fileOps.end()) {
+		op->deferred->Callback(op->buffer);
+		fileOps.erase(op); }
+	else {
+		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when complete", id)); }}
 
 
 void onFileOpEvent(int id) {
-	auto op = std::find_if(begin(fileOps), end(fileOps),
-	                       [=](auto& item) { return item.id == id; });
-	if (op == fileOps.end()) {
-		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when event", id)); }
+	auto search = FindOpById(id);
+	if (search == fileOps.end()) {
+		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when event", id));
+		return; }
 
-	auto success = GetOverlappedResult(op->fd, &op->request, &op->bytesRead, FALSE);
+	FileOp& op = *search;
+	DWORD bytesRead = 0;
+
+	auto success = GetOverlappedResult(op.fd.Get(), &op.request, &bytesRead, FALSE);
 	if (success == 0) {
 		auto error = GetLastError();
 		auto msg = fmt::sprintf("GetOverlappedResult unexpected error %d", error);
 		throw std::runtime_error(msg); }
 
-	if (op->bytesRead != op->expectedSizeInBytes) {
-		auto msg = fmt::sprintf("expected %d bytes but read %d", op->expectedSizeInBytes, op->bytesRead);
+	if (bytesRead != op.expectedSizeInBytes) {
+		auto msg = fmt::sprintf("expected %d bytes but read %d", op.expectedSizeInBytes, bytesRead);
 		throw std::runtime_error(msg); }
 
-	if (op->onComplete) {
-		op->onComplete(op->buffer); }
-	fileOps.erase(op); }
+	FileOp foo(std::move(op));
+	fileOps.erase(search);
+	foo.deferred->Callback(foo.buffer); }
 
 
 }  // namespace
@@ -175,8 +164,7 @@ void Reactor::DrawScreenEventually() {
 
 
 void Reactor::Run() {
-	ListenForever(ReactorEvent{ d_redrawEvent.GetHandle(),
-				  [&](){ DrawScreen(); }});
+	ListenForever(d_redrawEvent, [&](){ DrawScreen(); });
 
 	std::vector<HANDLE> pendingEvents;
 	while (!d_shouldQuit) {
@@ -226,18 +214,18 @@ bool Reactor::HandleKeyboardInput() {
 	return false; }
 
 
-void Reactor::LoadFile(const std::string& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError) {
+std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::string& path) {
 	auto tmp = rclt::UTF8Codec::Decode(path);
-	LoadFile(tmp, onComplete, onError);}
+	return LoadFile(tmp); }
 
 
-void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError) {
+std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::wstring& path) {
 	fileOps.emplace_back(FileOp{});
 	auto& op = fileOps.back();
+	op.deferred = std::make_shared<LoadFileDeferred>();
+	auto& d = op.deferred;
 
 	op.id = GetNextOpId();
-	op.onComplete = onComplete;
-	op.onError = onError;
 	op.good = true;
 	op.error = 0;
 	memset(&op.request, 0, sizeof(op.request));
@@ -249,60 +237,54 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 	                    OPEN_EXISTING,
 	                    FILE_ATTRIBUTE_NORMAL|FILE_FLAG_OVERLAPPED,
 	                    nullptr);
-	if (op.fd == INVALID_HANDLE_VALUE) {
+	if (op.fd.Get() == INVALID_HANDLE_VALUE) {
 		op.error = GetLastError();
-		op.fd = nullptr;
 		// Log::GetInstance().info(fmt::sprintf("CreateFileW() failed with %d", op.error));
 		op.good = false;
-		op.request.hEvent = CreateEventW(nullptr, TRUE, TRUE, nullptr);
-		ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpError(op.id); } });
-		return; }
+		op.event = WinEvent::MakeEvent(true);
+		ListenOnce(op.event, [&](){ onFileOpError(op.id); });
+		return d; }
 
-	auto result = GetFileSizeEx(op.fd, reinterpret_cast<LARGE_INTEGER*>(&op.expectedSizeInBytes));
+	auto result = GetFileSizeEx(op.fd.Get(), reinterpret_cast<LARGE_INTEGER*>(&op.expectedSizeInBytes));
 	if (result == 0) {
 		op.error = GetLastError();
 		// Log::GetInstance().info(fmt::sprintf("GetFileSizeEx() failed with %d", op.error));
 		op.good = false;
-		op.request.hEvent = CreateEventW(nullptr, TRUE, TRUE, nullptr);
-		ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpError(op.id); } });
-		return; }
+		op.event = WinEvent::MakeEvent(true);
+		ListenOnce(op.event, [&](){ onFileOpError(op.id); });
+		return d; }
 
 	op.buffer.resize(op.expectedSizeInBytes);
-	op.request.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-	if (op.request.hEvent == nullptr) {
-		auto err = GetLastError();
-		auto msg = fmt::sprintf("CreateEventW failed with %d", err);
-		throw std::runtime_error(msg); }
+	op.event = WinEvent::MakeEvent(false);
+	op.request.hEvent = op.event.Get();
 
-	result = ReadFile(op.fd,
+	DWORD bytesRead;
+
+	result = ReadFile(op.fd.Get(),
 	                  op.buffer.data(),
 	                  op.expectedSizeInBytes,
-	                  &op.bytesRead,
+	                  &bytesRead,
 	                  &op.request);
 	op.error = GetLastError();
 
 	if (result == 0 && op.error != ERROR_IO_PENDING) {
 		// error...
-		// Log::GetInstance().info(fmt::sprintf("ReadFile failed with %d", op.error));
-		CloseHandle(op.request.hEvent);
-		op.request.hEvent = CreateEvent(nullptr, TRUE, TRUE, nullptr);
-		ListenOnce(ReactorEvent{ op.request.hEvent,
-		                         [&](){ onFileOpError(op.id); }});
-		return; }
+		op.event = WinEvent::MakeEvent(true);
+		ListenOnce(op.event, [&](){ onFileOpError(op.id); });
+		return d; }
 
 	if (result != 0) {
-		// Log::GetInstance().warn(fmt::sprintf("ReadFile was synchronous! read %d bytes", op.bytesRead));
 		// read was processed synchronously
 		op.error = 0;
-		CloseHandle(op.request.hEvent);
-		op.request.hEvent = CreateEvent(nullptr, TRUE, TRUE, nullptr);
-		ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpComplete(op.id); } });
-		return; }
+		op.event = WinEvent::MakeEvent(true);
+		ListenOnce(op.event, [&](){ onFileOpComplete(op.id); });
+		return d; }
 
 	// request submitted successfully, wait for results
 	op.error = 0;
 	// Log::GetInstance().info(fmt::sprintf("ReadFile success, listening"));
-	ListenOnce(ReactorEvent{ op.request.hEvent, [&](){ onFileOpEvent(op.id); } }); }
+	ListenOnce(op.event, [&](){ onFileOpEvent(op.id); });
+	return d; }
 
 
 /**
@@ -312,12 +294,12 @@ void Reactor::LoadFile(const std::wstring& path, std::function<void(const std::v
 int Reactor::Delay(const double millis, const std::function<void()> func) {
 	auto [id, timer] = GetDelay();
 	timer.SetIn(millis);
-	auto rawHandle = timer.GetHandle();
-	ListenOnce(ReactorEvent{ rawHandle, [=](){
+	auto rawHandle = timer.Get();
+	ListenOnce(timer, [=](){
 		bool canceled = ReleaseTimer(rawHandle);
 		if (!canceled) {
 			func(); }
-		} });
+		});
 	return id; };
 
 
@@ -327,7 +309,7 @@ void Reactor::CancelDelay(int id) {
 		return; }  // not found is a no-op
 
 	found->canceled = true;
-	auto handle = found->event.GetHandle();
+	auto handle = found->event.Get();
 	auto result = CancelWaitableTimer(handle);
 	if (result != 0) {
 		auto error = GetLastError();

@@ -4,35 +4,90 @@
 #include <functional>
 #include <iostream>
 #include <vector>
-#include <Windows.h>
+
 #include "3rdparty/fmt/include/fmt/printf.h"
+#include <Windows.h>
 
 namespace rqdq {
 namespace cxl {
 
+template <typename GoodT, typename BadT>
+struct Deferred {
+	using goodfunc = std::function<void(GoodT)>;
+	using badfunc = std::function<void(BadT)>;
 
-class WindowsEvent {
+	void Callback(GoodT data) {
+		if (callback) {
+			callback(data); }}
+
+	void Errback(BadT data) {
+		if (errback) {
+			errback(data); }}
+
+	void AddCallbacks(goodfunc f1, badfunc f2) {
+		callback = f1;
+		errback = f2; }
+
+	goodfunc callback;
+	badfunc errback; };
+
+
+using LoadFileDeferred = Deferred<std::vector<uint8_t>&, uint32_t>;
+
+
+class WinFile {
+public:
+	WinFile(HANDLE fd=INVALID_HANDLE_VALUE) :d_fd(fd) {}
+	WinFile(const WinFile&) = delete;
+	WinFile& operator=(const WinFile&) = delete;
+	WinFile(WinFile&& other) noexcept {
+		d_fd = other.d_fd;
+		other.d_fd = INVALID_HANDLE_VALUE; }
+	WinFile& operator=(WinFile&& other) noexcept {
+		d_fd = other.d_fd;
+		other.d_fd = INVALID_HANDLE_VALUE;
+		return *this; }
+	~WinFile() {
+		Close(); }
+	HANDLE Get() const {
+		return d_fd;}
+	void Swap(WinFile& other) noexcept {
+		std::swap(d_fd, other.d_fd); }
+	void Reset(HANDLE fd = INVALID_HANDLE_VALUE) {
+		WinFile tmp(fd);
+		tmp.Swap(*this); }
+	void Close() {
+		if (d_fd != INVALID_HANDLE_VALUE) {
+			const auto fd = d_fd;
+			d_fd = INVALID_HANDLE_VALUE;
+			CloseHandle(d_fd); }}
+
+private:
+	HANDLE d_fd = INVALID_HANDLE_VALUE; };
+
+
+class WinEvent {
 public:
 	// default constructable
-	WindowsEvent() = default;
+	WinEvent() = default;
 
 	// make from owned handle
-	WindowsEvent(HANDLE event) :d_handle(event) {}
+	WinEvent(HANDLE event) :d_handle(event) {}
 
 	// not copyable
-	WindowsEvent(const WindowsEvent& other) = delete;
-	WindowsEvent& operator=(const WindowsEvent& other) = delete;
+	WinEvent(const WinEvent& other) = delete;
+	WinEvent& operator=(const WinEvent& other) = delete;
 
-	// movable
-	WindowsEvent(WindowsEvent&& other) noexcept {
+	// moveable
+	WinEvent(WinEvent&& other) noexcept {
 		d_handle = other.d_handle;
 		other.d_handle = nullptr; }
-	WindowsEvent& operator=(WindowsEvent&& other) noexcept {
+	WinEvent& operator=(WinEvent&& other) noexcept {
 		d_handle = other.d_handle;
 		other.d_handle = nullptr;
 		return *this; }
 
-	~WindowsEvent() {
+	~WinEvent() {
 		if (d_handle != nullptr) {
 			CloseHandle(d_handle); }}
 
@@ -52,26 +107,26 @@ public:
 		d_handle = nullptr;
 		return tmp; }
 
-	HANDLE GetHandle() {
+	HANDLE Get() const {
 		assert(d_handle != nullptr);
 		return d_handle; }
 
-	static WindowsEvent MakeEvent() {
-		const auto event = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+	static WinEvent MakeEvent(bool initialState=false) {
+		const auto event = CreateEventW(nullptr, FALSE, initialState, nullptr);
 		if (event == nullptr) {
 			const auto error = GetLastError();
 			const auto msg = fmt::sprintf("CreateEventW error %d", error);
 			throw std::runtime_error(msg); }
-		auto instance = WindowsEvent(event);
+		auto instance = WinEvent(event);
 		return instance; }
 
-	static WindowsEvent MakeTimer() {
+	static WinEvent MakeTimer() {
 		const auto event = CreateWaitableTimerW(nullptr, FALSE, nullptr);
 		if (event == nullptr) {
 			const auto error = GetLastError();
 			const auto msg = fmt::sprintf("CreateWaitableTimerW error %d", error);
 			throw std::runtime_error(msg); }
-		auto instance = WindowsEvent(event);
+		auto instance = WinEvent(event);
 		return instance; }
 
 private:
@@ -95,12 +150,12 @@ public:
 	void Stop() {
 		d_shouldQuit = true; }
 
-	void ListenForever(ReactorEvent re) {
-		d_events.emplace_back(re);
+	void ListenForever(const WinEvent& we, std::function<void()> cb) {
+		d_events.emplace_back(ReactorEvent{ we.Get(), cb });
 		d_events.back().persist = true; }
 
-	void ListenOnce(ReactorEvent re) {
-		d_events.emplace_back(re);
+	void ListenOnce(const WinEvent& we, std::function<void()> cb) {
+		d_events.emplace_back(ReactorEvent{ we.Get(), cb });
 		d_events.back().persist = false; }
 
 	bool GetKeyState(int scanCode);
@@ -108,8 +163,8 @@ public:
 	void DrawScreen();
 	void DrawScreenEventually();
 
-	void LoadFile(const std::string& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError);
-	void LoadFile(const std::wstring& path, std::function<void(const std::vector<uint8_t>&)> onComplete, std::function<void(uint32_t)> onError);
+	std::shared_ptr<LoadFileDeferred> LoadFile(const std::string& path);
+	std::shared_ptr<LoadFileDeferred> LoadFile(const std::wstring& path);
 
 	int Delay(double millis, std::function<void()> func);
 	void CancelDelay(int id);
@@ -129,7 +184,7 @@ public:
 
 private:
 	bool d_shouldQuit = false;
-	WindowsEvent d_redrawEvent = WindowsEvent::MakeEvent();
+	WinEvent d_redrawEvent = WinEvent::MakeEvent();
 	std::vector<ReactorEvent> d_events; };
 
 

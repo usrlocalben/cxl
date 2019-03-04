@@ -34,8 +34,8 @@ UIRoot::UIRoot(CXLUnit& unit)
 	auto& reactor = Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedMT);
-	reactor.ListenForever({ d_playbackStateChangedEvent.GetHandle(),
-	                        [&]() { onCXLUnitPlaybackStateChanged(); }});
+	reactor.ListenForever(d_playbackStateChangedEvent,
+	                      [&]() { onCXLUnitPlaybackStateChanged(); });
 
 	d_unit.d_loaderStateChanged.connect(this, &UIRoot::onLoaderStateChange);
 

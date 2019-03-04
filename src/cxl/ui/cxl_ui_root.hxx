@@ -38,7 +38,7 @@ private:
 	const rclw::ConsoleCanvas& DrawTransportIndicator(int width);
 
 private:
-	WindowsEvent d_playbackStateChangedEvent = WindowsEvent::MakeEvent();
+	WinEvent d_playbackStateChangedEvent = WinEvent::MakeEvent();
 	void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 
 	std::shared_ptr<Widget> d_loading;
