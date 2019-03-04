@@ -168,7 +168,7 @@ bool UIRoot::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 void UIRoot::onCXLUnitPlaybackStateChangedMT(bool isPlaying) {
 	// this is called from the ASIO thread.
 	// use a Reactor event to bounce to main
-	d_playbackStateChangedEvent.Set(); }
+	d_playbackStateChangedEvent.Signal(); }
 void UIRoot::onCXLUnitPlaybackStateChanged() {
 	Reactor::GetInstance().DrawScreenEventually(); }
 

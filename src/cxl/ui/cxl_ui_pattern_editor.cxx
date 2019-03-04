@@ -82,7 +82,7 @@ PatternEditor::PatternEditor(CXLUnit& unit)
 void PatternEditor::onCXLUnitPlaybackPositionChangedMT(int pos) {
 	// this is called from the ASIO thread.
 	// use a Reactor event to bounce to main
-	d_playbackPositionChangedEvent.Set(); }
+	d_playbackPositionChangedEvent.Signal(); }
 void PatternEditor::onCXLUnitPlaybackPositionChanged() {
 	Reactor::GetInstance().DrawScreenEventually(); }
 

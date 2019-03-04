@@ -160,7 +160,7 @@ void Reactor::DrawScreen() {
 
 
 void Reactor::DrawScreenEventually() {
-	d_redrawEvent.Set(); }
+	d_redrawEvent.Signal(); }
 
 
 void Reactor::Run() {
@@ -293,7 +293,7 @@ std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::wstring& path) {
  */
 int Reactor::Delay(const double millis, const std::function<void()> func) {
 	auto [id, timer] = GetDelay();
-	timer.SetIn(millis);
+	timer.SignalIn(millis);
 	auto rawHandle = timer.Get();
 	ListenOnce(timer, [=](){
 		bool canceled = ReleaseTimer(rawHandle);

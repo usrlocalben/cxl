@@ -25,8 +25,8 @@ struct Deferred {
 			errback(data); }}
 
 	void AddCallbacks(goodfunc f1, badfunc f2) {
-		callback = f1;
-		errback = f2; }
+		callback = std::move(f1);
+		errback = std::move(f2); }
 
 	goodfunc callback;
 	badfunc errback; };
@@ -37,15 +37,14 @@ using LoadFileDeferred = Deferred<std::vector<uint8_t>&, uint32_t>;
 
 class WinFile {
 public:
+	// lifecycle
 	WinFile(HANDLE fd=INVALID_HANDLE_VALUE) :d_fd(fd) {}
 	WinFile(const WinFile&) = delete;
 	WinFile& operator=(const WinFile&) = delete;
 	WinFile(WinFile&& other) noexcept {
-		d_fd = other.d_fd;
-		other.d_fd = INVALID_HANDLE_VALUE; }
+		other.Swap(*this); }
 	WinFile& operator=(WinFile&& other) noexcept {
-		d_fd = other.d_fd;
-		other.d_fd = INVALID_HANDLE_VALUE;
+		other.Swap(*this);
 		return *this; }
 	~WinFile() {
 		Close(); }
@@ -62,39 +61,41 @@ public:
 			d_fd = INVALID_HANDLE_VALUE;
 			CloseHandle(d_fd); }}
 
+	// actions
+
 private:
 	HANDLE d_fd = INVALID_HANDLE_VALUE; };
 
 
 class WinEvent {
 public:
-	// default constructable
-	WinEvent() = default;
-
-	// make from owned handle
-	WinEvent(HANDLE event) :d_handle(event) {}
-
-	// not copyable
+	// lifecycle
+	WinEvent(HANDLE event=nullptr) :d_handle(event) {}
 	WinEvent(const WinEvent& other) = delete;
 	WinEvent& operator=(const WinEvent& other) = delete;
-
-	// moveable
 	WinEvent(WinEvent&& other) noexcept {
-		d_handle = other.d_handle;
-		other.d_handle = nullptr; }
+		other.Swap(*this); }
 	WinEvent& operator=(WinEvent&& other) noexcept {
-		d_handle = other.d_handle;
-		other.d_handle = nullptr;
+		other.Swap(*this);
 		return *this; }
-
+	void Swap(WinEvent& other) noexcept {
+		std::swap(d_handle, other.d_handle); }
 	~WinEvent() {
 		if (d_handle != nullptr) {
 			CloseHandle(d_handle); }}
+	HANDLE Release() {
+		auto tmp = d_handle;
+		d_handle = nullptr;
+		return tmp; }
+	HANDLE Get() const {
+		assert(d_handle != nullptr);
+		return d_handle; }
 
-	void Set() {
+	// actions
+	void Signal() {
 		SetEvent(d_handle); }
 
-	void SetIn(double millis) {
+	void SignalIn(double millis) {
 		const auto t = static_cast<int64_t>(-millis * 10000);
 		const auto result = SetWaitableTimer(d_handle, reinterpret_cast<const LARGE_INTEGER*>(&t), 0, NULL, NULL, 0);
 		if (result == 0) {
@@ -102,15 +103,7 @@ public:
 			const auto msg = fmt::sprintf("SetWaitableTimer error %d", error);
 			throw std::runtime_error(msg); }}
 
-	HANDLE Release() {
-		auto tmp = d_handle;
-		d_handle = nullptr;
-		return tmp; }
-
-	HANDLE Get() const {
-		assert(d_handle != nullptr);
-		return d_handle; }
-
+	// factories
 	static WinEvent MakeEvent(bool initialState=false) {
 		const auto event = CreateEventW(nullptr, FALSE, initialState, nullptr);
 		if (event == nullptr) {
