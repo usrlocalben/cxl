@@ -96,5 +96,14 @@
     <ClCompile Include="..\src\cxl\ui\cxl_ui_root.cxx">
       <Filter>cxx\ui</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_winevent.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

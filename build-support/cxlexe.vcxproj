@@ -195,12 +195,15 @@
     <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx" />
     <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx" />
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx" />
     <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx" />
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx" />
+    <ClCompile Include="..\src\rcl\rclw\rclw_winevent.cxx" />
+    <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
