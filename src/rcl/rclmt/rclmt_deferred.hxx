@@ -10,6 +10,9 @@ struct Deferred {
 	using goodfunc = std::function<void(GoodT)>;
 	using badfunc = std::function<void(BadT)>;
 
+//	Deferred(const Deferred&) = delete;
+//	Deferred& operator=(const Deferred&) = delete;
+
 	void Callback(GoodT data) {
 		if (callback) {
 			callback(data); }}

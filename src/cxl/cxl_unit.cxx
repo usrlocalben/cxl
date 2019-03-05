@@ -108,9 +108,9 @@ void CXLUnit::MakeProgressLoadingWaves() {
 		return; }
 	auto& reactor = Reactor::GetInstance();
 	const auto wavPath = rcls::JoinPath(config::sampleDir, d_filesToLoad[d_nextFileId]);
-	auto lfd = reactor.LoadFile(wavPath);
-	lfd->AddCallbacks([&](std::vector<uint8_t>& data) { this->onWaveIOComplete(data); },
-	                  [&](uint32_t err) { this->onWaveIOError(err); }); }
+	auto& lfd = reactor.LoadFile(wavPath);
+	lfd.AddCallbacks([&](std::vector<uint8_t>& data) { this->onWaveIOComplete(data); },
+	                 [&](uint32_t err) { this->onWaveIOError(err); }); }
 
 
 float CXLUnit::GetLoadingProgress() {

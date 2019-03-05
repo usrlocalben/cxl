@@ -23,10 +23,14 @@ public:
 	void Swap(WinEvent& other) noexcept {
 		std::swap(d_handle, other.d_handle); }
 	~WinEvent() {
+		Close(); }
+	void Close() {
 		if (d_handle != nullptr) {
-			CloseHandle(d_handle); }}
+			const auto tmp = d_handle;
+			d_handle = nullptr;
+			CloseHandle(tmp); }}
 	HANDLE Release() {
-		auto tmp = d_handle;
+		const auto tmp = d_handle;
 		d_handle = nullptr;
 		return tmp; }
 	HANDLE Get() const {

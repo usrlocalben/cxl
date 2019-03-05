@@ -46,8 +46,8 @@ public:
 	void DrawScreen();
 	void DrawScreenEventually();
 
-	std::shared_ptr<LoadFileDeferred> LoadFile(const std::string& path);
-	std::shared_ptr<LoadFileDeferred> LoadFile(const std::wstring& path);
+	LoadFileDeferred& LoadFile(const std::string& path);
+	LoadFileDeferred& LoadFile(const std::wstring& path);
 
 	int Delay(double millis, std::function<void()> func);
 	void CancelDelay(int id);

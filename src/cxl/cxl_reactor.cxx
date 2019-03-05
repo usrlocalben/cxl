@@ -3,6 +3,7 @@
 #include "src/cxl/cxl_log.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 #include "src/rcl/rclw/rclw_winfile.hxx"
+#include "src/rcl/rclw/rclw_winevent.hxx"
 
 #include <algorithm>
 #include <functional>
@@ -73,7 +74,7 @@ struct FileOp {
 	int id = -1;
 	rclw::WinFile fd;
 	rclw::WinEvent event;
-	std::shared_ptr<cxl::LoadFileDeferred> deferred;
+	cxl::LoadFileDeferred deferred;
 
 	bool good = true;
 	int64_t expectedSizeInBytes;
@@ -91,7 +92,7 @@ auto FindOpById(int id) {
 
 void onFileOpError(int id) {
 	if (auto op = FindOpById(id); op!=fileOps.end()) {
-		op->deferred->Errback(op->error);
+		op->deferred.Errback(op->error);
 		fileOps.erase(op); }
 	else {
 		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when error", id)); }}
@@ -99,7 +100,7 @@ void onFileOpError(int id) {
 
 void onFileOpComplete(int id) {
 	if (auto op = FindOpById(id); op!=fileOps.end()) {
-		op->deferred->Callback(op->buffer);
+		op->deferred.Callback(op->buffer);
 		fileOps.erase(op); }
 	else {
 		cxl::Log::GetInstance().warn(fmt::sprintf("fileOp id=%d not found when complete", id)); }}
@@ -126,7 +127,7 @@ void onFileOpEvent(int id) {
 
 	FileOp foo(std::move(op));
 	fileOps.erase(search);
-	foo.deferred->Callback(foo.buffer); }
+	foo.deferred.Callback(foo.buffer); }
 
 
 }  // namespace
@@ -215,15 +216,14 @@ bool Reactor::HandleKeyboardInput() {
 	return false; }
 
 
-std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::string& path) {
+LoadFileDeferred& Reactor::LoadFile(const std::string& path) {
 	auto tmp = rclt::UTF8Codec::Decode(path);
 	return LoadFile(tmp); }
 
 
-std::shared_ptr<LoadFileDeferred> Reactor::LoadFile(const std::wstring& path) {
+LoadFileDeferred& Reactor::LoadFile(const std::wstring& path) {
 	fileOps.emplace_back(FileOp{});
 	auto& op = fileOps.back();
-	op.deferred = std::make_shared<LoadFileDeferred>();
 	auto& d = op.deferred;
 
 	op.id = GetNextOpId();
