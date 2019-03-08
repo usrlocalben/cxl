@@ -172,17 +172,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx" />
-    <ClCompile Include="..\src\cxl\cxl_config.cxx" />
-    <ClCompile Include="..\src\cxl\cxl_log.cxx" />
-    <ClCompile Include="..\src\cxl\cxl_reactor.cxx" />
-    <ClCompile Include="..\src\cxl\cxl_unit.cxx" />
-    <ClCompile Include="..\src\cxl\cxl_widget.cxx" />
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_alert.cxx" />
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_loading_status.cxx" />
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_pattern_editor.cxx" />
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_pattern_length_edit.cxx" />
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_root.cxx" />
+    <ClCompile Include="..\src\cxl\config.cxx" />
+    <ClCompile Include="..\src\cxl\log.cxx" />
+    <ClCompile Include="..\src\cxl\main.cxx" />
+    <ClCompile Include="..\src\cxl\unit.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx" />
     <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx" />
@@ -202,7 +195,6 @@
     <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx" />
-    <ClCompile Include="..\src\rcl\rclw\rclw_winevent.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

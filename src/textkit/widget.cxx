@@ -1,13 +1,14 @@
-#include "src/cxl/cxl_widget.hxx"
+#include "src/textkit/widget.hxx"
+
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
 
 #include <memory>
-#include <optional>
 #include <string>
 #include <utility>
 
 namespace rqdq {
-namespace cxl {
+namespace TextKit {
 
 
 LineBox::LineBox(std::shared_ptr<Widget> widget)
@@ -18,7 +19,7 @@ LineBox::LineBox(std::shared_ptr<Widget> widget, const std::string& title)
 	:d_widget(std::move(widget)), d_title(title) {}
 
 
-bool LineBox::HandleKeyEvent(KEY_EVENT_RECORD e) {
+bool LineBox::HandleKeyEvent(KeyEvent e) {
 	return d_widget->HandleKeyEvent(e); }
 
 
@@ -44,5 +45,5 @@ const rclw::ConsoleCanvas& LineBox::Draw(int width, int height) {
 	return out; }
 
 
-}  // namespace cxl
+}  // namespace TextKit
 }  // namespace rqdq

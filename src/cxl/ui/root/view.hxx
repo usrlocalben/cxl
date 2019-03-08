@@ -1,11 +1,13 @@
 #pragma once
-#include "src/cxl/cxl_reactor.hxx"
-#include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_widget.hxx"
-#include "src/cxl/ui/cxl_ui_pattern_editor.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/cxl/ui/pattern_editor/view.hxx"
+#include "src/rcl/rclmt/rclmt_event.hxx"
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
-#include "src/rcl/rclw/rclw_winevent.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/mainloop.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <deque>
 #include <memory>
@@ -15,11 +17,13 @@ namespace rqdq {
 namespace cxl {
 
 
-class UIRoot : public Widget {
+class UIRoot : public TextKit::Widget {
 public:
 	UIRoot(CXLUnit&);
 
-	void onCXLUnitPlaybackStateChangedMT(bool);
+	void Run();
+
+	void onCXLUnitPlaybackStateChangedASIO(bool);
 	void onCXLUnitPlaybackStateChanged();
 
 	void onLogWrite();
@@ -27,7 +31,7 @@ public:
 	void onLoaderStateChange();
 
 	// Widget impl
-	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
+	bool HandleKeyEvent(TextKit::KeyEvent) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;
@@ -39,13 +43,14 @@ private:
 	const rclw::ConsoleCanvas& DrawTransportIndicator(int width);
 
 private:
-	rclw::WinEvent d_playbackStateChangedEvent = rclw::WinEvent::MakeEvent();
-	void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
+	rclmt::Event d_playbackStateChangedEvent = rclmt::Event::MakeEvent();
+	// XXX void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 
-	std::shared_ptr<Widget> d_loading;
+	std::shared_ptr<TextKit::Widget> d_loading;
 	PatternEditor d_patternEditor;
 
 	CXLUnit& d_unit;
+	TextKit::MainLoop d_loop;
 	int d_mode = 0;
 	rclw::ConsoleCanvas d_canvas;
 	bool d_enableKeyDebug = true;

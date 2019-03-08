@@ -6,29 +6,24 @@
 #include <Windows.h>
 
 namespace rqdq {
-namespace rclw {
+namespace rclmt {
 
-
-class WinEvent {
+class Event {
 public:
 	// lifecycle
-	WinEvent(HANDLE event=nullptr) :d_handle(event) {}
-	WinEvent(const WinEvent& other) = delete;
-	WinEvent& operator=(const WinEvent& other) = delete;
-	WinEvent(WinEvent&& other) noexcept {
+	Event(HANDLE event=nullptr) :d_handle(event) {}
+	Event(const Event& other) = delete;
+	Event& operator=(const Event& other) = delete;
+	Event(Event&& other) noexcept {
 		other.Swap(*this); }
-	WinEvent& operator=(WinEvent&& other) noexcept {
+	Event& operator=(Event&& other) noexcept {
 		other.Swap(*this);
 		return *this; }
-	void Swap(WinEvent& other) noexcept {
+	void Swap(Event& other) noexcept {
 		std::swap(d_handle, other.d_handle); }
-	~WinEvent() {
+	~Event() {
 		Close(); }
-	void Close() {
-		if (d_handle != nullptr) {
-			const auto tmp = d_handle;
-			d_handle = nullptr;
-			CloseHandle(tmp); }}
+	void Close();
 	HANDLE Release() {
 		const auto tmp = d_handle;
 		d_handle = nullptr;
@@ -42,12 +37,12 @@ public:
 	void SignalIn(double millis);
 
 	// factories
-	static WinEvent MakeEvent(bool initialState=false);
-	static WinEvent MakeTimer();
+	static Event MakeEvent(bool initialState=false);
+	static Event MakeTimer();
 
 private:
 	HANDLE d_handle = nullptr; };
 
 
-}  // namespace rclw
+}  // namespace rclmt
 }  // namespace rqdq

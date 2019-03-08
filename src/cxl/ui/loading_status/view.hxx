@@ -1,19 +1,20 @@
 #pragma once
-#include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_widget.hxx"
+#include "src/cxl/unit.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 namespace rqdq {
 namespace cxl {
 
 
-class LoadingStatus : public Widget {
+class LoadingStatus : public TextKit::Widget {
 public:
 	LoadingStatus(CXLUnit& unit);
 
 	// Widget
-	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
+	bool HandleKeyEvent(TextKit::KeyEvent) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;

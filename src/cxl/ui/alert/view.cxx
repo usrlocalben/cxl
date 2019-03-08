@@ -1,8 +1,9 @@
-#include "src/cxl/ui/cxl_ui_alert.hxx"
+#include "src/cxl/ui/alert/view.hxx"
 
-#include "src/cxl/cxl_widget.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <string>
 
@@ -21,10 +22,10 @@ std::pair<int, int> Alert::Pack(int w, int h) {
 
 
 int Alert::GetType() {
-	return WT_FIXED; }
+	return TextKit::WT_FIXED; }
 
 
-bool Alert::HandleKeyEvent(KEY_EVENT_RECORD e) {
+bool Alert::HandleKeyEvent(TextKit::KeyEvent e) {
 	return false; }
 
 

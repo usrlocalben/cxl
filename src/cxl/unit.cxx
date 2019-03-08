@@ -1,21 +1,23 @@
-#include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_config.hxx"
-#include "src/cxl/cxl_reactor.hxx"
-#include "src/cxl/cxl_log.hxx"
+#include "src/cxl/unit.hxx"
+
+#include "src/cxl/config.hxx"
+#include "src/cxl/log.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_file.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
-#include <utility>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
-#include <fstream>
+
 #include "3rdparty/fmt/include/fmt/format.h"
 #include "3rdparty/fmt/include/fmt/printf.h"
 
@@ -106,9 +108,8 @@ void CXLUnit::BeginLoadingWaves() {
 void CXLUnit::MakeProgressLoadingWaves() {
 	if (d_nextFileId >= d_filesToLoad.size()) {
 		return; }
-	auto& reactor = Reactor::GetInstance();
 	const auto wavPath = rcls::JoinPath(config::sampleDir, d_filesToLoad[d_nextFileId]);
-	auto& lfd = reactor.LoadFile(wavPath);
+	auto& lfd = rclmt::LoadFile(wavPath);
 	lfd.AddCallbacks([&](std::vector<uint8_t>& data) { this->onWaveIOComplete(data); },
 	                 [&](uint32_t err) { this->onWaveIOError(err); }); }
 

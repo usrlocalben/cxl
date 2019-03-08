@@ -1,8 +1,12 @@
-#include "src/cxl/ui/cxl_ui_pattern_length_edit.hxx"
+#include "src/cxl/ui/pattern_length_edit/view.hxx"
+
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <string>
+
 #include "3rdparty/fmt/include/fmt/printf.h"
 
 namespace rqdq {
@@ -18,24 +22,24 @@ std::pair<int, int> PatternLengthEdit::Pack(int w, int h) {
 
 
 int PatternLengthEdit::GetType() {
-	return WT_FIXED; }
+	return TextKit::WT_FIXED; }
 
 
-bool PatternLengthEdit::HandleKeyEvent(KEY_EVENT_RECORD e) {
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
-		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+bool PatternLengthEdit::HandleKeyEvent(TextKit::KeyEvent e) {
+	if (e.down && e.control==0) {
+		if (e.scanCode == ScanCode::Comma || e.scanCode == ScanCode::Period) {
 
-			int offset = (e.wVirtualScanCode == ScanCode::Comma ? -16 : 16);
+			int offset = (e.scanCode == ScanCode::Comma ? -16 : 16);
 			int newValue = std::clamp(d_value+offset, 16, 64);
 			if (newValue != d_value) {
 				d_value = newValue;
 				d_dirty = true; }
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::Enter) {
+		if (e.scanCode == ScanCode::Enter) {
 			if (onSuccess) {
 				onSuccess(d_value);}
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::Esc) {
+		if (e.scanCode == ScanCode::Esc) {
 			if (onCancel) {
 				onCancel(); }
 			return true;}}

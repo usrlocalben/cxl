@@ -1,9 +1,13 @@
-#include "src/cxl/ui/cxl_ui_loading_status.hxx"
-#include "src/cxl/cxl_unit.hxx"
+#include "src/cxl/ui/loading_status/view.hxx"
+
+#include "src/cxl/unit.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <stdexcept>
+
 #include "3rdparty/fmt/include/fmt/printf.h"
 
 namespace rqdq {
@@ -25,10 +29,10 @@ std::pair<int, int> LoadingStatus::Pack(int w, int h) {
 
 
 int LoadingStatus::GetType() {
-	return WT_FIXED; }
+	return TextKit::WT_FIXED; }
 
 
-bool LoadingStatus::HandleKeyEvent(KEY_EVENT_RECORD e) {
+bool LoadingStatus::HandleKeyEvent(TextKit::KeyEvent e) {
 	return false; }
 
 

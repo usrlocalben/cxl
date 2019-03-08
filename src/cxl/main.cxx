@@ -1,11 +1,11 @@
+#include "src/cxl/config.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/cxl/log.hxx"
+#include "src/cxl/ui/root/view.hxx"
 #include "src/ral/ralio/ralio_asio.hxx"
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/cxl/cxl_reactor.hxx"
-#include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/ui/cxl_ui_root.hxx"
-#include "src/cxl/cxl_config.hxx"
-#include "src/cxl/cxl_log.hxx"
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
+#include "src/rcl/rclw/rclw_console.hxx"
 
 #include <algorithm>
 #include <array>
@@ -13,11 +13,12 @@
 #include <iostream>
 #include <mutex>
 #include <string>
+#include <vector>
+
 #include "3rdparty/fmt/include/fmt/format.h"
 #include "3rdparty/fmt/include/fmt/printf.h"
 #include "3rdparty/wink/wink/signal.hpp"
 #include <Windows.h>
-
 
 namespace rqdq {
 
@@ -408,16 +409,11 @@ int main(int argc, char **argv) {
 
 	asio.Start();
 
-	UIRoot uiRoot(unit);
-
 	auto& console = rclw::Console::GetInstance();
 	console.SetDimensions(80, 25);
 	console.Clear();
 
-	auto& reactor = Reactor::GetInstance();
-	reactor.DrawScreenEventually();
-	reactor.d_widget = &uiRoot;
-	reactor.Run();
+	UIRoot(unit).Run();
 
 	asio.Stop();
 	asio.DisposeBuffers();

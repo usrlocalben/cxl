@@ -1,7 +1,9 @@
 #pragma once
-#include "src/cxl/cxl_widget.hxx"
+#include "src/textkit/widget.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <functional>
 
@@ -9,12 +11,12 @@ namespace rqdq {
 namespace cxl {
 
 
-class PatternLengthEdit : public Widget {
+class PatternLengthEdit : public TextKit::Widget {
 public:
 	PatternLengthEdit(int value);
 
 	// Widget
-	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
+	bool HandleKeyEvent(TextKit::KeyEvent) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;

@@ -1,10 +1,10 @@
 #pragma once
-#include "src/cxl/cxl_reactor.hxx"
-#include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_widget.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
-#include "src/rcl/rclw/rclw_winevent.hxx"
+#include "src/textkit/mainloop.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <deque>
 #include <memory>
@@ -15,15 +15,15 @@ namespace rqdq {
 namespace cxl {
 
 
-class PatternEditor : public Widget {
+class PatternEditor : public TextKit::Widget {
 public:
-	PatternEditor(CXLUnit&);
+	PatternEditor(CXLUnit&, TextKit::MainLoop& loop);
 
-	void onCXLUnitPlaybackPositionChangedMT(int);
+	void onCXLUnitPlaybackPositionChangedASIO(int);
 	void onCXLUnitPlaybackPositionChanged();
 
 	// Widget impl
-	bool HandleKeyEvent(KEY_EVENT_RECORD) override;
+	bool HandleKeyEvent(TextKit::KeyEvent) override;
 	const rclw::ConsoleCanvas& Draw(int, int) override;
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;
@@ -44,11 +44,12 @@ private:
 	void ClearTrackPage();
 	void PasteTrackPage();
 
-	rclw::WinEvent d_playbackPositionChangedEvent = rclw::WinEvent::MakeEvent();
+	rclmt::Event d_playbackPositionChangedEvent = rclmt::Event::MakeEvent();
 
-	std::shared_ptr<Widget> d_popup;
+	std::shared_ptr<TextKit::Widget> d_popup;
 
 	CXLUnit& d_unit;
+	TextKit::MainLoop& d_loop;
 	rclw::ConsoleCanvas d_canvas;
 	int d_selectedTrack = 0;
 	int d_selectedGridPage = 0;

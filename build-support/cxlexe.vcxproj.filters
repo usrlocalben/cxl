@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="$(SolutionDir)\src\cxl\cxl.m.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
@@ -39,19 +36,7 @@
     <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_reactor.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_unit.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_config.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_widget.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx">
@@ -75,34 +60,25 @@
     <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\cxl_log.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx">
       <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_alert.cxx">
-      <Filter>cxx\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_loading_status.cxx">
-      <Filter>cxx\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_pattern_editor.cxx">
-      <Filter>cxx\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_pattern_length_edit.cxx">
-      <Filter>cxx\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\cxl_ui_root.cxx">
-      <Filter>cxx\ui</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_winevent.cxx">
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx">
+    <ClCompile Include="..\src\cxl\config.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\log.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\main.cxx">
+      <Filter>cxx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\unit.cxx">
       <Filter>cxx</Filter>
     </ClCompile>
   </ItemGroup>

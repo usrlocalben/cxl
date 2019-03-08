@@ -1,5 +1,6 @@
-#include "src/cxl/cxl_log.hxx"
-#include "src/cxl/cxl_config.hxx"
+#include "src/cxl/log.hxx"
+
+#include "src/cxl/config.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 
 #include <fstream>

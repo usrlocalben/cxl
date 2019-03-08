@@ -1,13 +1,15 @@
-#include "src/cxl/ui/cxl_ui_pattern_editor.hxx"
+#include "src/cxl/ui/pattern_editor/view.hxx"
 
-#include "src/cxl/cxl_log.hxx"
-#include "src/cxl/cxl_reactor.hxx"
-#include "src/cxl/cxl_unit.hxx"
-#include "src/cxl/cxl_widget.hxx"
-#include "src/cxl/ui/cxl_ui_alert.hxx"
-#include "src/cxl/ui/cxl_ui_pattern_length_edit.hxx"
+#include "src/cxl/log.hxx"
+#include "src/cxl/ui/alert/view.hxx"
+#include "src/cxl/ui/pattern_length_edit/view.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
 #include "src/rcl/rclw/rclw_console.hxx"
 #include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 #include <array>
 #include <deque>
@@ -70,21 +72,21 @@ namespace cxl {
 using ScanCode = rclw::ScanCode;
 
 
-PatternEditor::PatternEditor(CXLUnit& unit)
-	:d_unit(unit) {
-	auto& reactor = Reactor::GetInstance();
+PatternEditor::PatternEditor(CXLUnit& unit, TextKit::MainLoop& loop)
+	:d_unit(unit), d_loop(loop) {
+	auto& reactor = rclmt::Reactor::GetInstance();
 
 	// XXX dtor should stop listening to these!
-	d_unit.d_playbackPositionChanged.connect(this, &PatternEditor::onCXLUnitPlaybackPositionChangedMT);
-	reactor.ListenForever(d_playbackPositionChangedEvent,
-	                      [&]() { onCXLUnitPlaybackPositionChanged(); });}
+	d_unit.d_playbackPositionChanged.connect(this, &PatternEditor::onCXLUnitPlaybackPositionChangedASIO);
+	reactor.ListenMany(d_playbackPositionChangedEvent,
+	                   [&]() { onCXLUnitPlaybackPositionChanged(); });}
 
-void PatternEditor::onCXLUnitPlaybackPositionChangedMT(int pos) {
+void PatternEditor::onCXLUnitPlaybackPositionChangedASIO(int pos) {
 	// this is called from the ASIO thread.
 	// use a Reactor event to bounce to main
 	d_playbackPositionChangedEvent.Signal(); }
 void PatternEditor::onCXLUnitPlaybackPositionChanged() {
-	Reactor::GetInstance().DrawScreenEventually(); }
+	d_loop.DrawScreenEventually(); }
 
 
 std::pair<int, int> PatternEditor::Pack(int w, int h) {
@@ -92,7 +94,7 @@ std::pair<int, int> PatternEditor::Pack(int w, int h) {
 
 
 int PatternEditor::GetType() {
-	return WT_BOX; }
+	return TextKit::WT_BOX; }
 
 
 const rclw::ConsoleCanvas& PatternEditor::Draw(int width, int height) {
@@ -259,102 +261,102 @@ const rclw::ConsoleCanvas& PatternEditor::DrawPageIndicator() {
 	return out; }
 
 
-bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
-	auto& reactor = Reactor::GetInstance();
+bool PatternEditor::HandleKeyEvent(const TextKit::KeyEvent e) {
+	auto& reactor = rclmt::Reactor::GetInstance();
 	if (d_popup) {
 		bool handled = d_popup->HandleKeyEvent(e);
 		if (handled) {
 			return true; }}
 
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.wVirtualScanCode && e.wVirtualScanCode<=ScanCode::Key8)) {
+	if (e.down && e.control==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.scanCode && e.scanCode<=ScanCode::Key8)) {
 		// Ctrl+1...Ctrl+8
-		d_selectedTrack = e.wVirtualScanCode - ScanCode::Key1;
+		d_selectedTrack = e.scanCode - ScanCode::Key1;
 		return true; }
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Backslash) {
+	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Backslash) {
 		auto editor = std::make_shared<PatternLengthEdit>(d_unit.GetPatternLength());
-		d_popup = std::make_shared<LineBox>(editor);
+		d_popup = std::make_shared<TextKit::LineBox>(editor);
 		editor->onSuccess = [&](int newValue) {
 			d_popup.reset();
 			d_unit.SetPatternLength(newValue); };
 		editor->onCancel = [&]() {
 			d_popup.reset(); };
 		return true; }
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::L && d_isRecording) {
+	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::L && d_isRecording) {
 		CopyTrackPage();  // copy page
 		d_popup = MakeAlert("copy page");
-		reactor.Delay(kAlertDurationInMillis, [&]() {
+		rclmt::Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
-			reactor.DrawScreenEventually(); });
+			d_loop.DrawScreenEventually(); });
 		return true; }
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Semicolon && d_isRecording) {
+	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Semicolon && d_isRecording) {
 		ClearTrackPage();  // clear page
 		d_popup = MakeAlert("clear page");
-		reactor.Delay(kAlertDurationInMillis, [&]() {
+		rclmt::Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
-			reactor.DrawScreenEventually(); });
+			d_loop.DrawScreenEventually(); });
 		return true; }
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCKLeftCtrl && e.wVirtualScanCode==ScanCode::Quote && d_isRecording) {
+	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Quote && d_isRecording) {
 		PasteTrackPage();  // paste page
 		d_popup = MakeAlert("paste page");
-		reactor.Delay(kAlertDurationInMillis, [&]() {
+		rclmt::Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
-			reactor.DrawScreenEventually(); });
+			d_loop.DrawScreenEventually(); });
 		return true; }
 
-	// xxx if ((e.bKeyDown != 0) && e.dwControlKeyState==rclw::kCK
-	if ((e.bKeyDown != 0) && e.dwControlKeyState==0) {
-		if (e.wVirtualScanCode == ScanCode::Backslash) {
+	// xxx if (e.down && e.control==rclw::kCK
+	if (e.down && e.control==0) {
+		if (e.scanCode == ScanCode::Backslash) {
 			d_selectedGridPage++;
 			if (d_selectedGridPage >= d_unit.GetPatternLength()/16) {
 				d_selectedGridPage = 0; }
 			return true; }
 
 		// parameter edit page
-		if (e.wVirtualScanCode == ScanCode::Backspace) {
+		if (e.scanCode == ScanCode::Backspace) {
 			d_selectedVoicePage = (d_selectedVoicePage+1)%3;
 			return true; }
 
 		// transport controls, copy/clear/paste
-		if (e.wVirtualScanCode == ScanCode::L) {
+		if (e.scanCode == ScanCode::L) {
 			d_isRecording = !d_isRecording;
 			d_unit.CommitPattern();
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::Semicolon) {
+		if (e.scanCode == ScanCode::Semicolon) {
 			d_unit.Play();
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::Quote) {
+		if (e.scanCode == ScanCode::Quote) {
 			d_unit.Stop();
 			return true; }
 
 		// kit load/save/change
-		if (e.wVirtualScanCode == ScanCode::F5) {
+		if (e.scanCode == ScanCode::F5) {
 			d_unit.SaveKit();
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::F6) {
+		if (e.scanCode == ScanCode::F6) {
 			d_unit.LoadKit();
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::F7) {
+		if (e.scanCode == ScanCode::F7) {
 			d_unit.DecrementKit();
 			return true; }
-		if (e.wVirtualScanCode == ScanCode::F8) {
+		if (e.scanCode == ScanCode::F8) {
 			d_unit.IncrementKit();
 			return true; }
 
 		// value inc/dec
-		if (e.wVirtualScanCode == ScanCode::Comma || e.wVirtualScanCode == ScanCode::Period) {
+		if (e.scanCode == ScanCode::Comma || e.scanCode == ScanCode::Period) {
 
-			int offset = (e.wVirtualScanCode == ScanCode::Comma ? -1 : 1);
-			if ((e.dwControlKeyState & rclw::kCKShift) != 0u) {
+			int offset = (e.scanCode == ScanCode::Comma ? -1 : 1);
+			if ((e.control & rclw::kCKShift) != 0u) {
 				// XXX does not work because of MSFT internal bug 9311951
 				// https://github.com/Microsoft/WSL/issues/1188
 				offset *= 10; }
 
 			auto it = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
-								   [&](auto& item) { return reactor.GetKeyState(item); });
+								   [&](auto& item) { return d_loop.IsKeyDown(item); });
 			if (it != end(kParamScanLUT)) {
 				int idx = std::distance(begin(kParamScanLUT), it);
 				AdjustPageParameter(d_selectedVoicePage, d_selectedTrack, idx, offset); }
-			else if (reactor.GetKeyState(ScanCode::Equals)) {
+			else if (d_loop.IsKeyDown(ScanCode::Equals)) {
 				d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
 
 			// indicate handled even if not paired with a valid key
@@ -362,12 +364,12 @@ bool PatternEditor::HandleKeyEvent(const KEY_EVENT_RECORD e) {
 
 		// grid/track matrix keys 1-16
 		auto it = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
-							   [&](auto &item) { return e.wVirtualScanCode == item; });
+							   [&](auto &item) { return e.scanCode == item; });
 		if (it != end(kGridScanLUT)) {
 			const int idx = std::distance(begin(kGridScanLUT), it);
-			if (reactor.GetKeyState(ScanCode::P)) {
+			if (d_loop.IsKeyDown(ScanCode::P)) {
 				d_unit.SwitchPattern(idx); }
-			else if (reactor.GetKeyState(ScanCode::M)) {
+			else if (d_loop.IsKeyDown(ScanCode::M)) {
 				d_unit.ToggleTrackMute(idx); }
 			else if (d_isRecording) {
 				d_unit.ToggleTrackGridNote(d_selectedTrack, d_selectedGridPage*16+idx); }

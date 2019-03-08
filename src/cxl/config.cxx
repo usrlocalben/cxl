@@ -1,4 +1,5 @@
-#include "src/cxl/cxl_config.hxx"
+#include "src/cxl/config.hxx"
+
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <algorithm>
@@ -7,6 +8,7 @@
 #include <regex>
 #include <stdexcept>
 #include <string>
+
 #include "3rdparty/winreg/WinReg.hxx"
 #include <Windows.h>
 
