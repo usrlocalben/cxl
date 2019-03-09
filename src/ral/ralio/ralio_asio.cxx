@@ -27,7 +27,6 @@ rqdq::ralio::ASIOCallbacks* theCallbacks = nullptr;
 namespace ralio {
 
 ASIOSystem::ASIOSystem() {
-	std::cerr << "<ASIO> starting up\n";
 	CoInitialize(nullptr); }
 
 
@@ -37,13 +36,10 @@ ASIOSystem& ASIOSystem::GetInstance() {
 
 
 ASIOSystem::~ASIOSystem() {
-	std::cerr << "<ASIO> shutting down\n";
 	if (theAsioDriver != nullptr) {
 		Stop();
-		std::cerr << "<ASIO> releasing driver:" << std::flush;
 		theAsioDriver->Release();
-		theAsioDriver = nullptr;
-		std::cerr << " OK" << std::endl; }
+		theAsioDriver = nullptr; }
 	CoUninitialize(); }
 
 

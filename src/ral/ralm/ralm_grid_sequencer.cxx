@@ -2,6 +2,7 @@
 
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 
+#include <cmath>
 #include <iostream>
 
 namespace rqdq {
@@ -11,7 +12,7 @@ void GridSequencer::SetTempo(const int bpm) {
 	double ax = 44100.0 / (bpm/600.0);
 	for (int i=0; i<kPPQ; i++) {
 		double chunk = ax / (kPPQ-i);
-		int ichunk = int(chunk + 0.5);
+		int ichunk = lround(chunk);
 		ax = ax - ichunk;
 		d_ppqLUT[i] = ichunk; }
 	d_tempoInBPM = bpm; }

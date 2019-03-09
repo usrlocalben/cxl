@@ -12,6 +12,7 @@
 #include <deque>
 #include <iostream>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -431,8 +432,11 @@ int main(int argc, char **argv) {
 	try {
 		result = rqdq::cxl::main(argc, argv); }
 	catch (const std::exception& err) {
-		std::cout << "exception: " << err.what() << std::endl;
+		std::cerr << "exception: " << err.what() << std::endl;
 		result = EXIT_FAILURE; }
-	exit(result); }
+	catch (...) {
+		std::cerr << "unknown exception" << std::endl;
+		result = EXIT_FAILURE; }
+	return result; }
 
 

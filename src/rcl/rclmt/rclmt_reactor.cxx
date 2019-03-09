@@ -47,12 +47,12 @@ void Reactor::Stop() {
 
 
 void Reactor::ListenMany(const rclmt::Event& event, std::function<void()> cb) {
-	d_events.emplace_back(ReactorEvent{ event.Get(), cb });
+	d_events.emplace_back(ReactorEvent{ event.Get(), std::move(cb) });
 	d_events.back().persist = true; }
 
 
 void Reactor::ListenOnce(const rclmt::Event& event, std::function<void()> cb) {
-	d_events.emplace_back(ReactorEvent{ event.Get(), cb });
+	d_events.emplace_back(ReactorEvent{ event.Get(), std::move(cb) });
 	d_events.back().persist = false; }
 
 

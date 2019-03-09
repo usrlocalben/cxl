@@ -11,7 +11,7 @@ namespace {
 std::vector<bool> keyState(256, false);
 
 
-void HandleKeyboardInput(std::function<void(rclmt::KeyEvent)> func) {
+void HandleKeyboardInput(const std::function<void(rclmt::KeyEvent)>& func) {
 	INPUT_RECORD record;
 	DWORD numRead;
 	if (ReadConsoleInputW(GetStdHandle(STD_INPUT_HANDLE), &record, 1, &numRead) == 0) {
@@ -45,7 +45,7 @@ void ListenKeyboard(std::function<void(KeyEvent)> func, Reactor* reactor_/*=null
 	// XXX func could be moved
 	auto& reactor = reactor_ != nullptr ? *reactor_ : Reactor::GetInstance();
 	reactor.ListenMany(Event(GetStdHandle(STD_INPUT_HANDLE)),
-	                   [=]() { HandleKeyboardInput(func); }); }
+	                   [func{std::move(func)}]() { HandleKeyboardInput(func); }); }
 
 
 }  // namespace rclmt

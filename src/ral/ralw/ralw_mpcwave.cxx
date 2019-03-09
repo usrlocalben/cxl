@@ -165,7 +165,8 @@ MPCWave MPCWave::ExtractRegion(int rnum) const {
 
 MPCWave MPCWave::Load(const std::string& path, const std::string& wavename) {
 	MPCWave instance;
-	FILE* const fd = fopen(path.c_str(), "rb");
+	// XXX gsl::owner<FILE*> fd = fopen(path.c_str(), "rb");
+	FILE* fd = fopen(path.c_str(), "rb");
 	if (fd == nullptr) {
 		throw std::runtime_error("fopen read fail"); }
 

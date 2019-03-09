@@ -50,13 +50,13 @@ namespace rclmt {
  * Delay()
  * similar to Twisted callLater() or JavaScript's setTimeout()
  */
-int Delay(const double millis, const std::function<void()> func, Reactor* reactor_/*=nullptr*/) {
+int Delay(const double millis, std::function<void()> func, Reactor* reactor_/*=nullptr*/) {
 	auto& reactor = reactor_ != nullptr ? *reactor_ : Reactor::GetInstance();
 
 	auto [id, timer] = GetDelay();
 	timer.SignalIn(millis);
 	auto rawHandle = timer.Get();
-	reactor.ListenOnce(timer, [=](){
+	reactor.ListenOnce(timer, [func{std::move(func)}, rawHandle](){
 		bool canceled = ReleaseTimer(rawHandle);
 		if (!canceled) {
 			func(); }
