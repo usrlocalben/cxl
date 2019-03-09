@@ -204,12 +204,12 @@
     <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_delay.cxx" />
     <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_file.cxx" />
     <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_keyboard.cxx" />
+    <ClCompile Include="..\src\rcl\rcls\rcls_console.cxx" />
     <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx" />
+    <ClCompile Include="..\src\rcl\rcls\rcls_text_canvas.cxx" />
+    <ClCompile Include="..\src\rcl\rcls\rcls_timer.cxx" />
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx" />
-    <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx" />
-    <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx" />
-    <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx" />
     <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx" />
     <ClCompile Include="..\src\textkit\keyevent.cxx" />
     <ClCompile Include="..\src\textkit\mainloop.cxx" />

@@ -99,16 +99,7 @@
     <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx">
-      <Filter>rcl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx">
-      <Filter>rcl</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx">
-      <Filter>rcl</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
     <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx">
@@ -158,6 +149,15 @@
     </ClCompile>
     <ClCompile Include="..\src\cxl\ui\root\view.cxx">
       <Filter>cxl\ui\root</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rcls\rcls_console.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rcls\rcls_text_canvas.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rcls\rcls_timer.cxx">
+      <Filter>rcl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
