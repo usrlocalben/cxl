@@ -389,8 +389,8 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 		bool updated = d_sequencer.Process();
 		gridPositionUpdated = gridPositionUpdated || updated;
 
-		std::array<float, 2> masterOut;
-		std::array<float, kNumVoices> toMixer;
+		std::array<float, 2> masterOut{};
+		std::array<float, kNumVoices> toMixer{};
 		for (int i=0; i<kNumVoices; i++) {
 			float tmp;
 			d_voices[i].Process(nullptr, &tmp);

@@ -201,7 +201,7 @@ void ASIOSystem::CreateBuffers(rqdq::ralio::ASIOBufferInfo *bufs, int numChannel
 
 rqdq::ralio::ASIOChannelInfo ASIOSystem::GetChannelInfo(bool isInput, int channel) {
 	EnsureDriverOpen();
-	rqdq::ralio::ASIOChannelInfo_ABI info;
+	rqdq::ralio::ASIOChannelInfo_ABI info{};
 	info.isInput = static_cast<rqdq::ralio::ASIOBool>(isInput);
 	info.channel = channel;
 	int result = theAsioDriver->getChannelInfo(reinterpret_cast<::ASIOChannelInfo*>(&info));

@@ -38,10 +38,10 @@ struct FileOp {
 	rclmt::LoadFileDeferred deferred;
 
 	bool good = true;
-	int64_t expectedSizeInBytes;
-	DWORD error;
+	int64_t expectedSizeInBytes = 0;
+	DWORD error = 0;
 	std::vector<uint8_t> buffer;
-	OVERLAPPED request; };
+	OVERLAPPED request{}; };
 
 
 std::list<FileOp> fileOps;

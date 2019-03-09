@@ -178,7 +178,7 @@ MPCWave MPCWave::Load(const std::string& path, const std::string& wavename) {
 	std::vector<uint8_t> tmp;
 	while (feof(fd) == 0) {
 
-		wavchunkhead wch;
+		wavchunkhead wch{};
 		fread(&wch, 8, 1, fd);
 
 		tmp.resize(wch.chunk_size, 0);

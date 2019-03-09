@@ -52,7 +52,7 @@ std::string kitDir = "kits";
 
 
 void Load() {
-	auto key = winreg::RegKey{ HKEY_CURRENT_USER, L"SOFTWARE\\rqdq\\cxl" };
+	winreg::RegKey key{ HKEY_CURRENT_USER, L"SOFTWARE\\rqdq\\cxl" };
 
 	try {
 		asioDriverName = rclt::UTF8Codec::Encode(key.GetStringValue(L"asioDriverName")); }

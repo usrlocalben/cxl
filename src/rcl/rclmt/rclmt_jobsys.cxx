@@ -90,7 +90,7 @@ void init(const int numThreads) {
 		telemetry_timers.push_back(timer);
 
 		void * ptr = _aligned_malloc(NUMBER_OF_JOBS * sizeof(Job), 64);
-		auto job_pool_ptr = reinterpret_cast<Job*>(ptr);
+		auto job_pool_ptr = static_cast<Job*>(ptr);
 		for (int pi = 0; pi < NUMBER_OF_JOBS; pi++) {
 			job_pool_ptr[pi].generation = 0; }
 		jobpools.push_back(job_pool_ptr);

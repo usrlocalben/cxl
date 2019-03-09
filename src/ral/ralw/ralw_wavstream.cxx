@@ -17,8 +17,8 @@ WavStream::WavStream(const std::string& filename, const int freq, const bool ste
 	fwrite("XXXX", 4, 1, d_fd); // placeholder for size of WAVE block
 	fwrite("WAVE", 4, 1, d_fd);
 
-	wc_fmt wcfmt;
-	wavchunkhead wch;
+	wc_fmt wcfmt{};
+	wavchunkhead wch{};
 	wch.chunk_id = WAV_CHUNK_FMT;
 	wch.chunk_size = sizeof(wcfmt);
 	wcfmt.bitdepth      = 16;
@@ -48,7 +48,7 @@ void WavStream::Write(const int16_t* const buf, const int numSamples) {
 
 
 WavStream::~WavStream() {
-	wavchunkhead wch;
+	wavchunkhead wch{};
 
 	fseek(d_fd, d_dataChunkOffset, SEEK_SET);
 

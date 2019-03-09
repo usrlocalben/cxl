@@ -68,12 +68,12 @@ public:
 	ASIOConnector(CXLUnit& unit) :d_unit(unit) {}
 
 	ralio::ASIOCallbacks MakeASIOCallbacks() {
-		rqdq::ralio::ASIOCallbacks out;
-		out.bufferSwitch = &ASIOConnector::onBufferReadyJmp;
-		out.bufferSwitchTimeInfo = &ASIOConnector::onBufferReadyExJmp;
-		out.sampleRateDidChange = &ASIOConnector::onSampleRateChangedJmp;
-		out.asioMessage = &ASIOConnector::onASIOMessageJmp;
-		out.ptr = reinterpret_cast<void*>(this);
+		rqdq::ralio::ASIOCallbacks out{
+			/*bufferSwitch=*/&ASIOConnector::onBufferReadyJmp,
+			/*sampleRateDidChange=*/&ASIOConnector::onSampleRateChangedJmp,
+			/*asioMessage=*/&ASIOConnector::onASIOMessageJmp,
+			/*bufferSwitchTimeInfo=*/&ASIOConnector::onBufferReadyExJmp,
+			/*ptr=*/static_cast<void*>(this) };
 		return out; }
 
 	void Connect(int leftIdx, int rightIdx) {
@@ -82,7 +82,7 @@ public:
 		d_connectionChangedSignal.emit(d_leftIdx, d_rightIdx); }
 
 	static ralio::ASIOTime* onBufferReadyExJmp(void* ptr, ralio::ASIOTime *timeInfo, long index, ralio::ASIOBool processNow) {
-		auto& self = *reinterpret_cast<ASIOConnector*>(ptr);
+		auto& self = *static_cast<ASIOConnector*>(ptr);
 		return self.onBufferReadyEx(timeInfo, index, processNow); }
 	ralio::ASIOTime* onBufferReadyEx(ralio::ASIOTime* timeInfo, long index, ralio::ASIOBool processNow) {
 		using namespace rqdq::ralio;
@@ -109,27 +109,27 @@ public:
 				// OK do processing for the outputs only
 				switch (channelInfos[i].type) {
 				case ASIOSTInt16LSB: {
-					auto dst = reinterpret_cast<int16_t*>(bufferInfos[i].buffers[index]);
+					auto dst = static_cast<int16_t*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
-						dst[si] = srcPtr[si] * std::numeric_limits<int16_t>::max();}}
+						dst[si] = static_cast<int16_t>(srcPtr[si] * std::numeric_limits<int16_t>::max());}}
 					break;
 				case ASIOSTInt24LSB:		// used for 20 bits as well
 					memset (bufferInfos[i].buffers[index], 0, buffSize * 3);
 					break;
-				case ASIOSTInt32LSB: { 
-					auto dst = reinterpret_cast<int32_t*>(bufferInfos[i].buffers[index]);
+				case ASIOSTInt32LSB: {
+					auto dst = static_cast<int32_t*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
-						dst[si] = srcPtr[si] * std::numeric_limits<int32_t>::max();}}
+						dst[si] = static_cast<int32_t>(srcPtr[si] * std::numeric_limits<int32_t>::max());}}
 					break;
 				case ASIOSTFloat32LSB: {
 					// IEEE 754 32 bit float, as found on Intel x86 architecture
-					auto dst = reinterpret_cast<float*>(bufferInfos[i].buffers[index]);
+					auto dst = static_cast<float*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
 						dst[si] = srcPtr[si];}}
 					break;
 				case ASIOSTFloat64LSB: {
 					// IEEE 754 64 bit double float, as found on Intel x86 architecture
-					auto dst = reinterpret_cast<double*>(bufferInfos[i].buffers[index]);
+					auto dst = static_cast<double*>(bufferInfos[i].buffers[index]);
 					for (int si=0; si<buffSize; si++) {
 						dst[si] = srcPtr[si];}}
 					break;
@@ -177,11 +177,11 @@ public:
 		return nullptr; }
 
 	static void onBufferReadyJmp(void* ptr, long index, ralio::ASIOBool processNow) {
-		auto& self = *reinterpret_cast<ASIOConnector*>(ptr);
+		auto& self = *static_cast<ASIOConnector*>(ptr);
 		return self.onBufferReady(index, processNow); }
 	void onBufferReady(long index, ralio::ASIOBool processNow) {
 		using namespace ralio;
-		ASIOTime timeInfo;
+		ASIOTime timeInfo{};
 		memset(&timeInfo, 0, sizeof (timeInfo));
 
 		// get the time stamp of the buffer, not necessary if no
@@ -192,7 +192,7 @@ public:
 		onBufferReadyEx(&timeInfo, index, processNow); }
 
 	static void onSampleRateChangedJmp(void* ptr, ralio::ASIOSampleRate sRate) {
-		auto& self = *reinterpret_cast<ASIOConnector*>(ptr);
+		auto& self = *static_cast<ASIOConnector*>(ptr);
 		return self.onSampleRateChanged(sRate); }
 	void onSampleRateChanged(ralio::ASIOSampleRate sRate) {}
 
@@ -201,7 +201,7 @@ public:
 	 * asio message handler callback
 	 */
 	static long onASIOMessageJmp(void* ptr, long selector, long value, void* message, double* opt) {
-		auto& self = *reinterpret_cast<ASIOConnector*>(ptr);
+		auto& self = *static_cast<ASIOConnector*>(ptr);
 		return self.onASIOMessage(selector, value, message, opt); }
 	long onASIOMessage(long selector, long value, void* message, double* opt) {
 		using namespace ralio;

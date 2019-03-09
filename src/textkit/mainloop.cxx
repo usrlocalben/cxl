@@ -28,11 +28,11 @@ void MainLoop::DrawScreen() {
 		rect.Right = canvas.d_width - 1;
 		rect.Bottom = canvas.d_height - 1;
 		auto canvasData = reinterpret_cast<CHAR_INFO*>(canvas.GetDataPtr());
-		auto result = WriteConsoleOutput(GetStdHandle(STD_OUTPUT_HANDLE),
-		                                 canvasData,
-		                                 COORD{ short(canvas.d_width), short(canvas.d_height) },
-		                                 COORD{ 0, 0 },
-		                                 &rect);
+		auto result = WriteConsoleOutputW(GetStdHandle(STD_OUTPUT_HANDLE),
+		                                  canvasData,
+		                                  COORD{ short(canvas.d_width), short(canvas.d_height) },
+		                                  COORD{ 0, 0 },
+		                                  &rect);
 		if (result == 0) {
 			throw std::runtime_error("WriteConsoleOutput failure"); }}}
 
