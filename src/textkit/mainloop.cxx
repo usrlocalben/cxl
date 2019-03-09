@@ -41,7 +41,7 @@ void MainLoop::DrawScreenEventually() {
 
 
 void MainLoop::onInput(rclmt::KeyEvent key) {
-	if (d_widget) {
+	if (d_widget != nullptr) {
 		bool handled = d_widget->HandleKeyEvent(key);
 		if (handled) {
 			DrawScreen(); }}}

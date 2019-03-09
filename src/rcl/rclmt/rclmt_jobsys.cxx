@@ -100,7 +100,7 @@ void init(const int numThreads) {
 	endBarrier = std::make_unique<Barrier>(numThreads);
 
 	for (int ti=1; ti<numThreads; ti++) {
-		pool.push_back(std::thread(thread_main, ti)); }}
+		pool.emplace_back(thread_main, ti); }}
 
 
 void reset() {
@@ -234,8 +234,9 @@ void thread_main(int id) {
 	thread_id = id;
 	while (true) {
 		startBarrier->Join();
-		if (should_quit) break;
-		while (should_work == true) {
+		if (should_quit) {
+			break; }
+		while (should_work) {
 			help(); }
 		endBarrier->Join(); }}
 
@@ -245,7 +246,7 @@ void join() {
 		thread.join();}}
 
 
-void noop([[maybe_unused]] jobsys::Job *job, [[maybe_unused]] const int tid, void *) {}
+void noop([[maybe_unused]] jobsys::Job *job, [[maybe_unused]] const int tid, void * /*unused*/) {}
 
 
 void mark_start() {
@@ -256,7 +257,7 @@ void mark_end(const uint32_t bits) {
 	telemetry_stores[thread_id].push_back({
 		mark_start_time, mark_end_time, bits }); }
 
-}  // close namespace jobsys
+}  // namespace jobsys
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace rclmt
+}  // namespace rqdq

@@ -55,21 +55,21 @@ auto FindOpById(int id) {
 	                    [=](auto& item) { return item.id == id; }); }
 
 void onFileOpError(int id) {
-	if (auto op = FindOpById(id); op==fileOps.end()) {
+	auto op = FindOpById(id);
+	if (op==fileOps.end()) {
 		auto msg = fmt::sprintf("onFileOpError(): fileOp id=%d not found", id);
 		throw std::runtime_error(msg); }
-	else {
-		op->deferred.Errback(op->error);
-		fileOps.erase(op); }}
+	op->deferred.Errback(op->error);
+	fileOps.erase(op); }
 
 
 void onFileOpComplete(int id) {
-	if (auto op = FindOpById(id); op==fileOps.end()) {
+	auto op = FindOpById(id);
+	if (op==fileOps.end()) {
 		auto msg = fmt::sprintf("onFileOpComplete(): fileOp id=%d not found", id);
 		throw std::runtime_error(msg); }
-	else {
-		op->deferred.Callback(op->buffer);
-		fileOps.erase(op); }}
+	op->deferred.Callback(op->buffer);
+	fileOps.erase(op); }
 
 
 void onFileOpEvent(int id) {
