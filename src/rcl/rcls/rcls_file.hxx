@@ -2,7 +2,6 @@
 #include <string>
 #include <vector>
 
-
 namespace rqdq {
 namespace rcls {
 
@@ -19,6 +18,7 @@ std::string JoinPath(const std::string& a, const std::string& b);
 std::string JoinPath(const std::string& a, const std::string& b, const std::string& c);
 
 void EnsureOpenable(const std::wstring& path);
+
 
 }  // close package namespace
 }  // close enterprise namespace

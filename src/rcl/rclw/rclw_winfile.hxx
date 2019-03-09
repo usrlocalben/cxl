@@ -34,5 +34,6 @@ public:
 private:
 	HANDLE d_handle = INVALID_HANDLE_VALUE; };
 
+
 }  // namespace rclw
 }  // namespace rqdq

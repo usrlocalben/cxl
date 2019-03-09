@@ -7,11 +7,11 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
 #include <Windows.h>
 
 namespace rqdq {
 namespace rclt {
-
 
 std::wstring UTF8Codec::Decode(const std::string& str) {
 	if (str.empty()) {
@@ -66,6 +66,7 @@ std::string Trim(const std::string &s) {
 		rit++; }
 
 	return std::string(it, rit.base()); }
+
 
 }  // namespace rclt
 }  // namespace rqdq

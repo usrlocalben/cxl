@@ -1,5 +1,13 @@
 #include "src/cxl/unit.hxx"
 
+#include <algorithm>
+#include <fstream>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "src/cxl/config.hxx"
+#include "src/cxl/log.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
@@ -8,18 +16,8 @@
 #include "src/rcl/rclmt/rclmt_reactor_file.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
-#include "src/cxl/config.hxx"
-#include "src/cxl/log.hxx"
 
-#include <algorithm>
-#include <fstream>
-#include <string>
-#include <utility>
-#include <vector>
-
-#include "3rdparty/fmt/include/fmt/format.h"
-#include "3rdparty/fmt/include/fmt/printf.h"
-
+#include <fmt/printf.h>
 
 namespace rqdq {
 namespace {
@@ -44,6 +42,7 @@ const std::string& MakePatternPath(int n) {
 
 
 }  // namespace
+
 namespace cxl {
 
 CXLUnit::CXLUnit()

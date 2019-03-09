@@ -10,8 +10,8 @@ constexpr int kMidiC3 = 48;
 constexpr int kSamplerRootNote = kMidiC3;
 
 }  // namespace
-namespace raldsp {
 
+namespace raldsp {
 
 void SingleSampler::Trigger(int note, double velocity, int ppqstamp) {
 	auto& wave = d_waveTable.Get(d_waveId);

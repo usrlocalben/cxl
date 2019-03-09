@@ -1,8 +1,8 @@
 #pragma once
-#include "src/rcl/rclmt/rclmt_event.hxx"
-
 #include <functional>
 #include <vector>
+
+#include "src/rcl/rclmt/rclmt_event.hxx"
 
 #include <Windows.h>
 
@@ -34,6 +34,7 @@ public:
 private:
 	bool d_shouldQuit = false;
 	std::vector<ReactorEvent> d_events; };
+
 
 }  // namespace rclmt
 }  // namespace rqdq

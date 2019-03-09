@@ -1,18 +1,17 @@
 #pragma once
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <deque>
-#include <memory>
-#include <string>
-#include <vector>
-
 namespace rqdq {
 namespace cxl {
-
 
 class PatternEditor : public TextKit::Widget {
 public:

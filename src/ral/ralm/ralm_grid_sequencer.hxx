@@ -1,11 +1,11 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_sampler.hxx"
-
 #include <algorithm>
 #include <array>
 #include <cassert>
 #include <stdexcept>
 #include <vector>
+
+#include "src/ral/raldsp/raldsp_sampler.hxx"
 
 namespace rqdq {
 namespace ralm {

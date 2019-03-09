@@ -1,10 +1,10 @@
 #include "src/cxl/log.hxx"
 
-#include "src/cxl/config.hxx"
-#include "src/rcl/rcls/rcls_file.hxx"
-
 #include <fstream>
 #include <string>
+
+#include "src/cxl/config.hxx"
+#include "src/rcl/rcls/rcls_file.hxx"
 
 namespace rqdq {
 namespace {
@@ -12,6 +12,7 @@ namespace {
 std::string logPath;
 
 }  // namespace
+
 namespace cxl {
 
 Log::Log() {
@@ -37,6 +38,7 @@ void Log::info(const std::string& msg) {
 	if (d_head >= 1024) {
 		d_head = 0; }
 	d_updated.emit(); }
+
 
 }  // namespace cxl
 }  // namespace rqdq

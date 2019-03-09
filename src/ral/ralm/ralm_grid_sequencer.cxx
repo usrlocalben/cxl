@@ -1,9 +1,9 @@
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
 
-#include "src/ral/raldsp/raldsp_sampler.hxx"
-
 #include <cmath>
 #include <iostream>
+
+#include "src/ral/raldsp/raldsp_sampler.hxx"
 
 namespace rqdq {
 namespace ralm {

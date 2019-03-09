@@ -1,6 +1,7 @@
 #include "src/rcl/rclw/rclw_guid.hxx"
 
 #include <string>
+
 #include <Windows.h>
 
 namespace rqdq {
@@ -12,6 +13,7 @@ CLSID CLSIDSerializer::Deserialize(const std::wstring& data) {
 	if (CLSIDFromString(ptr, &out) != NOERROR) {
 		throw std::runtime_error{ "clsid string invalid" }; }
 	return out; }
+
 
 }  // close package namespace
 }  // namespace rqdq

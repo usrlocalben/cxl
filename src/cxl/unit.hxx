@@ -1,19 +1,19 @@
 #pragma once
+#include <algorithm>
+#include <string>
+#include <vector>
+
+#include "src/cxl/channelstrip.hxx"
+#include "src/cxl/effect.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
-#include "src/cxl/effect.hxx"
-#include "src/cxl/channelstrip.hxx"
 
-#include <algorithm>
-#include <string>
-#include <vector>
-
-#include "3rdparty/wink/wink/signal.hpp"
-#include "3rdparty/wink/wink/slot.hpp"
+#include <wink/signal.hpp>
+#include <wink/slot.hpp>
 
 namespace rqdq {
 namespace cxl {

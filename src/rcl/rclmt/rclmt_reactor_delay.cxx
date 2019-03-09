@@ -3,7 +3,7 @@
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 
-#include "3rdparty/fmt/include/fmt/printf.h"
+#include <fmt/printf.h>
 #include <Windows.h>
 
 namespace rqdq {
@@ -84,4 +84,3 @@ void CancelDelay(int id, Reactor* reactor_/*=nullptr*/) {
 
 }  // namespace rclmt
 }  // namespace rqdq
-

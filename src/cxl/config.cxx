@@ -1,7 +1,5 @@
 #include "src/cxl/config.hxx"
 
-#include "src/rcl/rclt/rclt_util.hxx"
-
 #include <algorithm>
 #include <iostream>
 #include <optional>
@@ -9,11 +7,12 @@
 #include <stdexcept>
 #include <string>
 
+#include "src/rcl/rclt/rclt_util.hxx"
+
 #include "3rdparty/winreg/WinReg.hxx"
 #include <Windows.h>
 
 namespace rqdq {
-
 namespace {
 
 std::optional<std::wstring> GetEnvVar(const std::wstring& key) {
@@ -82,8 +81,8 @@ void Load() {
 	//std::cout << ">>> dataDir = [" << dataDir << "]\n"; }
 
 
-
 }  // namespace config
+
 
 }  // namespace cxl
 }  // namespace rqdq

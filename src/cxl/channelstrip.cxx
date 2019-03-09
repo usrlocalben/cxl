@@ -11,7 +11,6 @@ raldsp::PanningLUT panningLUT;
 
 namespace cxl {
 
-
 void CXLChannelStrip::Update(int tempo) {}
 
 

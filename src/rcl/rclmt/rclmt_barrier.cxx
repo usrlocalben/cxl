@@ -5,7 +5,6 @@
 namespace rqdq {
 namespace rclmt {
 
-
 Barrier::Barrier(int numThreads)
 	:d_numThreads(numThreads), d_numThreadsStillActive(numThreads) {
 	assert(numThreads > 0); }

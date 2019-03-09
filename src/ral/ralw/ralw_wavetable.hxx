@@ -1,12 +1,11 @@
 #pragma once
-#include "src/ral/ralw/ralw_mpcwave.hxx"
-
 #include <string>
 #include <vector>
 
+#include "src/ral/ralw/ralw_mpcwave.hxx"
+
 namespace rqdq {
 namespace ralw {
-
 
 class WaveTable {
 public:

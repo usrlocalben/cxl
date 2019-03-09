@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "3rdparty/fmt/include/fmt/printf.h"
+#include <fmt/printf.h>
 #include <Windows.h>
 
 namespace rqdq {
@@ -42,6 +42,7 @@ Event Event::MakeTimer() {
 		throw std::runtime_error(msg); }
 	auto instance = Event(event);
 	return instance; }
+
 
 }  // namespace rclmt
 }  // namespace rqdq

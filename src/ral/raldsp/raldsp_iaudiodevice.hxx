@@ -4,7 +4,6 @@
 namespace rqdq {
 namespace raldsp {
 
-
 class IAudioDevice {
 public:
 	virtual void Update(int tempo) = 0;

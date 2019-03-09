@@ -1,5 +1,4 @@
-#include <array>
-
+#pragma once
 #include <array>
 #include <cassert>
 
@@ -18,6 +17,7 @@ public:
 private:
 	std::array<float, 128> leftGain;
 	std::array<float, 128> rightGain; };
+
 
 }  // namespace raldsp
 }  // namespace rqdq

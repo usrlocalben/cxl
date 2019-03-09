@@ -1,15 +1,15 @@
 #include "src/textkit/mainloop.hxx"
 
-#include "src/rcl/rclmt/rclmt_event.hxx"
-#include "src/rcl/rclmt/rclmt_reactor.hxx"
-#include "src/rcl/rclmt/rclmt_reactor_keyboard.hxx"
-
 #include <algorithm>
 #include <functional>
 #include <utility>
 #include <vector>
 
-#include "3rdparty/fmt/include/fmt/printf.h"
+#include "src/rcl/rclmt/rclmt_event.hxx"
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_keyboard.hxx"
+
+#include <fmt/printf.h>
 #include <Windows.h>
 
 namespace rqdq {

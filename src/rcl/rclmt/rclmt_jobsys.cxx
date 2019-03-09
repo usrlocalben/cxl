@@ -1,6 +1,4 @@
 #include "src/rcl/rclmt/rclmt_jobsys.hxx"
-#include "src/rcl/rclmt/rclmt_barrier.hxx"
-#include "src/rcl/rcls/rcls_timer.hxx"
 
 #include <atomic>
 #include <cassert>
@@ -11,6 +9,8 @@
 #include <random>
 #include <thread>
 
+#include "src/rcl/rclmt/rclmt_barrier.hxx"
+#include "src/rcl/rcls/rcls_timer.hxx"
 
 namespace rqdq {
 namespace rclmt {
@@ -258,6 +258,7 @@ void mark_end(const uint32_t bits) {
 		mark_start_time, mark_end_time, bits }); }
 
 }  // namespace jobsys
+
 
 }  // namespace rclmt
 }  // namespace rqdq

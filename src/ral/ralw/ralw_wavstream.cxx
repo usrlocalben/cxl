@@ -1,9 +1,10 @@
 #include "src/ral/ralw/ralw_wavstream.hxx"
-#include "src/ral/ralw/ralw_wavfile.hxx"
 
 #include <cstdio>
 #include <stdexcept>
 #include <string>
+
+#include "src/ral/ralw/ralw_wavfile.hxx"
 
 namespace rqdq {
 namespace ralw {
@@ -56,6 +57,7 @@ WavStream::~WavStream() {
 	wch.chunk_size = (d_numSamples*sizeof(int16_t)) * (d_stereo?2:1);
 	fwrite(&wch, sizeof(wavchunkhead), 1, d_fd);
 	fclose(d_fd); }
+
 
 }  // namespace ralw
 }  // namespace rqdq

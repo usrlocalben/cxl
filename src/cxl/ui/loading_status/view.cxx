@@ -1,13 +1,13 @@
 #include "src/cxl/ui/loading_status/view.hxx"
 
+#include <stdexcept>
+
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <stdexcept>
-
-#include "3rdparty/fmt/include/fmt/printf.h"
+#include <fmt/printf.h>
 
 namespace rqdq {
 namespace cxl {

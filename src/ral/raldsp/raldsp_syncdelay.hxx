@@ -1,7 +1,7 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
-
 #include <vector>
+
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
 namespace rqdq {
 namespace raldsp {
@@ -34,6 +34,7 @@ private:
 	int d_head = 0;
 
 	std::vector<std::vector<float>> d_bufs; };
+
 
 }  // namespace raldsp
 }  // namespace rqdq

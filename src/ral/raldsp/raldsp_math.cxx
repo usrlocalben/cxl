@@ -3,7 +3,6 @@
 #include <cmath>
 
 namespace rqdq {
-
 namespace {
 
 /* 20 / ln(10) */
@@ -15,7 +14,6 @@ constexpr double kDbToLogFactor = 0.11512925464970228420089957273422;
 }  // namespace
 
 namespace raldsp {
-
 
 double linear2db(double value) {
 	return std::log(value) * kLogToDbFactor; }

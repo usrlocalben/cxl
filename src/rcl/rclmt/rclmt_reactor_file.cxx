@@ -1,9 +1,5 @@
 #include "src/rcl/rclmt/rclmt_reactor_file.hxx"
 
-#include "src/rcl/rclmt/rclmt_event.hxx"
-#include "src/rcl/rclt/rclt_util.hxx"
-#include "src/rcl/rclw/rclw_winfile.hxx"
-
 #include <algorithm>
 #include <list>
 #include <stdexcept>
@@ -11,7 +7,12 @@
 #include <utility>
 #include <vector>
 
+#include "src/rcl/rclmt/rclmt_event.hxx"
+#include "src/rcl/rclt/rclt_util.hxx"
+#include "src/rcl/rclw/rclw_winfile.hxx"
+
 #include <Windows.h>
+#include <fmt/printf.h>
 
 namespace rqdq {
 namespace {
@@ -98,7 +99,6 @@ void onFileOpEvent(int id) {
 }  // namespace
 
 namespace rclmt {
-
 
 LoadFileDeferred& LoadFile(const std::string& path, Reactor* reactor) {
 	auto tmp = rclt::UTF8Codec::Decode(path);

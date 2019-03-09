@@ -1,27 +1,26 @@
 #include "src/cxl/ui/pattern_editor/view.hxx"
 
-#include "src/rcl/rclmt/rclmt_reactor.hxx"
-#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
-#include "src/rcl/rcls/rcls_console.hxx"
-#include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/textkit/keyevent.hxx"
-#include "src/textkit/widget.hxx"
-#include "src/cxl/log.hxx"
-#include "src/cxl/unit.hxx"
-#include "src/cxl/ui/alert/view.hxx"
-#include "src/cxl/ui/pattern_length_edit/view.hxx"
-
 #include <array>
 #include <deque>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "src/cxl/log.hxx"
+#include "src/cxl/ui/alert/view.hxx"
+#include "src/cxl/ui/pattern_length_edit/view.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
+
 #include <Windows.h>
-#include "3rdparty/fmt/include/fmt/printf.h"
+#include <fmt/printf.h>
 
 namespace rqdq {
-
 namespace {
 
 const int kAlertDurationInMillis = 500;
@@ -394,7 +393,6 @@ void PatternEditor::ClearTrackPage() {
 void PatternEditor::PasteTrackPage() {
 	for (int i=0; i<16; i++) {
 		d_unit.SetTrackGridNote(d_selectedTrack, d_selectedGridPage*16+i, d_clipboard[i]); }}
-
 
 
 }  // namespace cxl

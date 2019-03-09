@@ -34,7 +34,6 @@ void HandleKeyboardInput(const std::function<void(rclmt::KeyEvent)>& func) {
 
 namespace rclmt {
 
-
 bool IsKeyDown(int scanCode) {
 	if (scanCode < 256) {
 		return keyState[scanCode]; }

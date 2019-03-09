@@ -1,15 +1,14 @@
 #include "src/textkit/widget.hxx"
 
-#include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/textkit/keyevent.hxx"
-
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
+
 namespace rqdq {
 namespace TextKit {
-
 
 LineBox::LineBox(std::shared_ptr<Widget> widget)
 	:d_widget(std::move(widget)) {}

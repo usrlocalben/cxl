@@ -1,9 +1,9 @@
 #pragma once
+#include <memory>
+
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/widget.hxx"
-
-#include <memory>
 
 namespace rqdq {
 namespace cxl {

@@ -1,6 +1,10 @@
 #pragma once
-#include "src/cxl/unit.hxx"
+#include <deque>
+#include <memory>
+#include <string>
+
 #include "src/cxl/ui/pattern_editor/view.hxx"
+#include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
@@ -8,13 +12,8 @@
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <deque>
-#include <memory>
-#include <string>
-
 namespace rqdq {
 namespace cxl {
-
 
 class UIRoot : public TextKit::Widget {
 public:

@@ -1,8 +1,8 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
-
 #include <utility>
 #include <vector>
+
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
 namespace rqdq {
 namespace raldsp {
@@ -22,11 +22,11 @@ public:
 			outputs[i] = d_bypass ? inputs[i] : d_buf1[i]; }}
 
 public:
-	void SetCutoff(double value) {
+	void SetCutoff(float value) {
 		d_f = value;
 		UpdateInternal();}
 
-	void SetQ(double value) {
+	void SetQ(float value) {
 		d_q = value;
 		UpdateInternal();}
 
@@ -48,12 +48,12 @@ private:
 		d_fb = d_q + d_q / (1.0 - d_f); }
 
 private:
-	bool d_bypass;
+	bool d_bypass = false;
 	std::vector<float> d_buf0;
 	std::vector<float> d_buf1;
-	double d_fb;
-	double d_f;
-	double d_q; };
+	float d_fb;
+	float d_f;
+	float d_q; };
 
 
 }  // close package namespace

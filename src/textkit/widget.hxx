@@ -2,11 +2,11 @@
  * urwid-inspired Widget
  */
 #pragma once
-#include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/textkit/keyevent.hxx"
-
 #include <memory>
 #include <optional>
+
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
+#include "src/textkit/keyevent.hxx"
 
 #include <Windows.h>
 

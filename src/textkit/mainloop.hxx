@@ -1,19 +1,18 @@
 #pragma once
+#include <functional>
+#include <iostream>
+#include <vector>
+
 #include "src/rcl/rclmt/rclmt_deferred.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <functional>
-#include <iostream>
-#include <vector>
-
 #include <Windows.h>
 
 namespace rqdq {
 namespace TextKit {
-
 
 class MainLoop {
 public:

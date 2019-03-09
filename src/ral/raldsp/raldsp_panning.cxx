@@ -10,5 +10,6 @@ PanningLUT::PanningLUT() {
 		leftGain[i]  = sqrt((128-i)/128.0);
 		rightGain[i] = sqrt(     i /128.0); }}
 
+
 }  // namespace raldsp
 }  // namespace rqdq

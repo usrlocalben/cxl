@@ -1,7 +1,7 @@
 #pragma once
-#include "src/rcl/rclmt/rclmt_reactor.hxx"
-
 #include <functional>
+
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
 
 namespace rqdq {
 namespace rclmt {
@@ -15,6 +15,7 @@ struct KeyEvent {
 bool IsKeyDown(int scanCode);
 
 void ListenKeyboard(std::function<void(KeyEvent)>, Reactor* reactor_=nullptr);
+
 
 }  // namespace rclmt
 }  // namespace rqdq

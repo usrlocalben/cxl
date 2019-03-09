@@ -1,14 +1,13 @@
 #pragma once
+#include <cassert>
+#include <utility>
+
 #include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 
-#include <cassert>
-#include <utility>
-
 namespace rqdq {
 namespace raldsp {
-
 
 class DecayMode {
 public:

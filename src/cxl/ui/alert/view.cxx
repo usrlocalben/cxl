@@ -1,12 +1,12 @@
 #include "src/cxl/ui/alert/view.hxx"
 
+#include <string>
+
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <string>
-
-#include "3rdparty/fmt/include/fmt/printf.h"
+#include <fmt/printf.h>
 
 namespace rqdq {
 namespace cxl {

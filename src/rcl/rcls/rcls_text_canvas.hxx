@@ -122,5 +122,6 @@ inline void DrawPercentageBar(TextCanvas& canvas, int x, int y, int width, float
 	for (     ; cx<  width+x; cx++) {
 		WriteXY(canvas, cx, y, " "     );}}
 
+
 }  // namespace rcls
 }  // namespace rqdq

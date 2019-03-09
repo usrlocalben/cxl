@@ -1,8 +1,5 @@
 #include "src/rcl/rcls/rcls_console.hxx"
 
-#include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/rcl/rclt/rclt_util.hxx"
-
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -10,11 +7,13 @@
 #include <utility>
 #include <vector>
 
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
+#include "src/rcl/rclt/rclt_util.hxx"
+
 #include <Windows.h>
 
 namespace rqdq {
 namespace rcls {
-
 
 Console::Console(HANDLE hStdout, HANDLE hStdin)
 	:d_stdout{hStdout}, d_stdin{hStdin}, d_activeKeys(65536, false) {}

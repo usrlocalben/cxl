@@ -1,10 +1,5 @@
 #include "src/ral/ralio/ralio_asio.hxx"
 
-#include "src/rcl/rcls/rcls_file.hxx"
-#include "src/rcl/rclt/rclt_util.hxx"
-#include "src/rcl/rclw/rclw_guid.hxx"
-#include "src/rcl/rclw/rclw_smarti.hxx"
-
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -12,12 +7,16 @@
 #include <string>
 #include <vector>
 
+#include "src/rcl/rcls/rcls_file.hxx"
+#include "src/rcl/rclt/rclt_util.hxx"
+#include "src/rcl/rclw/rclw_guid.hxx"
+#include "src/rcl/rclw/rclw_smarti.hxx"
+
 #include "3rdparty/asiosdk/common/iasiodrv.h"
-#include "3rdparty/winreg/WinReg.hxx"
+#include <WinReg.hxx>
 
 
 namespace rqdq {
-
 namespace {
 
 IASIO* theAsioDriver = nullptr;

@@ -1,5 +1,4 @@
 #include "src/ral/ralw/ralw_mpcwave.hxx"
-#include "src/ral/ralw/ralw_wavfile.hxx"
 
 #include <algorithm>
 #include <cassert>
@@ -7,6 +6,8 @@
 #include <string>
 #include <sstream>
 #include <vector>
+
+#include "src/ral/ralw/ralw_wavfile.hxx"
 
 namespace rqdq {
 namespace ralw {
@@ -444,6 +445,7 @@ MPCWave MPCWave::Load(const std::vector<uint8_t>& buf, const std::string& wavena
 
 	instance.ResetRegions(1);
 	return instance; }
+
 
 }  // namespace ralw
 }  // namespace rqdq

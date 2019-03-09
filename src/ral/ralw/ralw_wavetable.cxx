@@ -1,14 +1,13 @@
 #include "src/ral/ralw/ralw_wavetable.hxx"
 
-#include "src/ral/ralw/ralw_mpcwave.hxx"
-
 #include <algorithm>
 #include <string>
 #include <vector>
 
+#include "src/ral/ralw/ralw_mpcwave.hxx"
+
 namespace rqdq {
 namespace ralw {
-
 
 WaveTable::WaveTable() {
 	d_waves.resize(17);
@@ -55,6 +54,7 @@ XXX new name creation
 		this->description = new_name;
 	}
 */
+
 
 }  // namespace ralw
 }  // namespace rqdq

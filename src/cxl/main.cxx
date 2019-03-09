@@ -1,28 +1,25 @@
-#include "src/cxl/config.hxx"
-#include "src/cxl/unit.hxx"
-#include "src/cxl/log.hxx"
-#include "src/cxl/ui/root/view.hxx"
-#include "src/ral/ralio/ralio_asio.hxx"
-#include "src/rcl/rclmt/rclmt_reactor.hxx"
-#include "src/rcl/rclt/rclt_util.hxx"
-#include "src/rcl/rcls/rcls_console.hxx"
-
 #include <algorithm>
 #include <array>
-#include <deque>
 #include <iostream>
 #include <mutex>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-#include "3rdparty/fmt/include/fmt/format.h"
-#include "3rdparty/fmt/include/fmt/printf.h"
-#include "3rdparty/wink/wink/signal.hpp"
+#include "src/cxl/config.hxx"
+#include "src/cxl/log.hxx"
+#include "src/cxl/ui/root/view.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/ral/ralio/ralio_asio.hxx"
+#include "src/rcl/rclmt/rclmt_reactor.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
+#include "src/rcl/rclt/rclt_util.hxx"
+
+#include <fmt/printf.h>
+#include <wink/signal.hpp>
 #include <Windows.h>
 
 namespace rqdq {
-
 namespace {
 
 // channels
@@ -288,9 +285,9 @@ int main(int argc, char **argv) {
 
 	int idx = asio.FindDriverByName(config::asioDriverName);
 	if (idx == -1) {
-		auto msg = fmt::format("ASIO driver \"{}\" not found in ASIO registry "
-							   "(HKEY_LOCAL_MACHINE\\Software\\ASIO)",
-							   config::asioDriverName);
+		auto msg = fmt::sprintf("ASIO driver \"%s\" not found in ASIO registry "
+		                        "(HKEY_LOCAL_MACHINE\\Software\\ASIO)",
+		                        config::asioDriverName);
 		throw std::runtime_error(msg); }
 
 	asio.OpenDriver(idx);
@@ -373,8 +370,9 @@ int main(int argc, char **argv) {
 				if (info.channel==stoi(mlc)) {
 					leftChannelIdx = i; }}
 			else {
-				auto msg = fmt::format("invalid asio connection \"{}\" expected "
-				                       "either num=<num> or name=<text>", config::masterLeftDest);
+				auto msg = fmt::sprintf("invalid asio connection \"%s\" expected "
+				                        "either num=<num> or name=<text>",
+				                        config::masterLeftDest);
 				throw std::runtime_error(msg); }
 
 			mlc = config::masterRightDest;
@@ -387,13 +385,14 @@ int main(int argc, char **argv) {
 				if (info.channel==stoi(mlc)) {
 					rightChannelIdx = i; }}
 			else {
-				auto msg = fmt::format("invalid asio connection \"{}\" expected "
-				                       "either num=<num> or name=<text>", config::masterRightDest);
+				auto msg = fmt::sprintf("invalid asio connection \"%s\" expected "
+				                        "either num=<num> or name=<text>",
+				                        config::masterRightDest);
 				throw std::runtime_error(msg); }}
 
-		auto detail = fmt::format("Ch #{}, {} \"{}\" {}",
-		                          info.channel, info.isInput?" INPUT":"OUTPUT",
-		                          info.name, info.type);
+		auto detail = fmt::sprintf("Ch #%d, %s \"%s\" %d",
+		                           info.channel, info.isInput?" INPUT":"OUTPUT",
+		                           info.name, info.type);
 		cout << detail << endl; }
 
 	if (leftChannelIdx == -1 || rightChannelIdx == -1) {
@@ -438,5 +437,3 @@ int main(int argc, char **argv) {
 		std::cerr << "unknown exception" << std::endl;
 		result = EXIT_FAILURE; }
 	return result; }
-
-

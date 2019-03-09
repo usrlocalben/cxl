@@ -1,7 +1,5 @@
 #include "src/rcl/rcls/rcls_file.hxx"
 
-#include "src/rcl/rclt/rclt_util.hxx"
-
 #include <algorithm>
 #include <cctype>
 #include <codecvt>
@@ -11,6 +9,8 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "src/rcl/rclt/rclt_util.hxx"
 
 #include <Windows.h>
 

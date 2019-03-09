@@ -2,8 +2,9 @@
 #include <functional>
 #include <string>
 #include <vector>
-#include "3rdparty/wink/wink/signal.hpp"
-#include "3rdparty/wink/wink/slot.hpp"
+
+#include <wink/signal.hpp>
+#include <wink/slot.hpp>
 
 namespace rqdq {
 namespace cxl {
@@ -34,6 +35,7 @@ public:
 private:
 	int d_head = 0;
 	std::vector<std::string> d_buf; };
+
 
 }  // namespace cxl
 }  // namespace rqdq

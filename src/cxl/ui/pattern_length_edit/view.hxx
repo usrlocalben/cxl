@@ -1,10 +1,9 @@
 #pragma once
-#include "src/textkit/widget.hxx"
+#include <functional>
+
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/widget.hxx"
-
-#include <functional>
 
 namespace rqdq {
 namespace cxl {
@@ -30,4 +29,3 @@ private:
 
 }  // namespace cxl
 }  // namespace rqdq
-

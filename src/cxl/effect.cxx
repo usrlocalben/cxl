@@ -38,5 +38,6 @@ void CXLEffects::Process(float* inputs, float* outputs) {
 	float filteredPlusDelay = filtered + fromDelay;
 	d_reducer.Process(&filteredPlusDelay, outputs); }
 
+
 }  // namespace cxl
 }  // namespace rqdq

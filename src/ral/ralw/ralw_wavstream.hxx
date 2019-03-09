@@ -23,5 +23,6 @@ private:
 	int d_numSamples;
 	bool d_stereo; };
 
+
 }  // close package namespace
 }  // close enterprise namespace

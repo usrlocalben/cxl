@@ -5,7 +5,6 @@
 #include <vector>
 
 namespace rqdq {
-
 namespace {
 
 constexpr int kMaxDelayInSamples = 44100*10;
@@ -48,6 +47,7 @@ void SyncDelay::AdvanceHead() {
 	d_head++;
 	if (d_head >= kMaxDelayInSamples) {
 		d_head = 0; }}
+
 
 }  // namespace raldsp
 }  // namespace rqdq

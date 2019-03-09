@@ -1,8 +1,7 @@
 #pragma once
-
 #include <algorithm>
+#include <cassert>
 
-#include "3rdparty/fmt/include/fmt/printf.h"
 #include <Windows.h>
 
 namespace rqdq {

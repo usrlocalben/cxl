@@ -1,15 +1,14 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
-#include "src/ral/raldsp/raldsp_distortion.hxx"
-
 #include <array>
 #include <algorithm>
 #include <stdexcept>
 #include <vector>
 
+#include "src/ral/raldsp/raldsp_distortion.hxx"
+#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
+
 namespace rqdq {
 namespace raldsp {
-
 
 template <typename CHANNEL_STRIP>
 class BasicMixer : public IAudioDevice {
