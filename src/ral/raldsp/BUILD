@@ -80,3 +80,11 @@ cc_library(
         ],
     copts = RSR_DEFAULT_COPTS,
     )
+
+cc_library(
+    name="panning",
+    srcs=["raldsp_panning.cxx"],
+    hdrs=["raldsp_panning.hxx"],
+    deps=[],
+    copts = RSR_DEFAULT_COPTS,
+    )

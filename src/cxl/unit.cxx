@@ -1,7 +1,5 @@
 #include "src/cxl/unit.hxx"
 
-#include "src/cxl/config.hxx"
-#include "src/cxl/log.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
@@ -10,10 +8,11 @@
 #include "src/rcl/rclmt/rclmt_reactor_file.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
+#include "src/cxl/config.hxx"
+#include "src/cxl/log.hxx"
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -46,40 +45,6 @@ const std::string& MakePatternPath(int n) {
 
 }  // namespace
 namespace cxl {
-
-void CXLEffects::Update(int tempo) {
-	const int freq = d_lowpassFreq;
-	const int q = d_lowpassQ;
-	if (freq == 127) {
-		d_filter.SetBypass(true); }
-	else {
-		d_filter.SetBypass(false);
-		d_filter.SetCutoff(pow(freq/127.0f, 2.0f));
-		// scale Q-max slightly under 1.0
-		d_filter.SetQ(sqrt(q/128.9f)); }
-
-	d_filter.Update(tempo);
-
-	d_delay.SetTime(d_delayTime);
-	d_delay.SetFeedbackGain(d_delayFeedback / 127.0);
-	d_delay.Update(tempo);
-
-	d_reducer.d_midi = d_reduce;
-	d_reducer.Update(tempo); }
-
-
-void CXLEffects::Process(float* inputs, float* outputs) {
-	float filtered;
-	d_filter.Process(inputs, &filtered);
-
-	float delaySend = d_delaySend / 127.0;
-	float toDelay = filtered * delaySend;
-	float fromDelay;
-	d_delay.Process(&toDelay, &fromDelay);
-
-	float filteredPlusDelay = filtered + fromDelay;
-	d_reducer.Process(&filteredPlusDelay, outputs); }
-
 
 CXLUnit::CXLUnit()
 	:d_waveTable(kMaxWaves) {
@@ -271,21 +236,21 @@ const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
 
 int CXLUnit::GetMixParameterValue(int ti, int pi) {
 	switch (pi) {
-	case 0: return d_mixer.d_channels[ti].d_distortion;
-	case 1: return d_mixer.d_channels[ti].d_gain;
-	case 2: return d_mixer.d_channels[ti].d_pan;
-	case 3: return d_mixer.d_channels[ti].d_send1;
-	case 4: return d_mixer.d_channels[ti].d_send2;
+	case 0: return d_mixer[ti].d_distortion;
+	case 1: return d_mixer[ti].d_gain;
+	case 2: return d_mixer[ti].d_pan;
+	case 3: return d_mixer[ti].d_send1;
+	case 4: return d_mixer[ti].d_send2;
 	default: return 0; }}
 
 
 void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
 	switch (pi) {
-	case 0: Adjust2(ti, d_mixer.d_channels[ti].d_distortion, 0, 127, offset); break;
-	case 1: Adjust2(ti, d_mixer.d_channels[ti].d_gain, 0, 127, offset); break;
-	case 2: Adjust2(ti, d_mixer.d_channels[ti].d_pan, -64, 63, offset); break;
-	case 3: Adjust2(ti, d_mixer.d_channels[ti].d_send1, 0, 127, offset); break;
-	case 4: Adjust2(ti, d_mixer.d_channels[ti].d_send2, 0, 127, offset); break;
+	case 0: Adjust2(ti, d_mixer[ti].d_distortion, 0, 127, offset); break;
+	case 1: Adjust2(ti, d_mixer[ti].d_gain, 0, 127, offset); break;
+	case 2: Adjust2(ti, d_mixer[ti].d_pan, -64, 63, offset); break;
+	case 3: Adjust2(ti, d_mixer[ti].d_send1, 0, 127, offset); break;
+	case 4: Adjust2(ti, d_mixer[ti].d_send2, 0, 127, offset); break;
 	default: break; }}
 
 
@@ -350,7 +315,7 @@ void CXLUnit::InitializeKit() {
 	for (int i=0; i<kNumVoices; i++) {
 		d_voices[i].Initialize();
 		d_effects[i].Initialize();
-		d_mixer.d_channels[i].Initialize(); }}
+		d_mixer[i].Initialize(); }}
 
 
 void CXLUnit::LoadKit() {
@@ -390,11 +355,11 @@ void CXLUnit::LoadKit() {
 				else if (ConsumePrefix(line, "  effect.dtm ")) { d_effects[vid].d_delayTime = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.dfb ")) { d_effects[vid].d_delayFeedback = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.red ")) { d_effects[vid].d_reduce = stoi(line); }
-				else if (ConsumePrefix(line, "  mix.dis ")) { d_mixer.d_channels[vid].d_distortion = stoi(line); }
-				else if (ConsumePrefix(line, "  mix.vol ")) { d_mixer.d_channels[vid].d_gain = stoi(line); }
-				else if (ConsumePrefix(line, "  mix.pan ")) { d_mixer.d_channels[vid].d_pan = stoi(line); }
-				else if (ConsumePrefix(line, "  mix.dly ")) { d_mixer.d_channels[vid].d_send1 = stoi(line); }
-				else if (ConsumePrefix(line, "  mix.rev ")) { d_mixer.d_channels[vid].d_send2 = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.dis ")) { d_mixer[vid].d_distortion = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.vol ")) { d_mixer[vid].d_gain = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.pan ")) { d_mixer[vid].d_pan = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.dly ")) { d_mixer[vid].d_send1 = stoi(line); }
+				else if (ConsumePrefix(line, "  mix.rev ")) { d_mixer[vid].d_send2 = stoi(line); }
 				else {
 					auto msg = fmt::sprintf("unknown kit line \"%s\"", line);
 					throw std::runtime_error(msg); }}

@@ -20,17 +20,39 @@ cc_library(
     deps = [
         "//3rdparty/fmt",
         "//3rdparty/wink",
-        "//src/ral/raldsp:filter",
         "//src/ral/raldsp:mixer",
-        "//src/ral/raldsp:ratereducer",
         "//src/ral/raldsp:sampler",
-        "//src/ral/raldsp:syncdelay",
         "//src/ral/ralm:grid_sequencer",
         "//src/ral/ralw:wavetable",
         "//src/rcl/rclmt:reactor_file",
         "//src/rcl/rcls:file",
+        ":channelstrip",
         ":config",
+        ":effect",
         ":log",
+        ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "effect",
+    srcs = ["effect.cxx"],
+    hdrs = ["effect.hxx"],
+    deps = [
+        "//src/ral/raldsp:filter",
+        "//src/ral/raldsp:ratereducer",
+        "//src/ral/raldsp:syncdelay",
+        ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "channelstrip",
+    srcs = ["channelstrip.cxx"],
+    hdrs = ["channelstrip.hxx"],
+    deps = [
+        "//src/ral/raldsp:distortion",
+        "//src/ral/raldsp:panning",
         ],
     copts = RSR_DEFAULT_COPTS,)
 

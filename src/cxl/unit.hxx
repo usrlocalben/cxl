@@ -1,14 +1,12 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_filter.hxx"
-#include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
-#include "src/ral/raldsp/raldsp_ratereducer.hxx"
 #include "src/ral/raldsp/raldsp_sampler.hxx"
-#include "src/ral/raldsp/raldsp_syncdelay.hxx"
 #include "src/ral/ralm/ralm_grid_sequencer.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
+#include "src/cxl/effect.hxx"
+#include "src/cxl/channelstrip.hxx"
 
 #include <algorithm>
 #include <string>
@@ -19,35 +17,6 @@
 
 namespace rqdq {
 namespace cxl {
-
-
-class CXLEffects {
-public:
-	void Update(int);
-	void Process(float*, float*);
-
-	void Initialize() {
-		d_lowpassFreq = 127;
-		d_lowpassQ = 0;
-		d_delaySend = 0;
-		d_delayTime = 16;
-		d_delayFeedback = 0;
-		d_reduce = 0; }
-
-public:
-	int d_lowpassFreq = 127;
-	int d_lowpassQ = 0;
-
-	int d_delaySend = 0;      // 0-127 = 0...1.0
-	int d_delayTime = 16;     // 0-127, 128th notes
-	int d_delayFeedback = 0;  // 0-127 = 0...1.0
-	int d_reduce = 0;
-
-private:
-	raldsp::CXLFilter d_filter{1};
-	raldsp::SyncDelay d_delay{1};
-	raldsp::RateReducer d_reducer{1}; };
-
 
 class CXLUnit {
 public:
@@ -148,7 +117,7 @@ private:
 	std::string d_kitName = "new kit";
 	int d_patternNum = 0;
 	ralw::WaveTable d_waveTable;
-	raldsp::BasicMixer d_mixer;
+	raldsp::BasicMixer<CXLChannelStrip> d_mixer;
 	ralm::GridSequencer d_sequencer;
 	std::vector<raldsp::SingleSampler> d_voices;
 	std::vector<CXLEffects> d_effects; };

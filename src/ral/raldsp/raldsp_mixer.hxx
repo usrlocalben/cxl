@@ -2,6 +2,8 @@
 #include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 #include "src/ral/raldsp/raldsp_distortion.hxx"
 
+#include <array>
+#include <algorithm>
 #include <stdexcept>
 #include <vector>
 
@@ -9,53 +11,42 @@ namespace rqdq {
 namespace raldsp {
 
 
-struct BasicMixerChannel {
-	void Update(int tempo);
-	void Process(float* inputs, float* outputs);
-	void Initialize() {
-		d_gain = 100;
-		d_mute = false;
-		d_pan = 0;
-		d_distortion = 0;
-		d_send1 = 0;
-		d_send2 = 0; }
-	int d_gain = 100;
-	bool d_mute = false;
-	int d_pan =0;
-	int d_distortion = 0;
-	int d_send1 = 0;
-	int d_send2 = 0;
-
-	Distortor d_distortor{1}; };
-
-
+template <typename CHANNEL_STRIP>
 class BasicMixer : public IAudioDevice {
 	// IAudioDevice
 public:
-	void Update(int tempo) override;
-	void Process(float*, float*) override;
+	void Update(int tempo) override {}
+
+	void Process(float* inputs, float* outputs) override {
+		std::array<float, 6> sums;
+
+		std::fill(sums.begin(), sums.end(), 0);
+		for (int i=0; i<d_channels.size(); i++) {
+			std::array<float, 6> channelOut;
+			d_channels[i].Process(&(inputs[i]), channelOut.data());
+			for (int oi=0; oi<6; oi++) {
+				sums[oi] += channelOut[oi]; }}
+
+		// std::array<float, 2> fxOut;
+		// d_delay.Process(&sums[2], fxOut.data());
+		// sums[0] += fxOut[0];
+		// sums[1] += fxOut[1];
+		// d_reverb.Process(&sums[4], fxOut.data());
+		// sums[0] += fxOut[0];
+		// sums[1] += fxOut[1];
+
+		outputs[0] = sums[0];
+		outputs[1] = sums[1]; }
 
 public:
-	void AddChannel();
+	void AddChannel() {
+		d_channels.emplace_back(); }
+
 	int GetNumChannels() { return static_cast<int>(d_channels.size()); }
-	void SetChannelGain(int ch, int value) {
+
+	CHANNEL_STRIP& operator[](int ch) {
 		EnsureValidChannelId(ch);
-		d_channels[ch].d_gain = value; }
-	void SetChannelPan(int ch, int value) {
-		EnsureValidChannelId(ch);
-		d_channels[ch].d_pan = value; }
-	void SetChannelMute(int ch, bool value) {
-		EnsureValidChannelId(ch);
-		d_channels[ch].d_mute = value; }
-	int GetChannelGain(int ch) {
-		EnsureValidChannelId(ch);
-		return d_channels[ch].d_gain; }
-	int GetChannelPan(int ch) {
-		EnsureValidChannelId(ch);
-		return d_channels[ch].d_pan; }
-	bool GetChannelMute(int ch) {
-		EnsureValidChannelId(ch);
-		return d_channels[ch].d_mute; }
+		return d_channels[ch]; }
 
 private:
 	void EnsureValidChannelId(int ch) {
@@ -63,7 +54,7 @@ private:
 			throw new std::runtime_error("invalid channel id"); }}
 
 public:
-	std::vector<BasicMixerChannel> d_channels; };
+	std::vector<CHANNEL_STRIP> d_channels; };
 
 
 }  // close package namespace

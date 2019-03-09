@@ -1,3 +1,4 @@
+#pragma once
 #include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
 namespace rqdq {
