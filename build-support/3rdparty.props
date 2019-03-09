@@ -7,6 +7,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>
         $(SolutionDir)\3rdparty\asiosdk\common;
+        $(SolutionDir)\3rdparty\fmt\include;
         $(SolutionDir)\3rdparty\wink;
         $(SolutionDir)\3rdparty\winreg;
 	%(AdditionalIncludeDirectories)

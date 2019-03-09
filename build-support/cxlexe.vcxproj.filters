@@ -33,130 +33,130 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\cxl\config.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\config.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\log.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\log.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\main.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\main.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\unit.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\unit.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\effect.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\effect.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\channelstrip.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\channelstrip.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_filter.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_iaudiodevice.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_math.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_mixer.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_panning.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_panning.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_sampler.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_sampler.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_syncdelay.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\ralio\ralio_asio.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\ralio\ralio_asio.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\ralm\ralm_grid_sequencer.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\ralm\ralm_grid_sequencer.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_mpcwave.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_mpcwave.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_wavetable.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_wavfile.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
+    <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_wavstream.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_deferred.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_file.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclt\rclt_util.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclw\rclw_guid.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclw\rclw_winfile.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_barrier.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_barrier.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_event.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_event.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_jobsys.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_jobsys.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_delay.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_delay.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_file.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_file.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_keyboard.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_keyboard.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\textkit\keyevent.cxx">
+    <ClCompile Include="$(SolutionDir)\src\textkit\keyevent.cxx">
       <Filter>TextKit</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\textkit\mainloop.cxx">
+    <ClCompile Include="$(SolutionDir)\src\textkit\mainloop.cxx">
       <Filter>TextKit</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\textkit\widget.cxx">
+    <ClCompile Include="$(SolutionDir)\src\textkit\widget.cxx">
       <Filter>TextKit</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\alert\view.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx">
       <Filter>cxl\ui\alert</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\loading_status\view.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading_status\view.cxx">
       <Filter>cxl\ui\loading_status</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\pattern_editor\view.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_editor\view.cxx">
       <Filter>cxl\ui\pattern_editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\pattern_length_edit\view.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\view.cxx">
       <Filter>cxl\ui\pattern_length_edit</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\cxl\ui\root\view.cxx">
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\view.cxx">
       <Filter>cxl\ui\root</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rcls\rcls_console.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_console.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rcls\rcls_text_canvas.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_text_canvas.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\rcl\rcls\rcls_timer.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_timer.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
   </ItemGroup>
