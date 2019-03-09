@@ -37,7 +37,7 @@ ASIOSystem& ASIOSystem::GetInstance() {
 
 ASIOSystem::~ASIOSystem() {
 	if (theAsioDriver != nullptr) {
-		Stop();
+		Stop(/*throwOnError=*/false);
 		theAsioDriver->Release();
 		theAsioDriver = nullptr; }
 	CoUninitialize(); }
@@ -233,10 +233,10 @@ void ASIOSystem::Start() {
 		throw ASIOException("start failed", result); }}
 
 
-void ASIOSystem::Stop() {
+void ASIOSystem::Stop(bool throwOnError/*=true*/) {
 	EnsureDriverOpen();
 	int result = theAsioDriver->stop();
-	if (result != ASE_OK) {
+	if (result != ASE_OK && throwOnError) {
 		throw ASIOException("stop failed", result); }}
 
 

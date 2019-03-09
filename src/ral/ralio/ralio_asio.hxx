@@ -283,7 +283,7 @@ public:
 	ralio::ASIOChannelInfo GetChannelInfo(bool isInput, int channel);
 	std::pair<int, int> GetLatencies();
 	void Start();
-	void Stop();
+	void Stop(bool throwOnError=true);
 	void DisposeBuffers();
 	void Exit() {}
 
