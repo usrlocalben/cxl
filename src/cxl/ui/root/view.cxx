@@ -35,7 +35,7 @@ using ScanCode = rclw::ScanCode;
 
 
 UIRoot::UIRoot(CXLUnit& unit)
-	:d_unit(unit), d_loop(), d_patternEditor(unit, d_loop) {
+	:d_unit(unit),  d_patternEditor(unit, d_loop) {
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedASIO);

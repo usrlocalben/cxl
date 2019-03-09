@@ -1,85 +1,163 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="cxx">
+    <Filter Include="ral">
+      <UniqueIdentifier>{642a5398-0267-434a-ac60-c64225bdf593}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="rcl">
+      <UniqueIdentifier>{03e0e6f1-4eb2-47d6-9ba2-58c0a5da6ce2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl">
       <UniqueIdentifier>{c1b71232-3764-46b7-b5fe-2891a86882e8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="cxx\ui">
+    <Filter Include="cxl\ui">
       <UniqueIdentifier>{a2355a47-d3cb-44e4-82cf-61b6266e938c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="TextKit">
+      <UniqueIdentifier>{6d84442e-75c7-45e3-95f6-aab8c3547a7e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\alert">
+      <UniqueIdentifier>{ba6277df-ac53-4cce-ac55-f15b8bca1437}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\loading_status">
+      <UniqueIdentifier>{1099de9b-ed5d-4b09-8343-fe21f66fac66}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\pattern_editor">
+      <UniqueIdentifier>{0f829952-39c5-43bf-b7c4-02335571b638}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\pattern_length_edit">
+      <UniqueIdentifier>{e160c571-761c-472a-9cd7-34f8fb883af8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\root">
+      <UniqueIdentifier>{068d07c9-f471-4628-a5ec-681208e8fab4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_sampler.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\ralio\ralio_asio.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\ralm\ralm_grid_sequencer.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_mpcwave.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx">
-      <Filter>cxx</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\cxl\config.cxx">
-      <Filter>cxx</Filter>
+      <Filter>cxl</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cxl\log.cxx">
-      <Filter>cxx</Filter>
+      <Filter>cxl</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cxl\main.cxx">
-      <Filter>cxx</Filter>
+      <Filter>cxl</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cxl\unit.cxx">
-      <Filter>cxx</Filter>
+      <Filter>cxl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\effect.cxx">
+      <Filter>cxl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\channelstrip.cxx">
+      <Filter>cxl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_filter.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_iaudiodevice.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_math.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_mixer.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_panning.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_sampler.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\raldsp\raldsp_syncdelay.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralio\ralio_asio.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralm\ralm_grid_sequencer.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_mpcwave.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_wavetable.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_wavfile.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ral\ralw\ralw_wavstream.cxx">
+      <Filter>ral</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_deferred.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rcls\rcls_file.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclt\rclt_util.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_console.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_console_canvas.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_guid.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_io.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclw\rclw_winfile.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_barrier.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_event.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_jobsys.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_delay.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_file.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\rcl\rclmt\rclmt_reactor_keyboard.cxx">
+      <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\textkit\keyevent.cxx">
+      <Filter>TextKit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\textkit\mainloop.cxx">
+      <Filter>TextKit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\textkit\widget.cxx">
+      <Filter>TextKit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\alert\view.cxx">
+      <Filter>cxl\ui\alert</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\loading_status\view.cxx">
+      <Filter>cxl\ui\loading_status</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\pattern_editor\view.cxx">
+      <Filter>cxl\ui\pattern_editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\pattern_length_edit\view.cxx">
+      <Filter>cxl\ui\pattern_length_edit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cxl\ui\root\view.cxx">
+      <Filter>cxl\ui\root</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

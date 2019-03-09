@@ -26,5 +26,5 @@ bool Barrier::Join() {
 	return false; }
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace rclmt
+}  // namespace rqdq

@@ -30,7 +30,7 @@ void HandleKeyboardInput(std::function<void(rclmt::KeyEvent)> func) {
 		for (int n=0; n<e.wRepeatCount; n++) {
 			func(ke); }}}
 
-}  // namesapce
+}  // namespace
 
 namespace rclmt {
 
