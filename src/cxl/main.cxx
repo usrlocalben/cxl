@@ -5,7 +5,7 @@
 #include "src/ral/ralio/ralio_asio.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
-#include "src/rcl/rclw/rclw_console.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
 
 #include <algorithm>
 #include <array>
@@ -410,7 +410,7 @@ int main(int argc, char **argv) {
 
 	asio.Start();
 
-	auto& console = rclw::Console::GetInstance();
+	auto& console = rcls::Console::GetInstance();
 	console.SetDimensions(80, 25);
 	console.Clear();
 

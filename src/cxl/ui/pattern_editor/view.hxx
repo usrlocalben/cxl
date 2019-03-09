@@ -1,8 +1,7 @@
 #pragma once
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
@@ -24,15 +23,15 @@ public:
 
 	// Widget impl
 	bool HandleKeyEvent(TextKit::KeyEvent) override;
-	const rclw::ConsoleCanvas& Draw(int, int) override;
+	const rcls::TextCanvas& Draw(int, int) override;
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;
 
 private:
-	const rclw::ConsoleCanvas& DrawTrackSelection();
-	const rclw::ConsoleCanvas& DrawParameters();
-	const rclw::ConsoleCanvas& DrawGrid();
-	const rclw::ConsoleCanvas& DrawPageIndicator();
+	const rcls::TextCanvas& DrawTrackSelection();
+	const rcls::TextCanvas& DrawParameters();
+	const rcls::TextCanvas& DrawGrid();
+	const rcls::TextCanvas& DrawPageIndicator();
 
 private:
 	const std::string GetPageParameterName(int pageNum, int trackNum, int paramNum);
@@ -50,7 +49,7 @@ private:
 
 	CXLUnit& d_unit;
 	TextKit::MainLoop& d_loop;
-	rclw::ConsoleCanvas d_canvas;
+	rcls::TextCanvas d_canvas;
 	int d_selectedTrack = 0;
 	int d_selectedGridPage = 0;
 	int d_selectedVoicePage = 0;

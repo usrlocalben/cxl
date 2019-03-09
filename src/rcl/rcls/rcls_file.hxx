@@ -18,5 +18,7 @@ std::vector<std::string> LoadLines(const std::string& path);
 std::string JoinPath(const std::string& a, const std::string& b);
 std::string JoinPath(const std::string& a, const std::string& b, const std::string& c);
 
+void EnsureOpenable(const std::wstring& path);
+
 }  // close package namespace
 }  // close enterprise namespace

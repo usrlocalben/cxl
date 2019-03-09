@@ -66,7 +66,7 @@ cc_binary(
         "//src/cxl/ui/root:view",
         "//src/ral/ralio:asio",
         "//src/rcl/rclmt:reactor",
-        "//src/rcl/rclw:console",
+        "//src/rcl/rcls:console",
         ":config",
         ":log",
         ":unit",

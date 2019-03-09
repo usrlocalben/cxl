@@ -1,15 +1,15 @@
 #include "src/cxl/ui/pattern_editor/view.hxx"
 
-#include "src/cxl/log.hxx"
-#include "src/cxl/ui/alert/view.hxx"
-#include "src/cxl/ui/pattern_length_edit/view.hxx"
-#include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/widget.hxx"
+#include "src/cxl/log.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/cxl/ui/alert/view.hxx"
+#include "src/cxl/ui/pattern_length_edit/view.hxx"
 
 #include <array>
 #include <deque>
@@ -26,7 +26,7 @@ namespace {
 
 const int kAlertDurationInMillis = 500;
 
-using SC = rclw::ScanCode;
+using SC = rcls::ScanCode;
 
 /**
  * LUT for converting a 4x4 matrix of scan-codes to
@@ -69,7 +69,7 @@ const std::string& tolower(const std::string& s) {
 
 namespace cxl {
 
-using ScanCode = rclw::ScanCode;
+using ScanCode = rcls::ScanCode;
 
 
 PatternEditor::PatternEditor(CXLUnit& unit, TextKit::MainLoop& loop)
@@ -97,7 +97,7 @@ int PatternEditor::GetType() {
 	return TextKit::WT_BOX; }
 
 
-const rclw::ConsoleCanvas& PatternEditor::Draw(int width, int height) {
+const rcls::TextCanvas& PatternEditor::Draw(int width, int height) {
 	auto& out = d_canvas;
 	out.Resize(width, height);
 	out.Clear();
@@ -109,7 +109,7 @@ const rclw::ConsoleCanvas& PatternEditor::Draw(int width, int height) {
 	WriteXY(out, 8, 5, DrawParameters());
 
 	if (d_popup) {
-		auto attr = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
+		auto attr = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 		Fill(out, attr);
 		auto [sx, sy] = d_popup->Pack(-1, -1);
 		const auto& overlay = d_popup->Draw(sx, sy);
@@ -120,11 +120,11 @@ const rclw::ConsoleCanvas& PatternEditor::Draw(int width, int height) {
 	return out; }
 
 
-const rclw::ConsoleCanvas& PatternEditor::DrawTrackSelection() {
-	static rclw::ConsoleCanvas out{ 25, 2 };
+const rcls::TextCanvas& PatternEditor::DrawTrackSelection() {
+	static rcls::TextCanvas out{ 25, 2 };
 	out.Clear();
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
+	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
+	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
 	for (int ti = 0; ti < 8; ti++) {
 		auto isMuted = d_unit.IsTrackMuted(ti);
 		WriteXY(out, ti*3+1, 0, tolower(kTrackNames[ti]), isMuted?lo:hi); }
@@ -173,13 +173,13 @@ void PatternEditor::AdjustPageParameter(int pageNum, int trackNum, int paramNum,
 		throw std::runtime_error(msg); }}
 
 
-const rclw::ConsoleCanvas& PatternEditor::DrawParameters() {
-	static rclw::ConsoleCanvas out{ 7*4, 1+2*2+1 };
+const rcls::TextCanvas& PatternEditor::DrawParameters() {
+	static rcls::TextCanvas out{ 7*4, 1+2*2+1 };
 	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Cyan));
+	Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Cyan));
 
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
+	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Brown);
+	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);
 
 	WriteXY(out, 0, 0, "Voice", d_selectedVoicePage==0?hi:lo);
 	WriteXY(out, 7, 0, "Effect", d_selectedVoicePage==1?hi:lo);
@@ -211,12 +211,12 @@ const rclw::ConsoleCanvas& PatternEditor::DrawParameters() {
 	return out; }
 
 
-const rclw::ConsoleCanvas& PatternEditor::DrawGrid() {
-	static rclw::ConsoleCanvas out{ 65, 3 };
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
-	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
-	auto dark = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
+const rcls::TextCanvas& PatternEditor::DrawGrid() {
+	static rcls::TextCanvas out{ 65, 3 };
+	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Brown);
+	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);
+	auto red = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongRed);
+	auto dark = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
 	const int curPos = d_unit.GetLastPlayedGridPosition();
@@ -239,14 +239,14 @@ const rclw::ConsoleCanvas& PatternEditor::DrawGrid() {
 	return out; }
 
 
-const rclw::ConsoleCanvas& PatternEditor::DrawPageIndicator() {
-	static rclw::ConsoleCanvas out{ 9, 1 };
+const rcls::TextCanvas& PatternEditor::DrawPageIndicator() {
+	static rcls::TextCanvas out{ 9, 1 };
 	int curPage = d_selectedGridPage;
 	int playingPage = d_unit.GetLastPlayedGridPosition() / 16;
 
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Brown);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBrown);
-	auto red = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Brown);
+	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);
+	auto red = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongRed);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "[. . . .]", lo);
 	const std::array<int,4> xa = { 1, 3, 5, 7 };
@@ -268,11 +268,11 @@ bool PatternEditor::HandleKeyEvent(const TextKit::KeyEvent e) {
 		if (handled) {
 			return true; }}
 
-	if (e.down && e.control==rclw::kCKLeftCtrl && (ScanCode::Key1<=e.scanCode && e.scanCode<=ScanCode::Key8)) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && (ScanCode::Key1<=e.scanCode && e.scanCode<=ScanCode::Key8)) {
 		// Ctrl+1...Ctrl+8
 		d_selectedTrack = e.scanCode - ScanCode::Key1;
 		return true; }
-	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Backslash) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Backslash) {
 		auto editor = std::make_shared<PatternLengthEdit>(d_unit.GetPatternLength());
 		d_popup = std::make_shared<TextKit::LineBox>(editor);
 		editor->onSuccess = [&](int newValue) {
@@ -281,21 +281,21 @@ bool PatternEditor::HandleKeyEvent(const TextKit::KeyEvent e) {
 		editor->onCancel = [&]() {
 			d_popup.reset(); };
 		return true; }
-	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::L && d_isRecording) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::L && d_isRecording) {
 		CopyTrackPage();  // copy page
 		d_popup = MakeAlert("copy page");
 		rclmt::Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
 			d_loop.DrawScreenEventually(); });
 		return true; }
-	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Semicolon && d_isRecording) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Semicolon && d_isRecording) {
 		ClearTrackPage();  // clear page
 		d_popup = MakeAlert("clear page");
 		rclmt::Delay(kAlertDurationInMillis, [&]() {
 			d_popup.reset();
 			d_loop.DrawScreenEventually(); });
 		return true; }
-	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Quote && d_isRecording) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Quote && d_isRecording) {
 		PasteTrackPage();  // paste page
 		d_popup = MakeAlert("paste page");
 		rclmt::Delay(kAlertDurationInMillis, [&]() {
@@ -303,7 +303,7 @@ bool PatternEditor::HandleKeyEvent(const TextKit::KeyEvent e) {
 			d_loop.DrawScreenEventually(); });
 		return true; }
 
-	// xxx if (e.down && e.control==rclw::kCK
+	// xxx if (e.down && e.control==rcls::kCK
 	if (e.down && e.control==0) {
 		if (e.scanCode == ScanCode::Backslash) {
 			d_selectedGridPage++;
@@ -346,7 +346,7 @@ bool PatternEditor::HandleKeyEvent(const TextKit::KeyEvent e) {
 		if (e.scanCode == ScanCode::Comma || e.scanCode == ScanCode::Period) {
 
 			int offset = (e.scanCode == ScanCode::Comma ? -1 : 1);
-			if ((e.control & rclw::kCKShift) != 0u) {
+			if ((e.control & rcls::kCKShift) != 0u) {
 				// XXX does not work because of MSFT internal bug 9311951
 				// https://github.com/Microsoft/WSL/issues/1188
 				offset *= 10; }

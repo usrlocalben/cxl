@@ -1,5 +1,6 @@
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
+
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <stdexcept>
@@ -8,10 +9,11 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+
 #include <Windows.h>
 
 namespace rqdq {
-namespace rclw {
+namespace rcls {
 
 
 Console::Console(HANDLE hStdout, HANDLE hStdin)
@@ -102,5 +104,5 @@ Console& Console::Clear() {
 	return *this; }
 
 
-}  // namespace rclw
+}  // namespace rcls
 }  // namespace rqdq

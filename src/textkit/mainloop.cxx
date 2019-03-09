@@ -27,8 +27,9 @@ void MainLoop::DrawScreen() {
 		rect.Top = 0;
 		rect.Right = canvas.d_width - 1;
 		rect.Bottom = canvas.d_height - 1;
+		auto canvasData = reinterpret_cast<CHAR_INFO*>(canvas.GetDataPtr());
 		auto result = WriteConsoleOutput(GetStdHandle(STD_OUTPUT_HANDLE),
-		                                 canvas.GetDataPtr(),
+		                                 canvasData,
 		                                 COORD{ short(canvas.d_width), short(canvas.d_height) },
 		                                 COORD{ 0, 0 },
 		                                 &rect);

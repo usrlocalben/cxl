@@ -1,11 +1,21 @@
 #pragma once
-
+#include <algorithm>
+#include <string>
 #include <vector>
-#include <Windows.h>
 
 namespace rqdq {
-namespace rclw {
+namespace rcls {
 
+/**
+ * ASCII Character & Color attribute pair as used by VGA text-
+ * modes, but 16-bits wide for ABI-compatibility with Windows
+ * CHAR_INFO struct.
+ */
+struct ColorChar {
+	union {
+		wchar_t unicode;
+		char ch; };
+	uint16_t attr; };
 
 enum Color {
 	Black,
@@ -24,19 +34,18 @@ enum Color {
 	StrongRed,
 	StrongMagenta,
 	StrongBrown,
-	StrongWhite,
-};
+	StrongWhite, };
 
-const char Bright = 0x8;
+// XXX const char Bright = 0x8;
 
 inline uint8_t MakeAttribute(Color bg, Color fg) {
 	return (bg<<4)|fg; }
 
 
-class ConsoleCanvas {
+class TextCanvas {
 public:
-	ConsoleCanvas() :d_width(0), d_height(0) {}
-	ConsoleCanvas(int width, int height) : d_width(width), d_height(height), d_buf(d_width*d_height) {}
+	TextCanvas() :d_width(0), d_height(0) {}
+	TextCanvas(int width, int height) : d_width(width), d_height(height), d_buf(d_width*d_height) {}
 
 public:
 	void Resize(int width, int height) {
@@ -45,15 +54,15 @@ public:
 		d_buf.resize(width*height);}
 
 	void Clear() {
-		std::fill(d_buf.begin(), d_buf.end(), CHAR_INFO{});}
+		std::fill(d_buf.begin(), d_buf.end(), ColorChar{});}
 
-	CHAR_INFO* GetDataPtr() { return d_buf.data(); }
+	ColorChar* GetDataPtr() { return d_buf.data(); }
 	int d_width;
 	int d_height;
-	std::vector<CHAR_INFO> d_buf; };
+	std::vector<ColorChar> d_buf; };
 
 
-inline void WriteXY(ConsoleCanvas& dst, int x, int y, const ConsoleCanvas& src) {
+inline void WriteXY(TextCanvas& dst, int x, int y, const TextCanvas& src) {
 	for (int ry=0; ry<dst.d_height; ry++) {
 		for (int rx=0; rx<dst.d_width; rx++) {
 			if ((ry>=y && ry<y+src.d_height) &&
@@ -65,11 +74,11 @@ inline void WriteXY(ConsoleCanvas& dst, int x, int y, const ConsoleCanvas& src) 
 				dstCell = srcCell; }}}}
 
 
-inline ConsoleCanvas Flatten(const ConsoleCanvas& a, const ConsoleCanvas& b, int x, int y) {
-	ConsoleCanvas out(a.d_width, a.d_height);
+inline TextCanvas Flatten(const TextCanvas& a, const TextCanvas& b, int x, int y) {
+	TextCanvas out(a.d_width, a.d_height);
 	for (int ry=0; ry<a.d_height; ry++) {
 		for (int rx=0; rx<a.d_width; rx++) {
-			CHAR_INFO ch;
+			ColorChar ch;
 			if ((ry>=y && ry<y+b.d_height) && (rx>=x && rx<x+b.d_width)) {
 				int sx = rx-x;
 				int sy = ry-y;
@@ -80,29 +89,29 @@ inline ConsoleCanvas Flatten(const ConsoleCanvas& a, const ConsoleCanvas& b, int
 	return out; }
 
 
-inline void WriteXY(ConsoleCanvas& canvas, int x, int y, const std::string& text) {
+inline void WriteXY(TextCanvas& canvas, int x, int y, const std::string& text) {
 	if (0 <= y && y < canvas.d_height) {
 		for (int xx=0; xx<canvas.d_width; xx++) {
 			int ti = xx - x;
 			if (0 <= ti && ti < text.length()) {
-				canvas.d_buf[y*canvas.d_width + xx].Char.AsciiChar = text[ti]; }}}}
+				canvas.d_buf[y*canvas.d_width + xx].ch = text[ti]; }}}}
 
 
-inline void WriteXY(ConsoleCanvas& canvas, int x, int y, const std::string& text, const uint8_t attr) {
+inline void WriteXY(TextCanvas& canvas, int x, int y, const std::string& text, const uint8_t attr) {
 	if (0 <= y && y < canvas.d_height) {
 		for (int xx=0; xx<canvas.d_width; xx++) {
 			int ti = xx - x;
 			if (0 <= ti && ti < text.length()) {
-				canvas.d_buf[y*canvas.d_width + xx].Char.AsciiChar = text[ti];
-				canvas.d_buf[y*canvas.d_width + xx].Attributes = attr; }}}}
+				canvas.d_buf[y*canvas.d_width + xx].ch = text[ti];
+				canvas.d_buf[y*canvas.d_width + xx].attr = attr; }}}}
 
 
-inline void Fill(ConsoleCanvas& canvas, uint8_t attr) {
+inline void Fill(TextCanvas& canvas, uint8_t attr) {
 	for (auto& cell : canvas.d_buf) {
-		cell.Attributes = attr; }}
+		cell.attr = attr; }}
 
 
-inline void DrawPercentageBar(ConsoleCanvas& canvas, int x, int y, int width, float pct) {
+inline void DrawPercentageBar(TextCanvas& canvas, int x, int y, int width, float pct) {
 	//char fillChar[2];
 	//fillChar[0] = (char)0xb1; fillChar[1] = (char)0;
 	const std::string fillChar("="); //
@@ -113,6 +122,5 @@ inline void DrawPercentageBar(ConsoleCanvas& canvas, int x, int y, int width, fl
 	for (     ; cx<  width+x; cx++) {
 		WriteXY(canvas, cx, y, " "     );}}
 
-}  // namespace rclw
+}  // namespace rcls
 }  // namespace rqdq
-

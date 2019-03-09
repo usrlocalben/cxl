@@ -1,7 +1,7 @@
 #include "src/cxl/ui/pattern_length_edit/view.hxx"
 
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/widget.hxx"
 
@@ -12,7 +12,7 @@
 namespace rqdq {
 namespace cxl {
 
-using ScanCode = rclw::ScanCode;
+using ScanCode = rcls::ScanCode;
 
 PatternLengthEdit::PatternLengthEdit(int value) :d_value(value) {}
 
@@ -46,7 +46,7 @@ bool PatternLengthEdit::HandleKeyEvent(TextKit::KeyEvent e) {
 	return false; }
 
 
-const rclw::ConsoleCanvas& PatternLengthEdit::Draw(int width, int height) {
+const rcls::TextCanvas& PatternLengthEdit::Draw(int width, int height) {
 	const auto mySize = Pack(-1, -1);
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
@@ -56,7 +56,7 @@ const rclw::ConsoleCanvas& PatternLengthEdit::Draw(int width, int height) {
 		d_dirty = false;
 		out.Resize(width, height);
 		out.Clear();
-		auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::White);
+		auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::White);
 		Fill(out, lo);
 		WriteXY(out, 0, 0, "Pattern Length");
 		WriteXY(out, 6, 1, fmt::sprintf("%d", d_value)); }

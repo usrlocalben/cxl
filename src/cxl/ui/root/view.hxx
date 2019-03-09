@@ -3,8 +3,7 @@
 #include "src/cxl/ui/pattern_editor/view.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
@@ -32,15 +31,15 @@ public:
 
 	// Widget impl
 	bool HandleKeyEvent(TextKit::KeyEvent) override;
-	const rclw::ConsoleCanvas& Draw(int, int) override;
+	const rcls::TextCanvas& Draw(int, int) override;
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;
 
 private:
-	const rclw::ConsoleCanvas& DrawHeader(int width);
-	const rclw::ConsoleCanvas& DrawKeyHistory();
-	const rclw::ConsoleCanvas& DrawLog(int width, int height);
-	const rclw::ConsoleCanvas& DrawTransportIndicator(int width);
+	const rcls::TextCanvas& DrawHeader(int width);
+	const rcls::TextCanvas& DrawKeyHistory();
+	const rcls::TextCanvas& DrawLog(int width, int height);
+	const rcls::TextCanvas& DrawTransportIndicator(int width);
 
 private:
 	rclmt::Event d_playbackStateChangedEvent = rclmt::Event::MakeEvent();
@@ -52,7 +51,7 @@ private:
 	CXLUnit& d_unit;
 	TextKit::MainLoop d_loop;
 	int d_mode = 0;
-	rclw::ConsoleCanvas d_canvas;
+	rcls::TextCanvas d_canvas;
 	bool d_enableKeyDebug = true;
 	std::deque<std::string> d_keyHistory; };
 

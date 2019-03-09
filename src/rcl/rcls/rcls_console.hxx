@@ -1,15 +1,12 @@
 #pragma once
-
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-//#include <Windows.h>
-
 namespace rqdq {
-namespace rclw {
+namespace rcls {
 
 constexpr uint32_t kCKRightAlt = 0x01;
 constexpr uint32_t kCKLeftAlt = 0x02;
@@ -157,5 +154,5 @@ private:
 	std::vector<bool> d_activeKeys; };
 
 
-}  // close package namespace
-}  // close enterprise namespace
+}  // namespace rcls
+}  // namespace rqdq

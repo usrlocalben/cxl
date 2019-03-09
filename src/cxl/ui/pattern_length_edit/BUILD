@@ -8,8 +8,9 @@ cc_library(
     hdrs = ["view.hxx"],
     deps = [
         "//3rdparty/fmt",
+        "//src/rcl/rcls:console",
+        "//src/rcl/rcls:text_canvas",
         "//src/textkit:keyevent",
         "//src/textkit:widget",
-        "//src/rcl/rclw:console",
         ],
     copts = RSR_DEFAULT_COPTS,)

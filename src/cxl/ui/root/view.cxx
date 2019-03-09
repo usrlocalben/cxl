@@ -1,15 +1,15 @@
 #include "src/cxl/ui/root/view.hxx"
 
-#include "src/cxl/log.hxx"
-#include "src/cxl/ui/loading_status/view.hxx"
-#include "src/cxl/ui/pattern_editor/view.hxx"
-#include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
-#include "src/rcl/rclw/rclw_console.hxx"
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_console.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
+#include "src/cxl/log.hxx"
+#include "src/cxl/unit.hxx"
+#include "src/cxl/ui/loading_status/view.hxx"
+#include "src/cxl/ui/pattern_editor/view.hxx"
 
 #include <array>
 #include <deque>
@@ -31,7 +31,7 @@ constexpr int UM_LOG = 1;
 
 namespace cxl {
 
-using ScanCode = rclw::ScanCode;
+using ScanCode = rcls::ScanCode;
 
 
 UIRoot::UIRoot(CXLUnit& unit)
@@ -66,7 +66,7 @@ int UIRoot::GetType() {
 	return TextKit::WT_BOX; }
 
 
-const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
+const rcls::TextCanvas& UIRoot::Draw(int width, int height) {
 	auto& out = d_canvas;
 	out.Resize(width, height);
 	out.Clear();
@@ -85,7 +85,7 @@ const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
 		WriteXY(out, 0, 1, overlay); }
 
 	if (d_unit.IsLoading()) {
-		auto attr = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack);
+		auto attr = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 		Fill(out, attr);
 		auto [sx, sy] = d_loading->Pack(-1, -1);
 		const auto& overlay = d_loading->Draw(sx, sy);
@@ -96,47 +96,47 @@ const rclw::ConsoleCanvas& UIRoot::Draw(int width, int height) {
 	return out; }
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawLog(int width, int height) {
+const rcls::TextCanvas& UIRoot::DrawLog(int width, int height) {
 	auto& log = Log::GetInstance();
-	static rclw::ConsoleCanvas out;
+	static rcls::TextCanvas out;
 	out.Resize(width, height);
 	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlack));
+	Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack));
 	int head = log.GetHeadIdx();
 	for (int y=0; y<height; y++) {
 		WriteXY(out, 0, y, log.GetEntry(height-y-1, head)); }
 	return out; }
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawHeader(int width) {
-	static rclw::ConsoleCanvas out(width, 1);
+const rcls::TextCanvas& UIRoot::DrawHeader(int width) {
+	static rcls::TextCanvas out(width, 1);
 	out.Resize(width, 1);
 	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Red, rclw::Color::Black));
+	Fill(out, rcls::MakeAttribute(rcls::Color::Red, rcls::Color::Black));
 	WriteXY(out, 1, 0, "cxl 0.1.0");
 	WriteXY(out, width-9-1, 0, "anix/rqdq");
 	return out; }
 
 
-/*const rclw::ConsoleCanvas& UIRoot::DrawKeyHistory() {
-	static rclw::ConsoleCanvas out{ 10, 8 };
+/*const rcls::TextCanvas& UIRoot::DrawKeyHistory() {
+	static rcls::TextCanvas out{ 10, 8 };
 	out.Clear();
-	Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue));
+	Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Blue));
 	int row = 0;
 	for (const auto& item : d_keyHistory) {
 		WriteXY(out, 0, row++, item); }
 	return out; }*/
 
 
-const rclw::ConsoleCanvas& UIRoot::DrawTransportIndicator(int width) {
-	static rclw::ConsoleCanvas out{ width, 1 };
+const rcls::TextCanvas& UIRoot::DrawTransportIndicator(int width) {
+	static rcls::TextCanvas out{ width, 1 };
 	out.Clear();
-	auto lo = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
-	auto hi = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue);
-	auto higreen = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongGreen);
-	// auto hired = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongRed);
+	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Blue);
+	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
+	auto higreen = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongGreen);
+	// auto hired = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongRed);
 
-	//Fill(out, rclw::MakeAttribute(rclw::Color::Black, rclw::Color::StrongBlue));
+	//Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue));
 	std::string s;
 	WriteXY(out, 1, 0, "Pattern: ", lo);
 	WriteXY(out, 10, 0, fmt::sprintf("A-%d", d_unit.GetCurrentPatternNumber()+1), hi);
@@ -161,10 +161,10 @@ const rclw::ConsoleCanvas& UIRoot::DrawTransportIndicator(int width) {
 bool UIRoot::HandleKeyEvent(const TextKit::KeyEvent e) {
 	// XXX AddKeyDebuggerEvent(e);
 	auto& reactor = rclmt::Reactor::GetInstance();
-	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Q) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Q) {
 		reactor.Stop();
 		return true; }
-	if (e.down && e.control==rclw::kCKLeftCtrl && e.scanCode==ScanCode::Enter) {
+	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Enter) {
 		if (d_mode == UM_PATTERN) {
 			d_mode = UM_LOG; }
 		else if (d_mode == UM_LOG) {

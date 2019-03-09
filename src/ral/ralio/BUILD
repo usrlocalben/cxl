@@ -9,9 +9,9 @@ cc_library(
     deps=[
         "//3rdparty/asiosdk",
         "//3rdparty/winreg",
+        "//src/rcl/rcls:file",
         "//src/rcl/rclt:util",
         "//src/rcl/rclw:guid",
-        "//src/rcl/rclw:io",
         "//src/rcl/rclw:smarti",
         ],
     copts = RSR_DEFAULT_COPTS,

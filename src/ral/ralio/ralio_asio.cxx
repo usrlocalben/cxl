@@ -1,7 +1,8 @@
 #include "src/ral/ralio/ralio_asio.hxx"
+
+#include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 #include "src/rcl/rclw/rclw_guid.hxx"
-#include "src/rcl/rclw/rclw_io.hxx"
 #include "src/rcl/rclw/rclw_smarti.hxx"
 
 #include <algorithm>
@@ -67,7 +68,7 @@ void ASIOSystem::RefreshDriverList() {
 			catch (...) {
 				descr = driverName; }
 
-			rclw::EnsureOpenable(dllPath);
+			rcls::EnsureOpenable(dllPath);
 			const rqdq::ralio::ASIODriverRegistration entry{ driverId, driverName, descr, dllPath };
 			d_drivers.emplace_back(entry); }
 		catch (const std::exception& err) {

@@ -1,6 +1,6 @@
 #include "src/textkit/widget.hxx"
 
-#include "src/rcl/rclw/rclw_console_canvas.hxx"
+#include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 
 #include <memory>
@@ -32,10 +32,10 @@ int LineBox::GetType() {
 	return d_widget->GetType(); }
 
 
-const rclw::ConsoleCanvas& LineBox::Draw(int width, int height) {
+const rcls::TextCanvas& LineBox::Draw(int width, int height) {
 	auto& out = d_canvas;
 	out.Resize(width, height);
-	auto xa = rclw::MakeAttribute(rclw::Color::Black, rclw::Color::Blue);
+	auto xa = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Blue);
 	const auto& sub = d_widget->Draw(width-2, height-2);
 	WriteXY(out, 0, 0, "/--- -  -", xa);
 	WriteXY(out, width-1, 0, "\\", xa);

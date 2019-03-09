@@ -21,7 +21,7 @@ cc_library(
     srcs = ["widget.cxx"],
     hdrs = ["widget.hxx"],
     deps = [
-        "//src/rcl/rclw:console_canvas",
+        "//src/rcl/rcls:text_canvas",
         ":keyevent",
         ],
     copts = RSR_DEFAULT_COPTS,)
