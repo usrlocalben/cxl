@@ -173,6 +173,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\config.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\host.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\log.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\main.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx" />

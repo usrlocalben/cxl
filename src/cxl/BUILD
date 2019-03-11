@@ -70,6 +70,7 @@ cc_binary(
         ":config",
         ":log",
         ":unit",
+        ":host",
         ],
     copts = RSR_DEFAULT_COPTS,)
 
@@ -83,4 +84,17 @@ cc_library(
         "//src/rcl/rcls:file",
         ":config",
         ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "host",
+    srcs = ["host.cxx"],
+    hdrs = ["host.hxx"],
+    deps = [
+        "//3rdparty/fmt",
+        "//3rdparty/wink",
+        "//src/ral/ralio:asio",
+        ":log",
+        ":unit", ],
     copts = RSR_DEFAULT_COPTS,)

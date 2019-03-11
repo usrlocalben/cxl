@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "src/cxl/host.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
@@ -17,7 +18,7 @@ namespace cxl {
 
 class UIRoot : public TextKit::Widget {
 public:
-	UIRoot(CXLUnit&);
+	UIRoot(CXLUnit&, CXLASIOHost&);
 
 	void Run();
 
@@ -48,6 +49,7 @@ private:
 	PatternEditor d_patternEditor;
 
 	CXLUnit& d_unit;
+	CXLASIOHost& d_host;
 	TextKit::MainLoop d_loop;
 	int d_mode = 0;
 	rcls::TextCanvas d_canvas;

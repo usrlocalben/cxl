@@ -15,6 +15,7 @@ cc_library(
         "//src/textkit:keyevent",
         "//src/textkit:mainloop",
         "//src/textkit:widget",
+        "//src/cxl:host",
         "//src/cxl:log",
         "//src/cxl:unit",
         "//src/cxl/ui/loading_status:view",

@@ -36,6 +36,9 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\config.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\host.cxx">
+      <Filter>cxl</Filter>
+    </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\log.cxx">
       <Filter>cxl</Filter>
     </ClCompile>

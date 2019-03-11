@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "src/cxl/host.hxx"
 #include "src/cxl/log.hxx"
 #include "src/cxl/ui/loading_status/view.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
@@ -33,8 +34,8 @@ namespace cxl {
 using ScanCode = rcls::ScanCode;
 
 
-UIRoot::UIRoot(CXLUnit& unit)
-	:d_unit(unit),  d_patternEditor(unit, d_loop) {
+UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
+	:d_unit(unit), d_host(host), d_patternEditor(unit, d_loop) {
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedASIO);
