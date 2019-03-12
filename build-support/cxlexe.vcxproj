@@ -178,6 +178,7 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\main.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading_status\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_editor\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\view.cxx" />

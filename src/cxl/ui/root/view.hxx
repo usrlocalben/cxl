@@ -2,8 +2,10 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "src/cxl/host.hxx"
+#include "src/cxl/ui/log/view.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
@@ -25,8 +27,6 @@ public:
 	void onCXLUnitPlaybackStateChangedASIO(bool);
 	void onCXLUnitPlaybackStateChanged();
 
-	void onLogWrite();
-
 	void onLoaderStateChange();
 
 	// Widget impl
@@ -38,7 +38,6 @@ public:
 private:
 	const rcls::TextCanvas& DrawHeader(int width);
 	const rcls::TextCanvas& DrawKeyHistory();
-	const rcls::TextCanvas& DrawLog(int width, int height);
 	const rcls::TextCanvas& DrawTransportIndicator(int width);
 
 private:
@@ -47,6 +46,7 @@ private:
 
 	std::shared_ptr<TextKit::Widget> d_loading;
 	PatternEditor d_patternEditor;
+    LogView d_logView;
 
 	CXLUnit& d_unit;
 	CXLASIOHost& d_host;

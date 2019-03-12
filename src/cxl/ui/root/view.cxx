@@ -1,14 +1,11 @@
 #include "src/cxl/ui/root/view.hxx"
 
-#include <array>
-#include <deque>
-#include <sstream>
 #include <string>
-#include <vector>
 
 #include "src/cxl/host.hxx"
 #include "src/cxl/log.hxx"
 #include "src/cxl/ui/loading_status/view.hxx"
+#include "src/cxl/ui/log/view.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
@@ -18,7 +15,6 @@
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <Windows.h>
 #include <fmt/printf.h>
 
 namespace rqdq {
@@ -35,7 +31,7 @@ using ScanCode = rcls::ScanCode;
 
 
 UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
-	:d_unit(unit), d_host(host), d_patternEditor(unit, d_loop) {
+	:d_unit(unit), d_host(host), d_patternEditor(unit, d_loop), d_logView(d_loop) {
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedASIO);
@@ -47,9 +43,7 @@ UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
 	d_loading = std::make_shared<TextKit::LineBox>(
 		std::make_shared<LoadingStatus>(d_unit)
 		);
-
-	auto& log = Log::GetInstance();
-	log.d_updated.connect([&]() { onLogWrite(); }); }
+    }
 
 
 void UIRoot::Run() {
@@ -81,7 +75,7 @@ const rcls::TextCanvas& UIRoot::Draw(int width, int height) {
 		const auto& overlay = d_patternEditor.Draw(width, height-2);
 		WriteXY(out, 0, 1, overlay); }
 	else if (d_mode == UM_LOG) {
-		const auto& overlay = DrawLog(width, height-2);
+		const auto& overlay = d_logView.Draw(width, height-2);
 		WriteXY(out, 0, 1, overlay); }
 
 	if (d_unit.IsLoading()) {
@@ -93,18 +87,6 @@ const rcls::TextCanvas& UIRoot::Draw(int width, int height) {
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }
 
-	return out; }
-
-
-const rcls::TextCanvas& UIRoot::DrawLog(int width, int height) {
-	auto& log = Log::GetInstance();
-	static rcls::TextCanvas out;
-	out.Resize(width, height);
-	out.Clear();
-	Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack));
-	int head = log.GetHeadIdx();
-	for (int y=0; y<height; y++) {
-		WriteXY(out, 0, y, log.GetEntry(height-y-1, head)); }
 	return out; }
 
 
@@ -181,10 +163,6 @@ void UIRoot::onCXLUnitPlaybackStateChangedASIO(bool isPlaying) {
 	// use a Reactor event to bounce to main
 	d_playbackStateChangedEvent.Signal(); }
 void UIRoot::onCXLUnitPlaybackStateChanged() {
-	d_loop.DrawScreenEventually(); }
-
-
-void UIRoot::onLogWrite() {
 	d_loop.DrawScreenEventually(); }
 
 
