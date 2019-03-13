@@ -14,6 +14,7 @@
 #include "src/ral/ralio/ralio_asio.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
+#include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <fmt/printf.h>
@@ -21,21 +22,6 @@
 #include <Windows.h>
 
 namespace rqdq {
-namespace {
-
-/**
- * based on https://stackoverflow.com/questions/1517685/recursive-createdirectory
- */
-void EnsureDirectoryExists(const std::string& path) {
-	size_t pos = 0;
-	do {
-		pos = path.find_first_of("\\/", pos+1);
-		CreateDirectoryA(path.substr(0, pos).c_str(), nullptr);
-	} while (pos != std::string::npos); }
-
-
-}  // namespace
-
 namespace cxl {
 
 using namespace std;
@@ -47,7 +33,7 @@ int main(int argc, char **argv) {
 	log.info("Log started");
 
 	const array<string, 3> userDirs = {config::patternDir, config::sampleDir, config::kitDir};
-	for_each(userDirs.begin(), userDirs.end(), EnsureDirectoryExists);
+	for_each(userDirs.begin(), userDirs.end(), rcls::EnsureDirectoryExists);
 
 	CXLUnit unit;
 

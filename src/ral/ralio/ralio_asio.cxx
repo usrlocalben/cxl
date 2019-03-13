@@ -93,8 +93,7 @@ void ASIOSystem::OpenDriver(int idx) {
 	int result = CoCreateInstance(clsId, nullptr, CLSCTX_INPROC_SERVER, clsId, &vtbl);
 	if (result != S_OK) {
 		throw std::runtime_error("could not create driver instance"); }
-	theAsioDriver = static_cast<IASIO*>(vtbl);
-	std::cerr << "driver open\n"; }
+	theAsioDriver = static_cast<IASIO*>(vtbl); }
 
 
 void EnsureDriverOpen() {
