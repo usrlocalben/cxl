@@ -22,6 +22,9 @@
     <Filter Include="cxl\ui\loading_status">
       <UniqueIdentifier>{1099de9b-ed5d-4b09-8343-fe21f66fac66}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cxl\ui\log">
+      <UniqueIdentifier>{89740812-0758-9713-8723-987509819872}</UniqueIdentifier>
+    </Filter>
     <Filter Include="cxl\ui\pattern_editor">
       <UniqueIdentifier>{0f829952-39c5-43bf-b7c4-02335571b638}</UniqueIdentifier>
     </Filter>
@@ -143,6 +146,9 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading_status\view.cxx">
       <Filter>cxl\ui\loading_status</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\view.cxx">
+      <Filter>cxl\ui\log</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_editor\view.cxx">
       <Filter>cxl\ui\pattern_editor</Filter>

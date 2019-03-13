@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "src/cxl/host.hxx"
+#include "src/cxl/ui/host/view.hxx"
 #include "src/cxl/ui/log/view.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
 #include "src/cxl/unit.hxx"
@@ -44,13 +45,15 @@ private:
 	rclmt::Event d_playbackStateChangedEvent = rclmt::Event::MakeEvent();
 	// XXX void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 
-	std::shared_ptr<TextKit::Widget> d_loading;
-	PatternEditor d_patternEditor;
-    LogView d_logView;
-
+	TextKit::MainLoop d_loop;
 	CXLUnit& d_unit;
 	CXLASIOHost& d_host;
-	TextKit::MainLoop d_loop;
+	PatternEditor d_patternEditor;
+	LogView d_logView;
+	HostView d_hostView;
+
+	std::shared_ptr<TextKit::Widget> d_loading;
+
 	int d_mode = 0;
 	rcls::TextCanvas d_canvas;
 	bool d_enableKeyDebug = true;

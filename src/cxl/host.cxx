@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -21,6 +20,9 @@ namespace cxl {
 using namespace std;
 
 
+CXLASIOHost::CXLASIOHost(CXLUnit& unit) :d_unit(unit) {}
+
+
 ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long index, ralio::ASIOBool processNow) {
 	using namespace rqdq::ralio;
 	static long processedSamples = 0;
@@ -28,8 +30,7 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 	long buffSize = d_bufPreferredSize;  // buffer size in samples
 	d_dl.resize(buffSize);
 	d_dr.resize(buffSize);
-	if (d_unit != nullptr) {
-		d_unit->Render(d_dl.data(), d_dr.data(), buffSize); }
+	d_unit.Render(d_dl.data(), d_dr.data(), buffSize);
 
 	// perform the processing
 	for (int i=0; i<d_numInputChannels+d_numOutputChannels; i++) {
@@ -43,8 +44,6 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 			else {
 				continue; }
 
-			//cout << "CT(" << int(d_channelInfos[i].type) << ")";
-			// OK do processing for the outputs only
 			switch (d_channelInfos[i].type) {
 			case ASIOSTInt16LSB: {
 				auto dst = static_cast<int16_t*>(d_bufferInfos[i].buffers[index]);
@@ -175,38 +174,63 @@ long CXLASIOHost::onASIOMessage(long selector, long value, void* message, double
 			break; }
 	return ret; }
 
-void CXLASIOHost::AttachUnit(CXLUnit& unit) {
-	if (d_unit != nullptr) {
-		throw std::runtime_error("CXLASIOHost already has an "
-								 "attached CXLUnit instance."); }
-	d_unit = &unit; }
 
-
-bool CXLASIOHost::AttachDriver(const std::string& driverName) {
+bool CXLASIOHost::SetDriver(const std::string& name) {
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	auto& log = Log::GetInstance();
 
 	asio.RefreshDriverList();
 
-	//std::for_each(begin(asio.d_drivers), end(asio.d_drivers),
-	//              [](auto& item) { wcout << item.stringify() << "\n"; });
-
-	int idx = asio.FindDriverByName(driverName);
+	int idx = asio.FindDriverByName(name);
 	if (idx == -1) {
 		auto msg = fmt::sprintf("ASIO driver \"%s\" not found in ASIO registry "
 		                        "(HKEY_LOCAL_MACHINE\\Software\\ASIO)",
-		                        driverName);
+		                        name);
 		log.info(msg);
 		return false; }
 
-	asio.OpenDriver(idx);
+	d_wantedDriver = name;
+	if (d_state == State::Running) {
+		Restart(); }
+	return true; }
+
+
+void CXLASIOHost::SetChannel(const std::string& driverName, int num, const std::string& name) {
+	d_wantedChannels[driverName][num] = name;
+	if (driverName == d_driverName) {
+		Restart(); }}
+
+
+void CXLASIOHost::Start() {
+	auto& asio = ralio::ASIOSystem::GetInstance();
+	auto& log = Log::GetInstance();
+	if (d_state == State::Running) {
+		return; }
+
+	int idx = asio.FindDriverByName(d_wantedDriver);
+	assert(idx > -1);
+
+	try {
+		asio.OpenDriver(idx); }
+	catch (const std::exception& err) {
+		d_driverName = "error";
+		auto msg = fmt::sprintf("ASIO OpenDriver error: %s", err.what());
+		log.info(msg);
+		d_updated.emit();
+		d_state = State::Failed;
+		return; }
+
+    d_driverName = d_wantedDriver;
+
 	const auto info = asio.Init(nullptr);
 
+	/*
 	cout << "Driver Initialized:\n";
 	cout << "    asioVersion: " << info.asioVersion << "\n";
 	cout << "  driverVersion: " << info.driverVersion << "\n";
 	cout << "           name: \"" << info.name << "\"" << "\n";
 	cout << endl;
+	*/
 
 	//asio.ShowControlPanel();
 
@@ -221,22 +245,6 @@ bool CXLASIOHost::AttachDriver(const std::string& driverName) {
 		d_sampleRate = asio.GetSampleRate(); }
 
 	d_supportsOutputReadyOptimization = asio.SignalOutputReady();
-
-	cout << "  #inputChannels: " << d_numInputChannels << "\n";
-	cout << " #outputChannels: " << d_numOutputChannels << "\n";
-	cout << "\n";
-	cout << "    buffer sizes: ";
-	cout << d_bufMinSize;
-	cout << "/" << d_bufMaxSize;
-	cout << "/" << d_bufPreferredSize;
-	cout << " (min/max/preferred)\n";
-	cout << " buffer granularity: " << d_bufGranularity << "\n";
-
-	cout << "\n";
-	cout << " resolution: " << d_sampleRate << " samples/sec" << "\n";
-	cout << "\n";
-
-	auto asioCallbacks = MakeASIOCallbacks();
 
 	d_bufferInfos.resize(d_numInputChannels+d_numOutputChannels);
 	d_channelInfos.resize(d_numInputChannels+d_numOutputChannels);
@@ -255,15 +263,23 @@ bool CXLASIOHost::AttachDriver(const std::string& driverName) {
 	asio.CreateBuffers(d_bufferInfos.data(),
 	                   d_numInputChannels + d_numOutputChannels,
 	                   d_bufPreferredSize,
-	                   asioCallbacks);
+	                   MakeASIOCallbacks());
 
 	for (int i=0; i<d_numInputChannels+d_numOutputChannels; i++) {
 		d_channelInfos[i] = asio.GetChannelInfo(d_bufferInfos[i].isInput != 0, d_bufferInfos[i].channelNum); }
-	return true; }
+
+	d_leftIdx = -1;
+	d_rightIdx = -1;
+	for (int ci=0; ci<2; ci++) {
+		auto& name = d_wantedChannels[d_driverName][ci];
+		LinkChannel(ci, name); }
+
+	asio.Start();
+	d_state = State::Running;
+	d_updated.emit(); }
 
 
-bool CXLASIOHost::AttachChannel(const int num, const std::string& name) {
-	auto& asio = ralio::ASIOSystem::GetInstance();
+void CXLASIOHost::LinkChannel(const int num, const std::string& name) {
 	auto& log = Log::GetInstance();
 
 	int foundIdx = -1;
@@ -279,44 +295,31 @@ bool CXLASIOHost::AttachChannel(const int num, const std::string& name) {
 		d_rightIdx = foundIdx; }
 	else {
 		log.info(fmt::sprintf("refusing to attach host to channel %d", num));
-		return false; }
+		return; }
 
 	bool wasConnected = foundIdx > -1;
-	return wasConnected; }
-
-
-bool CXLASIOHost::AttachChannel(const int num, const int idx) {
-	auto& asio = ralio::ASIOSystem::GetInstance();
-	auto& log = Log::GetInstance();
-
-	int foundIdx = -1;
-	for (int i=0; i<d_numInputChannels+d_numOutputChannels; i++) {
-		const auto& info = d_channelInfos[i];
-		if (!info.isInput) {
-			if (info.channel == idx) {
-				foundIdx = i; }}}
-
-	if (num == 0) {
-		d_leftIdx = foundIdx; }
-	else if (num == 1) {
-		d_rightIdx = foundIdx; }
-	else {
-		log.info(fmt::sprintf("refusing to attach host to channel %d", num));
-		return false; }
-
-	bool wasConnected = foundIdx > -1;
-	return wasConnected; }
-
-
-void CXLASIOHost::Start() {
-	auto& asio = ralio::ASIOSystem::GetInstance();
-	asio.Start(); }
+	return; }
 
 
 void CXLASIOHost::Stop() {
+	if (d_state == State::Stopped) {
+		return; }
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	asio.Stop();
 	asio.DisposeBuffers();
+	d_state = State::Stopped;
+	d_updated.emit(); }
+
+
+void CXLASIOHost::Restart() {
+	Stop();
+	Start(); }
+
+
+CXLASIOHost::~CXLASIOHost() {
+	auto& asio = ralio::ASIOSystem::GetInstance();
+	if (d_state == State::Running) {
+		Stop(); }
 	asio.Exit(); }
 
 

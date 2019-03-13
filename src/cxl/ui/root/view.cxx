@@ -4,6 +4,7 @@
 
 #include "src/cxl/host.hxx"
 #include "src/cxl/log.hxx"
+#include "src/cxl/ui/host/view.hxx"
 #include "src/cxl/ui/loading_status/view.hxx"
 #include "src/cxl/ui/log/view.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
@@ -22,6 +23,7 @@ namespace {
 
 constexpr int UM_PATTERN = 0;
 constexpr int UM_LOG = 1;
+constexpr int UM_HOST = 2;
 
 }  // namespace
 
@@ -31,7 +33,7 @@ using ScanCode = rcls::ScanCode;
 
 
 UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
-	:d_unit(unit), d_host(host), d_patternEditor(unit, d_loop), d_logView(d_loop) {
+	:d_unit(unit), d_host(host), d_patternEditor(unit, d_loop), d_logView(d_loop), d_hostView(d_host, d_loop) {
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedASIO);
@@ -41,9 +43,8 @@ UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
 	d_unit.d_loaderStateChanged.connect(this, &UIRoot::onLoaderStateChange);
 
 	d_loading = std::make_shared<TextKit::LineBox>(
-		std::make_shared<LoadingStatus>(d_unit)
-		);
-    }
+		std::make_shared<LoadingStatus>(d_unit));
+	}
 
 
 void UIRoot::Run() {
@@ -76,6 +77,9 @@ const rcls::TextCanvas& UIRoot::Draw(int width, int height) {
 		WriteXY(out, 0, 1, overlay); }
 	else if (d_mode == UM_LOG) {
 		const auto& overlay = d_logView.Draw(width, height-2);
+		WriteXY(out, 0, 1, overlay); }
+	else if (d_mode == UM_HOST) {
+		const auto& overlay = d_hostView.Draw(width, height-2);
 		WriteXY(out, 0, 1, overlay); }
 
 	if (d_unit.IsLoading()) {
@@ -150,6 +154,8 @@ bool UIRoot::HandleKeyEvent(const TextKit::KeyEvent e) {
 		if (d_mode == UM_PATTERN) {
 			d_mode = UM_LOG; }
 		else if (d_mode == UM_LOG) {
+			d_mode = UM_HOST; }
+		else if (d_mode == UM_HOST) {
 			d_mode = UM_PATTERN; }
 		return true; }
 

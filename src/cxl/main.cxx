@@ -12,7 +12,7 @@
 #include "src/cxl/ui/root/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/ral/ralio/ralio_asio.hxx"
-#include "src/rcl/rclmt/rclmt_reactor.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
@@ -51,42 +51,39 @@ int main(int argc, char **argv) {
 
 	CXLUnit unit;
 
-	CXLASIOHost host{};
-	host.AttachUnit(unit);
-	if (host.AttachDriver(config::asioDriverName)) {
+	CXLASIOHost host{unit};
 
-		const std::array<std::string, 2> chans = { config::masterLeftDest, config::masterRightDest };
-		for (int ci=0; ci<2; ci++) {
-			string mlc = chans[ci];
-			string msg;
-			bool success;
-			if (rclt::ConsumePrefix(mlc, "name=")) {
-				// identify connection by channel name
-				success = host.AttachChannel(ci, mlc);
-				msg = fmt::sprintf("asio channel name \"%s\" not found", mlc); }
-			else if (rclt::ConsumePrefix(mlc, "num=")) {
-				// identify connection by index
-				const int num = stoi(mlc);
-				success = host.AttachChannel(ci, num);
-				msg = fmt::sprintf("asio channel number %d not found", num); }
-			else {
-				success = false;
-				msg = fmt::sprintf("invalid asio connection \"%s\" expected "
-								   "either num=<num> or name=<text>",
-								   chans[ci]); }
-			if (!success) {
-				log.info(msg); }}}
-	else {
-		auto msg = fmt::sprintf("ASIO driver \"%s\" not available.",
-		                        config::asioDriverName); }
+	rclmt::Delay(0, [&]() {
+		if (host.SetDriver(config::asioDriverName)) {
+			const std::array<std::string, 2> chans = { config::masterLeftDest, config::masterRightDest };
+			for (int ci=0; ci<2; ci++) {
+				string mlc = chans[ci];
+				string msg;
+				if (rclt::ConsumePrefix(mlc, "name=")) {
+					// identify connection by channel name
+					host.SetChannel(config::asioDriverName, ci, mlc); }
+				/*else if (rclt::ConsumePrefix(mlc, "num=")) {
+					// identify connection by index
+					const int num = stoi(mlc);
+					success = host.AttachChannel(ci, num);
+					msg = fmt::sprintf("asio channel number %d not found", num); }*/
+				else {
+					msg = fmt::sprintf("invalid asio connection \"%s\" expected "
+									   "either num=<num> or name=<text>",
+									   chans[ci]);}
+				if (!msg.empty()) {
+					log.info(msg); }}
+			host.Start(); }
+		else {
+			auto msg = fmt::sprintf("ASIO driver \"%s\" not available.",
+									config::asioDriverName);
+			log.info(msg); }});
 
 	auto& console = rcls::Console::GetInstance();
 	console.SetDimensions(80, 25);
 	console.Clear();
 
-	host.Start();
 	UIRoot(unit, host).Run();
-	host.Stop();
 
 	for (int n=0; n<25; n++) {
 		cout << "\n"; }
