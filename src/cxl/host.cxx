@@ -297,7 +297,7 @@ void CXLASIOHost::LinkChannel(const int num, const std::string& name) {
 		log.info(fmt::sprintf("refusing to attach host to channel %d", num));
 		return; }
 
-	bool wasConnected = foundIdx > -1;
+	// XXX bool wasConnected = foundIdx > -1;
 	return; }
 
 

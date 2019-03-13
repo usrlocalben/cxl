@@ -261,7 +261,6 @@ const rcls::TextCanvas& PatternEditor::DrawPageIndicator() {
 
 
 bool PatternEditor::HandleKeyEvent(const TextKit::KeyEvent e) {
-	auto& reactor = rclmt::Reactor::GetInstance();
 	if (d_popup) {
 		bool handled = d_popup->HandleKeyEvent(e);
 		if (handled) {
