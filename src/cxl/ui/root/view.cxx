@@ -1,6 +1,7 @@
 #include "src/cxl/ui/root/view.hxx"
 
 #include <string>
+#include <utility>
 
 #include "src/cxl/host.hxx"
 #include "src/cxl/log.hxx"
@@ -10,6 +11,7 @@
 #include "src/cxl/ui/pattern_editor/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
@@ -34,6 +36,7 @@ using ScanCode = rcls::ScanCode;
 
 UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
 	:d_unit(unit), d_host(host), d_patternEditor(unit, d_loop), d_logView(d_loop), d_hostView(d_host, d_loop) {
+	using std::make_shared;
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	d_unit.d_playbackStateChanged.connect(this, &UIRoot::onCXLUnitPlaybackStateChangedASIO);
@@ -42,9 +45,17 @@ UIRoot::UIRoot(CXLUnit& unit, CXLASIOHost& host)
 
 	d_unit.d_loaderStateChanged.connect(this, &UIRoot::onLoaderStateChange);
 
-	d_loading = std::make_shared<TextKit::LineBox>(
-		std::make_shared<LoadingStatus>(d_unit));
-	}
+	auto splash = make_shared<SplashView>(d_loop);
+	splash->onComplete.connect([&]() {
+		// can't reset() the Splash ptr while onComplete is firing
+		// so queue this to run from the reactor
+		rclmt::Delay(0, [&]() {
+			d_loop.DrawScreenEventually();
+			d_splash.reset(); }); });
+	d_splash = make_shared<TextKit::LineBox>(splash);
+
+	d_loading = make_shared<TextKit::LineBox>(
+	                make_shared<LoadingStatus>(d_unit)); }
 
 
 void UIRoot::Run() {
@@ -87,6 +98,13 @@ const rcls::TextCanvas& UIRoot::Draw(int width, int height) {
 		Fill(out, attr);
 		auto [sx, sy] = d_loading->Pack(-1, -1);
 		const auto& overlay = d_loading->Draw(sx, sy);
+		int xc = (width - overlay.d_width) / 2;
+		int yc = (height - overlay.d_height) / 2;
+		WriteXY(out, xc, yc, overlay); }
+
+	if (d_splash) {
+		auto [sx, sy] = d_splash->Pack(-1, -1);
+		const auto& overlay = d_splash->Draw(sx, sy);
 		int xc = (width - overlay.d_width) / 2;
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }

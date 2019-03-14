@@ -8,6 +8,7 @@
 #include "src/cxl/ui/host/view.hxx"
 #include "src/cxl/ui/log/view.hxx"
 #include "src/cxl/ui/pattern_editor/view.hxx"
+#include "src/cxl/ui/splash/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
@@ -51,7 +52,7 @@ private:
 	PatternEditor d_patternEditor;
 	LogView d_logView;
 	HostView d_hostView;
-
+	std::shared_ptr<TextKit::Widget> d_splash;
 	std::shared_ptr<TextKit::Widget> d_loading;
 
 	int d_mode = 0;
