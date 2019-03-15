@@ -216,6 +216,8 @@
     <ClCompile Include="$(SolutionDir)\src\textkit\keyevent.cxx" />
     <ClCompile Include="$(SolutionDir)\src\textkit\mainloop.cxx" />
     <ClCompile Include="$(SolutionDir)\src\textkit\widget.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\view.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -34,6 +34,12 @@
     <Filter Include="cxl\ui\root">
       <UniqueIdentifier>{068d07c9-f471-4628-a5ec-681208e8fab4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cxl\ui\host">
+      <UniqueIdentifier>{8cd94ca7-7d7e-414b-b5e7-3acefbbcbc93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\splash">
+      <UniqueIdentifier>{e0b71b0c-7e17-4fe3-bf79-212cacd57a53}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\config.cxx">
@@ -167,6 +173,12 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_timer.cxx">
       <Filter>rcl</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\view.cxx">
+      <Filter>cxl\ui\host</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\view.cxx">
+      <Filter>cxl\ui\splash</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
