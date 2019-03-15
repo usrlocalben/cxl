@@ -43,7 +43,7 @@ public:
 	int GetRunningBufferSize() { return d_bufPreferredSize; }
 
 private:
-	void LinkChannel(int ci, const std::string& name);
+	void LinkChannel(int num, const std::string& name);
 
 	ralio::ASIOCallbacks* MakeASIOCallbacks() {
 		static rqdq::ralio::ASIOCallbacks out{
