@@ -42,30 +42,11 @@ constexpr std::array<char, 8> kParamScanLUT = {
 	SC::G, SC::H, SC::J, SC::K, };
 
 
-const std::array<const std::string, 16> kTrackNames = {
-	"BD", "SD", "HT", "MD", "LT", "CP", "RS", "CB",
-	"CH", "OH", "RC", "CC", "M1", "M2", "M3", "M4" };
-
-
-char tolower(char ch) {
-	if ('A' <= ch && ch <= 'Z') {
-		return ch - 'A' + 'a'; }
-	return ch; }
-
-
-const std::string& tolower(const std::string& s) {
-	thread_local std::string tmp;
-	tmp.clear();
-	for (auto ch : s) {
-		tmp.push_back(tolower(ch)); }
-	return tmp; }
-
 }  // namespace
 
 namespace cxl {
 
 using ScanCode = rcls::ScanCode;
-
 
 PatternController::PatternController(CXLUnit& unit, TextKit::MainLoop& loop)
 	:d_unit(unit), d_loop(loop), d_view(d_unit, d_state) {
