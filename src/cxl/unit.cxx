@@ -235,11 +235,11 @@ const std::string CXLUnit::GetMixParameterName(int ti, int pi) const {
 
 int CXLUnit::GetMixParameterValue(int ti, int pi) const {
 	switch (pi) {
-	case 0: return d_mixer.xxxcat(ti).d_distortion;
-	case 1: return d_mixer.xxxcat(ti).d_gain;
-	case 2: return d_mixer.xxxcat(ti).d_pan;
-	case 3: return d_mixer.xxxcat(ti).d_send1;
-	case 4: return d_mixer.xxxcat(ti).d_send2;
+	case 0: return d_mixer[ti].d_distortion;
+	case 1: return d_mixer[ti].d_gain;
+	case 2: return d_mixer[ti].d_pan;
+	case 3: return d_mixer[ti].d_send1;
+	case 4: return d_mixer[ti].d_send2;
 	default: return 0; }}
 
 
@@ -254,7 +254,7 @@ void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
 
 
 const std::string& CXLUnit::GetWaveName(int waveId) const {
-	return d_waveTable.GetConst(waveId).d_descr; }
+	return d_waveTable.Get(waveId).d_descr; }
 
 
 void CXLUnit::DecrementKit() {

@@ -19,7 +19,7 @@ public:
 			throw std::runtime_error("invalid wavetable slot id"); }
 		return d_waves[id]; }
 
-	const MPCWave& GetConst(const int id) const {
+	const MPCWave& Get(const int id) const {
 		if (!(0 <= id && id < d_waves.size())) {
 			throw std::runtime_error("invalid wavetable slot id"); }
 		return d_waves[id]; }

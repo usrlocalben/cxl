@@ -47,7 +47,7 @@ public:
 		EnsureValidChannelId(ch);
 		return d_channels[ch]; }
 
-	const CHANNEL_STRIP& xxxcat(int ch) const {
+	const CHANNEL_STRIP& operator[](int ch) const {
 		EnsureValidChannelId(ch);
 		return d_channels[ch]; }
 

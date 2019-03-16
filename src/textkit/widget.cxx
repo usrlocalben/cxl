@@ -14,7 +14,7 @@ namespace {
  * https://stackoverflow.com/questions/3486048/
  */
 struct no_op_delete {
-	void operator()(void*) {} };
+	void operator()(void* /*unused*/) {} };
 
 
 }  // namespace
