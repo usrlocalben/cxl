@@ -25,21 +25,21 @@ public:
 	// transport controls
 	void Play();
 	void Stop();
-	bool IsPlaying();
-	int GetLastPlayedGridPosition();
+	bool IsPlaying() const;
+	int GetLastPlayedGridPosition() const;
 	void SetTempo(int value);
-	int GetTempo();
+	int GetTempo() const;
 
 	// pattern editing
 	void ToggleTrackGridNote(int track, int pos);
-	int GetTrackGridNote(int track, int pos);
+	int GetTrackGridNote(int track, int pos) const;
 	void SetTrackGridNote(int track, int pos, int note);
 	void SwitchPattern(int pid);
 	void CommitPattern();
-	int GetCurrentPatternNumber() { return d_patternNum; }
-	int GetPatternLength() { return d_sequencer.GetPatternLength(); }
+	int GetCurrentPatternNumber() const { return d_patternNum; }
+	int GetPatternLength() const { return d_sequencer.GetPatternLength(); }
 	void SetPatternLength(int value) { d_sequencer.SetPatternLength(value); }
-	bool IsTrackMuted(int ti) { return d_sequencer.IsTrackMuted(ti); }
+	bool IsTrackMuted(int ti) const { return d_sequencer.IsTrackMuted(ti); }
 	void ToggleTrackMute(int ti) { d_sequencer.ToggleTrackMute(ti); d_patternDataChanged.emit(ti); }
 
 	// sampler voices
@@ -49,25 +49,25 @@ public:
 	void SaveKit();
 	void LoadKit();
 	void SwitchKit(int n);
-	int GetCurrentKitNumber() { return d_kitNum; }
-	const std::string& GetCurrentKitName() { return d_kitName; }
+	int GetCurrentKitNumber() const { return d_kitNum; }
+	const std::string& GetCurrentKitName() const { return d_kitName; }
 
-	int GetVoiceLevel(int ti);
+	int GetVoiceLevel(int ti) const;
 	void AdjustVoiceLevel(int ti, int offset);
 
-	const std::string GetVoiceParameterName(int ti, int pi);
-	int GetVoiceParameterValue(int ti, int pi);
+	const std::string GetVoiceParameterName(int ti, int pi) const;
+	int GetVoiceParameterValue(int ti, int pi) const;
 	void AdjustVoiceParameter(int ti, int pi, int offset);
 
-	const std::string GetEffectParameterName(int ti, int pi);
-	int GetEffectParameterValue(int ti, int pi);
+	const std::string GetEffectParameterName(int ti, int pi) const;
+	int GetEffectParameterValue(int ti, int pi) const;
 	void AdjustEffectParameter(int ti, int pi, int offset);
 
-	const std::string GetMixParameterName(int ti, int pi);
-	int GetMixParameterValue(int ti, int pi);
+	const std::string GetMixParameterName(int ti, int pi) const;
+	int GetMixParameterValue(int ti, int pi) const;
 	void AdjustMixParameter(int ti, int pi, int offset);
 
-	const std::string& GetWaveName(int waveId);
+	const std::string& GetWaveName(int waveId) const;
 	void Trigger(int track);
 
     // audio render
@@ -98,13 +98,13 @@ private:
 	std::vector<std::string> d_filesToLoad;
 public:
 	wink::signal<wink::slot<void()>> d_loaderStateChanged;
-	float GetLoadingProgress();
-	const std::string GetLoadingName() {
+	float GetLoadingProgress() const;
+	const std::string GetLoadingName() const {
 		if (d_nextFileId < d_filesToLoad.size()) {
 			return d_filesToLoad[d_nextFileId]; }
 		else {
 			return "";}}
-	bool IsLoading() { return d_loading; }
+	bool IsLoading() const { return d_loading; }
 private:
 	void BeginLoadingWaves();
 	void MakeProgressLoadingWaves();

@@ -2,6 +2,7 @@
 #include <utility>
 
 #include "src/cxl/host.hxx"
+#include "src/cxl/ui/host/view.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
@@ -9,18 +10,18 @@
 namespace rqdq {
 namespace cxl {
 
-class HostView : public TextKit::Widget {
+class HostController {
 public:
-	HostView(CXLASIOHost& host);
-
-	// Widget impl
-	const rcls::TextCanvas& Draw(int, int) override;
-	std::pair<int, int> Pack(int, int) override;
-	int GetType() override;
+	HostController(CXLASIOHost& host, TextKit::MainLoop& loop);
 
 private:
-	const CXLASIOHost& d_host;
-	rcls::TextCanvas d_canvas; };
+	void onHostUpdated();
+
+private:
+	CXLASIOHost& d_host;
+	TextKit::MainLoop& d_loop;
+public:
+	HostView d_view; };
 
 
 }  // namespace cxl

@@ -1,21 +1,14 @@
 #include "src/cxl/ui/splash/view.hxx"
 
 #include <array>
-#include <iostream>
+#include <stdexcept>
 #include <string>
 #include <utility>
 
-#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/textkit/keyevent.hxx"
-#include "src/textkit/widget.hxx"
 
 namespace rqdq {
 namespace {
-
-constexpr float kAnimRateInHz{30.0f};
-
-constexpr float kSplashDuration{5.0f};
 
 const std::array<std::string, 12> kArtText{ {
 	R"(                                            )",
@@ -37,8 +30,7 @@ const std::array<std::string, 12> kArtText{ {
 
 namespace cxl {
 
-SplashView::SplashView(TextKit::MainLoop& loop) :d_loop(loop) {
-	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }
+SplashView::SplashView(const float& t) :d_t(t) {}
 
 
 std::pair<int, int> SplashView::Pack(int w, int h) {
@@ -49,8 +41,8 @@ int SplashView::GetType() {
 	return TextKit::WT_FIXED; }
 
 
-bool SplashView::HandleKeyEvent(TextKit::KeyEvent e) {
-	return false; }
+void SplashView::Invalidate() {
+	d_dirty = true; }
 
 
 const rcls::TextCanvas& SplashView::Draw(int width, int height) {
@@ -71,17 +63,6 @@ const rcls::TextCanvas& SplashView::Draw(int width, int height) {
 	for (int y=0; y<kArtText.size(); y++) {
 		WriteXY(out, 0, y, kArtText[y], y==cyanY?cyan:blue); }
 	return out; }
-
-
-void SplashView::Tick() {
-	// std::cerr << "T" << std::flush;
-	d_t += 1/kAnimRateInHz;
-	if (d_t > kSplashDuration) {
-		onComplete.emit();
-		return; }
-	d_dirty = true;
-	d_loop.DrawScreenEventually();
-	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }
 
 
 }  // namespace cxl

@@ -8,9 +8,18 @@ cc_library(
     hdrs = ["view.hxx"],
     deps = [
         "//3rdparty/fmt",
-        "//src/rcl/rcls:console",
         "//src/rcl/rcls:text_canvas",
-        "//src/textkit:keyevent",
         "//src/textkit:widget",
         ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "controller",
+    srcs = ["controller.cxx"],
+    hdrs = ["controller.hxx"],
+    deps = [
+        "//src/rcl/rcls:console",
+        "//src/textkit:keyevent",
+        ":view", ],
     copts = RSR_DEFAULT_COPTS,)

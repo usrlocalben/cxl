@@ -177,9 +177,7 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\log.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\main.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading_status\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_editor\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\unit.cxx" />
@@ -218,6 +216,18 @@
     <ClCompile Include="$(SolutionDir)\src\textkit\widget.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\page.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\state.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\state.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\controller.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

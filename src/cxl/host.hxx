@@ -38,9 +38,9 @@ public:
 	void Restart();
 
 public:
-	std::string GetRunningDriverName() { return d_driverName; }
-	int GetRunningSampleRate() { return static_cast<int>(d_sampleRate); }
-	int GetRunningBufferSize() { return d_bufPreferredSize; }
+	std::string GetRunningDriverName() const { return d_driverName; }
+	int GetRunningSampleRate() const { return static_cast<int>(d_sampleRate); }
+	int GetRunningBufferSize() const { return d_bufPreferredSize; }
 
 private:
 	void LinkChannel(int num, const std::string& name);

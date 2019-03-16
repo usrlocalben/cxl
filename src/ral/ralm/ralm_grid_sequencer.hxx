@@ -50,13 +50,13 @@ public:
 	bool Update();
 	bool Process();
 
-	bool IsPlaying() { return d_state == PlayerState::Playing; }
+	bool IsPlaying() const { return d_state == PlayerState::Playing; }
 
 	void SetTempo(int bpm);
-	int GetTempo();
+	int GetTempo() const;
 	void AddTrack(raldsp::SingleSampler& voice);
 
-	int GetPatternLength() { return d_patternLength; }
+	int GetPatternLength() const { return d_patternLength; }
 	void SetPatternLength(int value) {
 		if (!(value==16 || value==32 || value==64)) {
 			throw std::runtime_error("invalid pattern length"); }
@@ -66,7 +66,7 @@ public:
 		if (!(0<=tn && tn<d_tracks.size())) {
 			throw std::runtime_error("invalid track"); }
 		d_tracks[tn].grid[pos] = value; }
-	int GetTrackGridNote(int tn, int pos) {
+	int GetTrackGridNote(int tn, int pos) const {
 		if (!(0<=tn && tn<d_tracks.size())) {
 			throw std::runtime_error("invalid track"); }
 		return d_tracks[tn].grid[pos]; }
@@ -77,7 +77,7 @@ public:
 		cell = (cell==1?0:1); }
 	void ClearTrackGrid(int tn) {
 		std::fill(d_tracks[tn].grid.begin(), d_tracks[tn].grid.end(), 0);}
-	bool IsTrackMuted(int tn) {
+	bool IsTrackMuted(int tn) const {
 		return d_tracks[tn].isMuted; }
 	void ToggleTrackMute(int tn) {
 		d_tracks[tn].isMuted = !d_tracks[tn].isMuted; }
@@ -85,7 +85,7 @@ public:
 	void InitializePattern() {
 		for (auto& track : d_tracks) {
 			std::fill(track.grid.begin(), track.grid.end(), 0); }}
-	int GetLastPlayedGridPosition() { return d_lastPlayedGridPosition; }
+	int GetLastPlayedGridPosition() const { return d_lastPlayedGridPosition; }
 
 private:
 	void IncrementT();

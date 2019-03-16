@@ -18,7 +18,7 @@ void GridSequencer::SetTempo(const int bpm) {
 	d_tempoInBPM = bpm; }
 
 
-int GridSequencer::GetTempo() {
+int GridSequencer::GetTempo() const {
 	return d_tempoInBPM; }
 
 

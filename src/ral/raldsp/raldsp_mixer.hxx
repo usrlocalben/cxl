@@ -41,14 +41,18 @@ public:
 	void AddChannel() {
 		d_channels.emplace_back(); }
 
-	int GetNumChannels() { return static_cast<int>(d_channels.size()); }
+	int GetNumChannels() const { return static_cast<int>(d_channels.size()); }
 
 	CHANNEL_STRIP& operator[](int ch) {
 		EnsureValidChannelId(ch);
 		return d_channels[ch]; }
 
+	const CHANNEL_STRIP& xxxcat(int ch) const {
+		EnsureValidChannelId(ch);
+		return d_channels[ch]; }
+
 private:
-	void EnsureValidChannelId(int ch) {
+	void EnsureValidChannelId(int ch) const {
 		if (!(0<=ch && ch<GetNumChannels())) {
 			throw new std::runtime_error("invalid channel id"); }}
 

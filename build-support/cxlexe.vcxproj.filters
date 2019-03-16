@@ -19,14 +19,8 @@
     <Filter Include="cxl\ui\alert">
       <UniqueIdentifier>{ba6277df-ac53-4cce-ac55-f15b8bca1437}</UniqueIdentifier>
     </Filter>
-    <Filter Include="cxl\ui\loading_status">
-      <UniqueIdentifier>{1099de9b-ed5d-4b09-8343-fe21f66fac66}</UniqueIdentifier>
-    </Filter>
     <Filter Include="cxl\ui\log">
       <UniqueIdentifier>{89740812-0758-9713-8723-987509819872}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="cxl\ui\pattern_editor">
-      <UniqueIdentifier>{0f829952-39c5-43bf-b7c4-02335571b638}</UniqueIdentifier>
     </Filter>
     <Filter Include="cxl\ui\pattern_length_edit">
       <UniqueIdentifier>{e160c571-761c-472a-9cd7-34f8fb883af8}</UniqueIdentifier>
@@ -39,6 +33,12 @@
     </Filter>
     <Filter Include="cxl\ui\splash">
       <UniqueIdentifier>{e0b71b0c-7e17-4fe3-bf79-212cacd57a53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\pattern">
+      <UniqueIdentifier>{0f829952-39c5-43bf-b7c4-02335571b638}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cxl\ui\loading">
+      <UniqueIdentifier>{1099de9b-ed5d-4b09-8343-fe21f66fac66}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -150,14 +150,8 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx">
       <Filter>cxl\ui\alert</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading_status\view.cxx">
-      <Filter>cxl\ui\loading_status</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\view.cxx">
       <Filter>cxl\ui\log</Filter>
-    </ClCompile>
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_editor\view.cxx">
-      <Filter>cxl\ui\pattern_editor</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\view.cxx">
       <Filter>cxl\ui\pattern_length_edit</Filter>
@@ -179,6 +173,42 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\view.cxx">
       <Filter>cxl\ui\splash</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\controller.cxx">
+      <Filter>cxl\ui\splash</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\controller.cxx">
+      <Filter>cxl\ui\root</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\controller.cxx">
+      <Filter>cxl\ui\pattern_length_edit</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\controller.cxx">
+      <Filter>cxl\ui\pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\page.cxx">
+      <Filter>cxl\ui\pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\state.cxx">
+      <Filter>cxl\ui\pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\view.cxx">
+      <Filter>cxl\ui\pattern</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\controller.cxx">
+      <Filter>cxl\ui\log</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\controller.cxx">
+      <Filter>cxl\ui\loading</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\view.cxx">
+      <Filter>cxl\ui\loading</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\controller.cxx">
+      <Filter>cxl\ui\host</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\state.cxx">
+      <Filter>cxl\ui\root</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

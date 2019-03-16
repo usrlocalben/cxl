@@ -19,7 +19,8 @@ const int WT_FLOW = 4;
 
 class Widget {
 public:
-	virtual bool HandleKeyEvent(KeyEvent) = 0;
+	virtual bool HandleKeyEvent(KeyEvent) {
+		return false; }
 	virtual const rcls::TextCanvas& Draw(int width, int height) = 0;
 	virtual std::pair<int, int> Pack(int, int) = 0;
 	virtual int GetType() = 0;
@@ -28,6 +29,7 @@ public:
 
 class LineBox : public Widget {
 public:
+	LineBox(Widget* widget);
 	LineBox(std::shared_ptr<Widget> widget);
 	LineBox(std::shared_ptr<Widget> widget, const std::string& title);
 

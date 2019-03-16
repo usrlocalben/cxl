@@ -7,14 +7,18 @@ cc_library(
     srcs = ["view.cxx"],
     hdrs = ["view.hxx"],
     deps = [
-        "//3rdparty/fmt",
-        "//3rdparty/wink",
-        "//src/rcl/rclmt:reactor",
-        "//src/rcl/rclmt:reactor_delay",
         "//src/rcl/rcls:text_canvas",
-        "//src/textkit:keyevent",
+        "//src/textkit:widget", ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "controller",
+    srcs = ["controller.cxx"],
+    hdrs = ["controller.hxx"],
+    deps = [
+        "//3rdparty/wink",
+        "//src/rcl/rclmt:reactor_delay",
         "//src/textkit:mainloop",
-        "//src/textkit:widget",
-        "//src/cxl:unit",
-        ],
+        ":view", ],
     copts = RSR_DEFAULT_COPTS,)

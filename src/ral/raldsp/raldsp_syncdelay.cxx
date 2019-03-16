@@ -28,7 +28,7 @@ void SyncDelay::Update(int tempo) {
 	d_valid = true; };
 
 
-int SyncDelay::GetNumChannels() {
+int SyncDelay::GetNumChannels() const {
 	return d_bufs.size(); }
 
 

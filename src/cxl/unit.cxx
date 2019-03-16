@@ -78,7 +78,7 @@ void CXLUnit::MakeProgressLoadingWaves() {
 	                 [&](uint32_t err) { this->onWaveIOError(err); }); }
 
 
-float CXLUnit::GetLoadingProgress() {
+float CXLUnit::GetLoadingProgress() const {
 	float total = d_filesToLoad.size();
 	float done = d_nextFileId;
 	return done / total; }
@@ -119,11 +119,11 @@ void CXLUnit::Stop() {
 	d_sequencer.Stop(); }
 
 
-bool CXLUnit::IsPlaying() {
+bool CXLUnit::IsPlaying() const {
 	return d_sequencer.IsPlaying(); }
 
 
-int CXLUnit::GetLastPlayedGridPosition() {
+int CXLUnit::GetLastPlayedGridPosition() const {
 	return d_sequencer.GetLastPlayedGridPosition(); }
 
 
@@ -132,7 +132,7 @@ void CXLUnit::SetTempo(int value) {
 	d_tempoChanged.emit(value); }
 
 
-int CXLUnit::GetTempo() {
+int CXLUnit::GetTempo() const {
 	return d_sequencer.GetTempo(); }
 
 
@@ -142,7 +142,7 @@ void CXLUnit::ToggleTrackGridNote(int track, int pos) {
 	d_patternDataChanged.emit(track); }
 
 
-int CXLUnit::GetTrackGridNote(int track, int pos) {
+int CXLUnit::GetTrackGridNote(int track, int pos) const {
 	return d_sequencer.GetTrackGridNote(track, pos); }
 
 
@@ -150,7 +150,7 @@ void CXLUnit::SetTrackGridNote(int track, int pos, int note) {
 	return d_sequencer.SetTrackGridNote(track, pos, note); }
 
 
-const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) {
+const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return "wav";
@@ -162,7 +162,7 @@ const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) {
 	default: return ""; }}
 
 
-int CXLUnit::GetVoiceParameterValue(int ti, int pi) {
+int CXLUnit::GetVoiceParameterValue(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return d_voices[ti].d_waveId;
@@ -185,7 +185,7 @@ void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 	default: break; }}
 
 
-const std::string CXLUnit::GetEffectParameterName(int ti, int pi) {
+const std::string CXLUnit::GetEffectParameterName(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return "flt";
@@ -198,7 +198,7 @@ const std::string CXLUnit::GetEffectParameterName(int ti, int pi) {
 	default: return ""; }}
 
 
-int CXLUnit::GetEffectParameterValue(int ti, int pi) {
+int CXLUnit::GetEffectParameterValue(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return d_effects[ti].d_lowpassFreq;
@@ -223,7 +223,7 @@ void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
 	default: break; }}
 
 
-const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
+const std::string CXLUnit::GetMixParameterName(int ti, int pi) const {
 	switch (pi) {
 	case 0: return "dis";
 	case 1: return "vol";
@@ -233,13 +233,13 @@ const std::string CXLUnit::GetMixParameterName(int ti, int pi) {
 	default: return ""; }}
 
 
-int CXLUnit::GetMixParameterValue(int ti, int pi) {
+int CXLUnit::GetMixParameterValue(int ti, int pi) const {
 	switch (pi) {
-	case 0: return d_mixer[ti].d_distortion;
-	case 1: return d_mixer[ti].d_gain;
-	case 2: return d_mixer[ti].d_pan;
-	case 3: return d_mixer[ti].d_send1;
-	case 4: return d_mixer[ti].d_send2;
+	case 0: return d_mixer.xxxcat(ti).d_distortion;
+	case 1: return d_mixer.xxxcat(ti).d_gain;
+	case 2: return d_mixer.xxxcat(ti).d_pan;
+	case 3: return d_mixer.xxxcat(ti).d_send1;
+	case 4: return d_mixer.xxxcat(ti).d_send2;
 	default: return 0; }}
 
 
@@ -253,8 +253,8 @@ void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
 	default: break; }}
 
 
-const std::string& CXLUnit::GetWaveName(int waveId) {
-	return d_waveTable.Get(waveId).d_descr; }
+const std::string& CXLUnit::GetWaveName(int waveId) const {
+	return d_waveTable.GetConst(waveId).d_descr; }
 
 
 void CXLUnit::DecrementKit() {

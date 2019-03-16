@@ -2,8 +2,6 @@
 
 #include "src/cxl/host.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/textkit/keyevent.hxx"
-#include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
 #include <fmt/printf.h>
@@ -11,8 +9,7 @@
 namespace rqdq {
 namespace cxl {
 
-HostView::HostView(CXLASIOHost& host, TextKit::MainLoop& loop) :d_host(host), d_loop(loop) {
-	d_host.d_updated.connect([&]() { onHostUpdated(); }); }
+HostView::HostView(CXLASIOHost& host) :d_host(host) {}
 
 
 std::pair<int, int> HostView::Pack(int w, int h) {
@@ -44,14 +41,6 @@ const rcls::TextCanvas& HostView::Draw(int width, int height) {
 	// WriteXY(out, xpos, y, fmt::sprintf("supportsOutputReadyOptimization: %s", info.supportsOutputReadyOptimization ? "Yes" : "No")); y++;
 
 	return out; }
-
-
-bool HostView::HandleKeyEvent(const TextKit::KeyEvent e) {
-	return false; }
-
-
-void HostView::onHostUpdated() {
-	d_loop.DrawScreenEventually(); }
 
 
 }  // namespace cxl

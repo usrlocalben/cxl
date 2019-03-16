@@ -1,52 +1,33 @@
 #include "src/cxl/ui/pattern_length_edit/view.hxx"
 
+#include <stdexcept>
 #include <string>
+#include <utility>
 
-#include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
-#include "src/textkit/keyevent.hxx"
-#include "src/textkit/widget.hxx"
 
 #include <fmt/printf.h>
 
 namespace rqdq {
 namespace cxl {
 
-using ScanCode = rcls::ScanCode;
+PatternLengthEditView::PatternLengthEditView(const int& value)
+	:d_value(value) {}
 
-PatternLengthEdit::PatternLengthEdit(int value) :d_value(value) {}
 
-
-std::pair<int, int> PatternLengthEdit::Pack(int w, int h) {
+std::pair<int, int> PatternLengthEditView::Pack(int w, int h) {
 	return {std::string("Pattern Length").length(), 2};}
 
 
-int PatternLengthEdit::GetType() {
+int PatternLengthEditView::GetType() {
 	return TextKit::WT_FIXED; }
 
 
-bool PatternLengthEdit::HandleKeyEvent(TextKit::KeyEvent e) {
-	if (e.down && e.control==0) {
-		if (e.scanCode == ScanCode::Comma || e.scanCode == ScanCode::Period) {
-
-			int offset = (e.scanCode == ScanCode::Comma ? -16 : 16);
-			int newValue = std::clamp(d_value+offset, 16, 64);
-			if (newValue != d_value) {
-				d_value = newValue;
-				d_dirty = true; }
-			return true; }
-		if (e.scanCode == ScanCode::Enter) {
-			if (onSuccess) {
-				onSuccess(d_value);}
-			return true; }
-		if (e.scanCode == ScanCode::Esc) {
-			if (onCancel) {
-				onCancel(); }
-			return true;}}
-	return false; }
+void PatternLengthEditView::Invalidate() {
+	d_dirty = true; }
 
 
-const rcls::TextCanvas& PatternLengthEdit::Draw(int width, int height) {
+const rcls::TextCanvas& PatternLengthEditView::Draw(int width, int height) {
 	const auto mySize = Pack(-1, -1);
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }

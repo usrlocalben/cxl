@@ -16,7 +16,7 @@ public:
 
 	void SetTime(int t) { d_delayTime = t; }
 	void SetFeedbackGain(float amt) { d_feedbackGain = amt; }
-	int GetNumChannels();
+	int GetNumChannels() const;
 
 private:
 	void AdvanceHead();

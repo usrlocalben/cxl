@@ -19,6 +19,11 @@ public:
 			throw std::runtime_error("invalid wavetable slot id"); }
 		return d_waves[id]; }
 
+	const MPCWave& GetConst(const int id) const {
+		if (!(0 <= id && id < d_waves.size())) {
+			throw std::runtime_error("invalid wavetable slot id"); }
+		return d_waves[id]; }
+
 	//-- clients can call one of these, but not both... maybe protect that somehow later XXX
 	//MPCWave* AllocWave();
 	//int GetNextWaveId();

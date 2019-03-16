@@ -8,10 +8,25 @@
 #include "src/textkit/keyevent.hxx"
 
 namespace rqdq {
+namespace {
+
+/**
+ * https://stackoverflow.com/questions/3486048/
+ */
+struct no_op_delete {
+	void operator()(void*) {} };
+
+
+}  // namespace
+
 namespace TextKit {
 
 LineBox::LineBox(std::shared_ptr<Widget> widget)
 	:d_widget(std::move(widget)) {}
+
+
+LineBox::LineBox(Widget* widget)
+	:d_widget(std::shared_ptr<Widget>{widget, no_op_delete()}) {}
 
 
 LineBox::LineBox(std::shared_ptr<Widget> widget, const std::string& title)

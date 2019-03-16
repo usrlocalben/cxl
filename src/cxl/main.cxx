@@ -9,17 +9,14 @@
 #include "src/cxl/config.hxx"
 #include "src/cxl/host.hxx"
 #include "src/cxl/log.hxx"
-#include "src/cxl/ui/root/view.hxx"
+#include "src/cxl/ui/root/controller.hxx"
 #include "src/cxl/unit.hxx"
-#include "src/ral/ralio/ralio_asio.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <fmt/printf.h>
-#include <wink/signal.hpp>
-#include <Windows.h>
 
 namespace rqdq {
 namespace cxl {
@@ -69,7 +66,7 @@ int main(int argc, char **argv) {
 	console.SetDimensions(80, 25);
 	console.Clear();
 
-	UIRoot(unit, host).Run();
+	RootController(unit, host).Run();
 
 	for (int n=0; n<25; n++) {
 		cout << "\n"; }
