@@ -36,5 +36,5 @@ private:
 	rclmt::Event d_redrawEvent = rclmt::Event::MakeEvent(); };
 
 
-}  // namespace cxl
+}  // namespace TextKit
 }  // namespace rqdq
