@@ -17,11 +17,17 @@ namespace cxl {
 class PatternController {
 public:
 	PatternController(CXLUnit&, TextKit::MainLoop& loop);
+	~PatternController();
 
 	void onCXLUnitPlaybackPositionChangedASIO(int);
 	void onCXLUnitPlaybackPositionChanged();
 
 	bool HandleKeyEvent(TextKit::KeyEvent);
+private:
+	bool HandleKeyEvent2(TextKit::KeyEvent);
+	void KeyboardTick();
+	void MaybeStartTick();
+	void MaybeStopTick();
 
 private:
 	void CopyTrackPage();
@@ -37,7 +43,9 @@ public:
 	PatternView d_view;
 
 private:
+	int d_timerId = -1;
 	rclmt::Event d_playbackPositionChangedEvent = rclmt::Event::MakeEvent();
+	TextKit::KeyEvent d_prevKey{};
 	std::array<int, 16> d_clipboard; };
 
 

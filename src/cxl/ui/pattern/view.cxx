@@ -100,6 +100,9 @@ const rcls::TextCanvas& PatternView::DrawParameters() {
 	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Brown);
 	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);
 
+	auto inactive = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Cyan);
+	auto active = rcls::MakeAttribute(rcls::Color::Cyan, rcls::Color::Black);
+
 	WriteXY(out, 0, 0, "Voice", d_state.curVoicePage==0?hi:lo);
 	WriteXY(out, 7, 0, "Effect", d_state.curVoicePage==1?hi:lo);
 	WriteXY(out, 15, 0, "Mix", d_state.curVoicePage==2?hi:lo);
@@ -112,7 +115,7 @@ const rcls::TextCanvas& PatternView::DrawParameters() {
 		const auto paramName = GetPageParameterName(d_unit, page, d_state.curTrack, pi);
 		if (!paramName.empty()) {
 			int value = GetPageParameterValue(d_unit, page, d_state.curTrack, pi);
-			WriteXY(out, 7*pi+2, row*2+0+1, paramName);
+			WriteXY(out, 7*pi+2, row*2+0+1, paramName, d_state.curParam.value_or(-1) == pi ? active : inactive);
 			WriteXY(out, 7*pi+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
 
 	// row 2
@@ -121,7 +124,7 @@ const rcls::TextCanvas& PatternView::DrawParameters() {
 		const auto paramName = GetPageParameterName(d_unit, page, d_state.curTrack, pi);
 		if (!paramName.empty()) {
 			int value = GetPageParameterValue(d_unit, page, d_state.curTrack, pi);
-			WriteXY(out, 7*(pi-4)+2, row*2+0+1, paramName);
+			WriteXY(out, 7*(pi-4)+2, row*2+0+1, paramName, d_state.curParam.value_or(-1) == pi ? active : inactive);
 			WriteXY(out, 7*(pi-4)+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
 
 	int waveId = d_unit.GetVoiceParameterValue(d_state.curTrack, 0);

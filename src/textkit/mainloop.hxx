@@ -33,7 +33,8 @@ public:
 	Widget* d_widget = nullptr;
 private:
 	rclmt::Reactor& d_reactor;
-	rclmt::Event d_redrawEvent = rclmt::Event::MakeEvent(); };
+	rclmt::Event d_redrawEvent = rclmt::Event::MakeEvent();
+	std::vector<bool> d_pressed; };
 
 
 }  // namespace TextKit

@@ -16,7 +16,8 @@ namespace rqdq {
 namespace TextKit {
 
 MainLoop::MainLoop(rclmt::Reactor* reactor_/*=nullptr*/)
-	:d_reactor(reactor_ != nullptr? *reactor_: rclmt::Reactor::GetInstance()) {}
+	:d_reactor{reactor_ != nullptr? *reactor_: rclmt::Reactor::GetInstance()},
+	d_pressed(256, false) {}
 
 
 void MainLoop::DrawScreen() {
@@ -42,6 +43,17 @@ void MainLoop::DrawScreenEventually() {
 
 
 void MainLoop::onInput(rclmt::KeyEvent key) {
+	if (key.scanCode >= 256) {
+		// win32 scancodes are WORDs -- drop large values
+		// todo: maybe move this into reactor_keyboard
+		return; }
+	if (key.down && d_pressed[key.scanCode]) {
+		// drop repeating keys
+		// todo: maybe move this into reactor_keyboard,
+		//       but configurable by a flag (or send
+		//       key-down, key-up, and key-press msgs)
+		return; }
+	d_pressed[key.scanCode] = key.down;
 	if (d_widget != nullptr) {
 		bool handled = d_widget->HandleKeyEvent(key);
 		if (handled) {
