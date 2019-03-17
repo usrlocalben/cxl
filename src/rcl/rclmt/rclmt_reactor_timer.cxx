@@ -105,8 +105,8 @@ void CancelTimer(int id, Reactor* reactor_/*=nullptr*/) {
 
 	found->canceled = true;
 	auto handle = found->event.Get();
-	auto result = CancelWaitableTimer(handle);
-	if (result != 0) {
+	auto success = CancelWaitableTimer(handle);
+	if (success == 0) {
 		auto error = GetLastError();
 		auto msg = fmt::sprintf("CancelWaitableTimer error %d", error);
 		throw std::runtime_error(msg); }
