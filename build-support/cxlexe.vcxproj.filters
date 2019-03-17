@@ -129,7 +129,7 @@
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_delay.cxx">
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_timer.cxx">
       <Filter>rcl</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_file.cxx">

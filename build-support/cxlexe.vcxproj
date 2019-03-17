@@ -201,7 +201,7 @@
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_event.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_jobsys.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_delay.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_timer.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_file.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_keyboard.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_console.cxx" />
