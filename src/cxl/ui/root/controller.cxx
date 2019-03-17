@@ -11,7 +11,7 @@
 #include "src/cxl/ui/splash/controller.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
-#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_timer.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"

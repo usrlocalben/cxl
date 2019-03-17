@@ -11,7 +11,7 @@
 #include "src/cxl/log.hxx"
 #include "src/cxl/ui/root/controller.hxx"
 #include "src/cxl/unit.hxx"
-#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_timer.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"

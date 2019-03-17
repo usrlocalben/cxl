@@ -18,7 +18,7 @@ cc_library(
     hdrs = ["controller.hxx"],
     deps = [
         "//3rdparty/wink",
-        "//src/rcl/rclmt:reactor_delay",
+        "//src/rcl/rclmt:reactor_timer",
         "//src/textkit:mainloop",
         ":view", ],
     copts = RSR_DEFAULT_COPTS,)

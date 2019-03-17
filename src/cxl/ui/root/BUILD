@@ -45,7 +45,7 @@ cc_library(
         "//src/cxl:unit",
         "//src/rcl/rclmt:event",
         "//src/rcl/rclmt:reactor",
-        "//src/rcl/rclmt:reactor_delay",
+        "//src/rcl/rclmt:reactor_timer",
         "//src/rcl/rcls:text_canvas",
         "//src/textkit:keyevent",
         "//src/textkit:mainloop",

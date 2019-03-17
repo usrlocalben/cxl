@@ -1,6 +1,6 @@
 #include "src/cxl/ui/splash/controller.hxx"
 
-#include "src/rcl/rclmt/rclmt_reactor_delay.hxx"
+#include "src/rcl/rclmt/rclmt_reactor_timer.hxx"
 
 namespace rqdq {
 namespace {
