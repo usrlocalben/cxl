@@ -1,5 +1,7 @@
 #include "src/rcl/rclmt/rclmt_reactor_timer.hxx"
 
+#include <deque>
+
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 
@@ -12,21 +14,19 @@ namespace {
 constexpr bool TT_ONESHOT{false};
 constexpr bool TT_PERIODIC{true};
 
-// timers
-// todo: since reactor* could be different, it should be stored
-//       in the TimerInfo so CancelTimer can reuse it
 struct TimerInfo {
 	bool inUse{false};
 	bool canceled{false};
 	int id{0};
 	bool type{TT_ONESHOT};
+	rclmt::Reactor *reactor{nullptr};
 	rclmt::Event event{rclmt::Event::MakeTimer()}; };
 
 std::vector<TimerInfo> timers;
 
 int timerSeq = 1;
 
-std::pair<int, rclmt::Event*> AllocTimer(bool type) {
+std::pair<int, rclmt::Event*> AllocTimer(bool type, rclmt::Reactor* reactor) {
 	TimerInfo* timer{nullptr};
 
 	auto available = std::find_if(timers.begin(), timers.end(),
@@ -40,8 +40,9 @@ std::pair<int, rclmt::Event*> AllocTimer(bool type) {
 	timer->inUse = true;
 	timer->canceled = false;
 	timer->type = type;
+	timer->reactor = reactor;
 	timer->id = timerSeq++;
-	return {timer->id, &timers.back().event}; }
+	return {timer->id, &(timer->event)}; }
 
 
 bool MaybeReleaseTimer(HANDLE h) {
@@ -69,8 +70,7 @@ namespace rclmt {
  */
 int Delay(const double millis, std::function<void()> func, Reactor* reactor_/*=nullptr*/) {
 	auto& reactor = reactor_ != nullptr ? *reactor_ : Reactor::GetInstance();
-
-	auto [id, timer] = AllocTimer(TT_ONESHOT);
+	auto [id, timer] = AllocTimer(TT_ONESHOT, &reactor);
 	timer->SignalIn(millis);
 	auto rawHandle = timer->Get();
 	reactor.ListenOnce(*timer, [func{std::move(func)}, rawHandle](){
@@ -82,8 +82,7 @@ int Delay(const double millis, std::function<void()> func, Reactor* reactor_/*=n
 
 int Repeat(const double millis, std::function<void()> func, Reactor* reactor_/*=nullptr*/) {
 	auto& reactor = reactor_ != nullptr ? *reactor_ : Reactor::GetInstance();
-
-	auto [id, timer] = AllocTimer(TT_PERIODIC);
+	auto [id, timer] = AllocTimer(TT_PERIODIC, &reactor);
 	timer->SignalEvery(millis);
 	auto rawHandle = timer->Get();
 	reactor.ListenMany(*timer, [func{std::move(func)}, rawHandle, &reactor](){
@@ -95,31 +94,30 @@ int Repeat(const double millis, std::function<void()> func, Reactor* reactor_/*=
 	return id; };
 
 
-void CancelTimer(int id, Reactor* reactor_/*=nullptr*/) {
-	auto& reactor = reactor_ != nullptr ? *reactor_ : Reactor::GetInstance();
-
+void CancelTimer(int id) {
 	auto found = std::find_if(timers.begin(), timers.end(),
 	                          [=](auto& item) { return item.id = id; });
 	if (found == timers.end()) {
 		return; }  // not found is a no-op
 
-	found->canceled = true;
-	auto handle = found->event.Get();
+	auto& timer = *found;
+	timer.canceled = true;
+	timer.inUse = false;
+	auto handle = timer.event.Get();
 	auto success = CancelWaitableTimer(handle);
 	if (success == 0) {
 		auto error = GetLastError();
 		auto msg = fmt::sprintf("CancelWaitableTimer error %d", error);
 		throw std::runtime_error(msg); }
-	reactor.RemoveEventByHandle(handle);
-	found->inUse = false; }
+	timer.reactor->RemoveEventByHandle(handle); }
 
 
-void CancelDelay(int id, Reactor* reactor_/*=nullptr*/) {
-	return CancelTimer(id, reactor_); }
+void CancelDelay(int id) {
+	return CancelTimer(id); }
 
 
-void CancelRepeat(int id, Reactor* reactor_/*=nullptr*/) {
-	return CancelTimer(id, reactor_); }
+void CancelRepeat(int id) {
+	return CancelTimer(id); }
 
 
 }  // namespace rclmt

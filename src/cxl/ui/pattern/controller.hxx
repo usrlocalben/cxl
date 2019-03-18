@@ -26,8 +26,8 @@ public:
 private:
 	bool HandleKeyEvent2(TextKit::KeyEvent);
 	void KeyboardTick();
-	void MaybeStartTick();
-	void MaybeStopTick();
+	void StartTick();
+	void StopTick();
 
 private:
 	void CopyTrackPage();

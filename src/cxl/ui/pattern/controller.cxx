@@ -112,11 +112,11 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 		const int dir = key == SC::Comma ? -1 : 1;
 		if (down) {
 			d_state.knobDir = dir;
-			MaybeStartTick(); }
+			StartTick(); }
 		else {
 			if (d_state.knobDir == dir) {
 				d_state.knobDir = 0;
-				MaybeStopTick(); }}
+				StopTick(); }}
 		return true; }
 
 
@@ -244,19 +244,19 @@ void PatternController::PasteTrackPage() {
 		d_unit.SetTrackGridNote(d_state.curTrack, d_state.curGridPage*16+i, d_clipboard[i]); }}
 
 
-void PatternController::MaybeStartTick() {
+void PatternController::StartTick() {
 	if (d_timerId == -1) {
 		d_timerId = rclmt::Repeat(1000.0/kKeyRateInHz, [&]() { KeyboardTick(); }); }}
 
 
-void PatternController::MaybeStopTick() {
+void PatternController::StopTick() {
 	if (d_timerId != -1) {
 		rclmt::CancelRepeat(d_timerId);
 		d_timerId = -1; }}
 
 
 PatternController::~PatternController() {
-	MaybeStopTick(); }
+	StopTick(); }
 
 
 }  // namespace cxl
