@@ -40,6 +40,9 @@
     <Filter Include="cxl\ui\loading">
       <UniqueIdentifier>{1099de9b-ed5d-4b09-8343-fe21f66fac66}</UniqueIdentifier>
     </Filter>
+    <Filter Include="cxl\ui\tap_tempo">
+      <UniqueIdentifier>{26c52ec2-779a-4aa5-8bfe-df9a2fc3703e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="$(SolutionDir)\src\cxl\config.cxx">
@@ -209,6 +212,12 @@
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\state.cxx">
       <Filter>cxl\ui\root</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\tap_tempo\view.cxx">
+      <Filter>cxl\ui\tap_tempo</Filter>
+    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx">
+      <Filter>cxl</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
