@@ -20,8 +20,6 @@
 namespace rqdq {
 namespace cxl {
 
-using ScanCode = rcls::ScanCode;
-
 RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
 	:d_unit(unit),
 	d_host(host),
@@ -55,19 +53,21 @@ void RootController::Run() {
 	d_loop.Run(); }
 
 
+void RootController::IncrementMode() {
+	d_mode = (d_mode+1)%(UI_MODES.size()); }
+
+
 bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
 	// XXX AddKeyDebuggerEvent(e);
+	using SC = rcls::ScanCode;
 	auto& reactor = rclmt::Reactor::GetInstance();
-	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Q) {
+	const auto key = e.scanCode;
+	const auto down = e.down;
+	if (down && e.control==rcls::kCKLeftAlt && key==SC::Q) {
 		reactor.Stop();
 		return true; }
-	if (e.down && e.control==rcls::kCKLeftCtrl && e.scanCode==ScanCode::Enter) {
-		if (d_mode == UM_PATTERN) {
-			d_mode = UM_LOG; }
-		else if (d_mode == UM_LOG) {
-			d_mode = UM_HOST; }
-		else if (d_mode == UM_HOST) {
-			d_mode = UM_PATTERN; }
+	if (down && e.control==rcls::kCKLeftCtrl && key==SC::Enter) {
+		IncrementMode();
 		return true; }
 
 	if (d_mode == UM_PATTERN) {

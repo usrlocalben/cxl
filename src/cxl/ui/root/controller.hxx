@@ -43,6 +43,9 @@ public:
 		return d_view.GetType(); }
 
 private:
+	void IncrementMode();
+
+private:
 	rclmt::Event d_playbackStateChangedEvent = rclmt::Event::MakeEvent();
 	// XXX void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
 

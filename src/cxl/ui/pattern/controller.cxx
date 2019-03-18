@@ -125,8 +125,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 	const int gridIdx = gridSearch != kGridScanLUT.end() ? std::distance(begin(kGridScanLUT), gridSearch) : -1;
 	// todo: set flag for parameter locks
 
-	//bool fn = (e.control == rcls::kCKLeftCtrl);
-	bool fn = (e.control & rcls::kCKLeftAlt) != 0u;
+	bool fn = (e.control == rcls::kCKLeftCtrl);
 
 	if (!down) {
 		return false; }
