@@ -98,3 +98,14 @@ cc_library(
         ":log",
         ":unit", ],
     copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name = "tap_tempo",
+    srcs = ["tap_tempo.cxx"],
+    hdrs = ["tap_tempo.hxx"],
+    deps = [
+        "//3rdparty/fmt",
+        "//src/rcl/rcls:timer",
+        ":log", ],
+    copts = RSR_DEFAULT_COPTS,)

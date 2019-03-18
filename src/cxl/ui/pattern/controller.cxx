@@ -9,12 +9,15 @@
 #include "src/cxl/ui/alert/view.hxx"
 #include "src/cxl/ui/pattern/page.hxx"
 #include "src/cxl/ui/pattern_length_edit/view.hxx"
+#include "src/cxl/ui/tap_tempo/view.hxx"
 #include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_timer.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
+
+#include <fmt/printf.h>
 
 namespace rqdq {
 namespace {
@@ -94,7 +97,14 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 
 	const auto key = e.scanCode;
 	const auto down = e.down;
+	const auto up = !e.down;
 	using SC = rcls::ScanCode;
+
+	if (up && key == SC::LeftCtrl) {
+		if (d_state.subMode == SM_TAP_TEMPO) {
+			d_view.d_popup.reset();
+			d_state.subMode = SM_NONE; }
+		return true; }
 
 	auto paramSearch = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
 	                                [&](auto &item) { return key == item; });
@@ -148,6 +158,25 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 			d_state.curGridPage++;
 			if (d_state.curGridPage >= d_unit.GetPatternLength()/16) {
 				d_state.curGridPage = 0; }}
+		return true; }
+
+	if (key == SC::Equals) {
+		if (fn) {
+			// tap tempo
+			if (d_state.subMode == SM_NONE) {
+				if (!d_view.d_popup) {
+					d_state.subMode = SM_TAP_TEMPO;
+					d_tapTempo.Reset();
+					d_taps = 1;
+					d_view.d_popup = MakeTapTempoView(d_taps);
+					d_tapTempo.Tap(); }}
+			else if (d_state.subMode == SM_TAP_TEMPO) {
+				d_tapTempo.Tap();
+				d_taps++;
+				if (d_tapTempo.GetNumSamples() >= 3) {
+					Log::GetInstance().info(fmt::sprintf("tapTempo: %.4f", d_tapTempo.GetTempo()));
+					auto newTempo = static_cast<int>(d_tapTempo.GetTempo() * 10);
+					d_unit.SetTempo(newTempo); }}}
 		return true; }
 
 	if (key == SC::L) {

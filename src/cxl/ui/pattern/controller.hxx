@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "src/cxl/tap_tempo.hxx"
 #include "src/cxl/ui/pattern/state.hxx"
 #include "src/cxl/ui/pattern/view.hxx"
 #include "src/cxl/ui/pattern_length_edit/controller.hxx"
@@ -43,10 +44,14 @@ public:
 	PatternView d_view;
 
 private:
-	int d_timerId = -1;
-	rclmt::Event d_playbackPositionChangedEvent = rclmt::Event::MakeEvent();
+	int d_subState{0};
+	TapTempo d_tapTempo{};
+	int d_taps{0};
+
+	int d_timerId{-1};
+	rclmt::Event d_playbackPositionChangedEvent{rclmt::Event::MakeEvent()};
 	TextKit::KeyEvent d_prevKey{};
-	std::array<int, 16> d_clipboard; };
+	std::array<int, 16> d_clipboard{}; };
 
 
 }  // namespace cxl
