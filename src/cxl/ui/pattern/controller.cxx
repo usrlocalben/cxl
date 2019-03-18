@@ -26,6 +26,8 @@ const int kAlertDurationInMillis = 500;
 
 constexpr int kKeyRateInHz = 20;
 
+constexpr double kNudgePct = 0.10;
+
 using SC = rcls::ScanCode;
 
 /**
@@ -106,6 +108,11 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 			d_state.subMode = SM_NONE; }
 		return true; }
 
+	if (up && (key == SC::OpenBracket || key == SC::CloseBracket)) {
+		const int dir = key == SC::OpenBracket ? -1 : 1;
+		StopNudge(dir);
+		return true; }
+
 	auto paramSearch = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
 	                                [&](auto &item) { return key == item; });
 	if (paramSearch != kParamScanLUT.end()) {
@@ -139,6 +146,11 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 
 	if (!down) {
 		return false; }
+
+	if (key == SC::OpenBracket || key == SC::CloseBracket) {
+		const int dir = key == SC::OpenBracket ? -1 : 1;
+		StartNudge(dir);
+		return true; }
 
 	if (key == SC::Backslash) {
 		// pattern length
@@ -281,6 +293,26 @@ void PatternController::StopTick() {
 	if (d_timerId != -1) {
 		rclmt::CancelRepeat(d_timerId);
 		d_timerId = -1; }}
+
+
+void PatternController::StartNudge(const int dir) {
+	assert(dir == -1 || dir == 1);
+	if (d_nudgeDir == dir) {
+		/* should be impossible. do nothing */ }
+	else {
+		if (d_nudgeDir == 0) {
+			d_nudgeOldTempo = d_unit.GetTempo(); }
+		auto offset = d_nudgeOldTempo * kNudgePct * dir;
+		auto newTempo = static_cast<int>(d_nudgeOldTempo + offset);
+		d_nudgeDir = dir;
+		d_unit.SetTempo(newTempo); }}
+
+
+void PatternController::StopNudge(const int dir) {
+	assert(dir == -1 || dir == 1);
+	if (d_nudgeDir == dir) {
+		d_nudgeDir = 0;
+		d_unit.SetTempo(d_nudgeOldTempo); }}
 
 
 PatternController::~PatternController() {

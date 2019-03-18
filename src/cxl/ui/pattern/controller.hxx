@@ -30,6 +30,9 @@ private:
 	void StartTick();
 	void StopTick();
 
+	void StartNudge(int dir);
+	void StopNudge(int dir);
+
 private:
 	void CopyTrackPage();
 	void ClearTrackPage();
@@ -47,6 +50,8 @@ private:
 	int d_subState{0};
 	TapTempo d_tapTempo{};
 	int d_taps{0};
+	int d_nudgeDir{0};
+	int d_nudgeOldTempo{0};
 
 	int d_timerId{-1};
 	rclmt::Event d_playbackPositionChangedEvent{rclmt::Event::MakeEvent()};
