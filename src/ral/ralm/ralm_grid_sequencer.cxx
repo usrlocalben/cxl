@@ -22,8 +22,8 @@ int GridSequencer::GetTempo() const {
 	return d_tempoInBPM; }
 
 
-void GridSequencer::AddTrack(raldsp::SingleSampler& voice) {
-	d_tracks.emplace_back(GridTrack{ &voice }); }
+void GridSequencer::AddTrack(raldsp::SingleSampler& voice, std::optional<int> muteGroupId) {
+	d_tracks.emplace_back(&voice, muteGroupId); }
 
 
 void GridSequencer::IncrementT() {
@@ -70,7 +70,13 @@ bool GridSequencer::Process() {
 		updated = true;
 		for (auto& track : d_tracks) {
 			if (track.grid[gridPos] != 0 && !track.isMuted) {
-				track.voice->Trigger(48, 1.0, 0); }}}
+				track.voice->Trigger(48, 1.0, 0);
+				if (track.muteGroupId) {
+					for (auto& other : d_tracks) {
+						if (&track != &other &&
+						    other.muteGroupId &&
+						    other.muteGroupId.value() == track.muteGroupId.value()) {
+							other.voice->Stop(); }}}}}}
 	return updated; }
 
 

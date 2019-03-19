@@ -51,8 +51,9 @@ void SingleSampler::Trigger(int note, double velocity, int ppqstamp) {
 
 
 void SingleSampler::Stop() {
-	d_isActive = false;
-	d_wavePtr->Release(); }
+	if (d_isActive) {
+		d_isActive = false;
+		d_wavePtr->Release(); }}
 
 
 void SingleSampler::Update(int tempo) {}

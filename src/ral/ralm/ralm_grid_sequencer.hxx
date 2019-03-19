@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <optional>
 #include <stdexcept>
 #include <vector>
 
@@ -14,11 +15,13 @@ constexpr int kPPQ = 96;
 constexpr int kBeatsPerBar = 4;
 
 struct GridTrack {
+	GridTrack(raldsp::SingleSampler* voice, std::optional<int> muteGroupId)
+		:voice(voice), muteGroupId(muteGroupId) {};
+
 	raldsp::SingleSampler* voice = nullptr;
 	bool isMuted = false;
-	std::array<int, 16*4> grid;
-	GridTrack(raldsp::SingleSampler* voice) :voice(voice) {
-		std::fill(begin(grid), end(grid), 0); } };
+	std::array<int, 16*4> grid{};
+	std::optional<int> muteGroupId{}; };
 
 
 class PlayerState {
@@ -54,7 +57,7 @@ public:
 
 	void SetTempo(int bpm);
 	int GetTempo() const;
-	void AddTrack(raldsp::SingleSampler& voice);
+	void AddTrack(raldsp::SingleSampler&, std::optional<int>);
 
 	int GetPatternLength() const { return d_patternLength; }
 	void SetPatternLength(int value) {
@@ -76,15 +79,15 @@ public:
 		auto& cell = d_tracks[tn].grid[pos];
 		cell = (cell==1?0:1); }
 	void ClearTrackGrid(int tn) {
-		std::fill(d_tracks[tn].grid.begin(), d_tracks[tn].grid.end(), 0);}
+		d_tracks[tn].grid.fill(0); }
 	bool IsTrackMuted(int tn) const {
 		return d_tracks[tn].isMuted; }
 	void ToggleTrackMute(int tn) {
 		d_tracks[tn].isMuted = !d_tracks[tn].isMuted; }
 
 	void InitializePattern() {
-		for (auto& track : d_tracks) {
-			std::fill(track.grid.begin(), track.grid.end(), 0); }}
+		std::for_each(begin(d_tracks), end(d_tracks),
+		              [](auto& item) { item.grid.fill(0); }); }
 	int GetLastPlayedGridPosition() const { return d_lastPlayedGridPosition; }
 
 private:

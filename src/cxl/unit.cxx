@@ -54,7 +54,12 @@ CXLUnit::CXLUnit()
 		d_voices.emplace_back(d_waveTable);
 		d_effects.emplace_back();
 		d_mixer.AddChannel();
-		d_sequencer.AddTrack(d_voices.back()); }
+
+		std::optional<int> muteGroupId;
+		if (i == 8 || i == 9) {
+			muteGroupId = 1; }  // CH & OH are in a fixed mute-group
+
+		d_sequencer.AddTrack(d_voices.back(), muteGroupId); }
 
 	BeginLoadingWaves(); }
 
