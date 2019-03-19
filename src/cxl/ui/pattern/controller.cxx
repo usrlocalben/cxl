@@ -185,7 +185,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 			else if (d_state.subMode == SM_TAP_TEMPO) {
 				d_tapTempo.Tap();
 				d_taps++;
-				if (d_tapTempo.GetNumSamples() >= 3) {
+				if (d_tapTempo.GetNumTaps() >= 4) {
 					Log::GetInstance().info(fmt::sprintf("tapTempo: %.4f", d_tapTempo.GetTempo()));
 					auto newTempo = static_cast<int>(d_tapTempo.GetTempo() * 10);
 					d_unit.SetTempo(newTempo); }}}

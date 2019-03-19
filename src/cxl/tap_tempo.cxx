@@ -23,30 +23,27 @@ TapTempo::TapTempo() = default;
 
 
 void TapTempo::Tap() {
-	if (d_first) {
-		d_first = false;
+	if (d_tapCnt == 0) {
 		d_timer.Reset(); }
 	else {
-		int beatsSinceStart = d_tapCnt + 1;
-		d_taps[d_headIdx] = d_timer.GetElapsed() / beatsSinceStart;
-		d_tapCnt = std::clamp(d_tapCnt+1, 0, kMaxTapTempoSamples);
-		d_headIdx = (d_headIdx+1) % kMaxTapTempoSamples; }}
+		int idx = (d_tapCnt-1) % kMaxTapTempoSamples;
+		d_samples[idx] = d_timer.GetElapsed() / d_tapCnt; }
+	d_tapCnt++; }
 
 
 double TapTempo::GetTempo() {
-	if (d_taps.empty()) {
-		throw std::runtime_error("GetTempo() called with zero taps"); }
-	const auto sum = std::accumulate(begin(d_taps), begin(d_taps)+d_tapCnt, 0.0);
-	const auto avgSecsPerBeat = sum / d_tapCnt;
+	if (d_tapCnt < 2) {
+		throw std::runtime_error("GetTempo() requires at least two taps"); }
+	const auto numSamples = std::min(d_tapCnt-1, kMaxTapTempoSamples);
+	const auto sum = std::accumulate(begin(d_samples), begin(d_samples)+numSamples, 0.0);
+	const auto avgSecsPerBeat = sum / numSamples;
 	const auto bpm = kOneMinuteInSecs / avgSecsPerBeat;
 	// Log::GetInstance().info(fmt::sprintf("TapTempo::GetTempo() sum: %.4f, avg: %.4f, bpm: %.4f", sum, avgSecsPerBeat, bpm));
 	return bpm; }
 
 
 void TapTempo::Reset() {
-	d_first = true;
-	d_tapCnt = 0;
-	d_headIdx = 0; }
+	d_tapCnt = 0; }
 
 
 }  // namespace cxl

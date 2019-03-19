@@ -18,14 +18,12 @@ public:
 	void Tap();
 	void Reset();
 	double GetTempo();
-	int GetNumSamples() const { return d_taps.size(); }
+	int GetNumTaps() const { return d_tapCnt; }
 
 private:
 	rcls::Timer d_timer;
-	bool d_first{true};
 	int d_tapCnt{0};
-	int d_headIdx{0};
-	std::array<double, kMaxTapTempoSamples> d_taps{}; };
+	std::array<double, kMaxTapTempoSamples> d_samples{}; };
 
 
 }  // namespace cxl
