@@ -9,8 +9,6 @@
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
 
-#include <Windows.h>
-
 namespace rqdq {
 namespace TextKit {
 

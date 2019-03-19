@@ -8,8 +8,6 @@
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
 
-#include <Windows.h>
-
 namespace rqdq {
 namespace TextKit {
 
