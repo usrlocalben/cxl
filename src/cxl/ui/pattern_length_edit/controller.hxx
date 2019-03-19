@@ -1,9 +1,11 @@
 #pragma once
 #include <functional>
+#include <memory>
 
 #include "src/cxl/ui/pattern_length_edit/view.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
 #include "src/textkit/keyevent.hxx"
+#include "src/textkit/widget.hxx"
 
 namespace rqdq {
 namespace cxl {
@@ -18,7 +20,7 @@ public:
 	std::function<void()> onCancel;
 
 public:
-	PatternLengthEditView d_view;
+	std::shared_ptr<TextKit::Widget> d_view;
 
 private:
 	int d_value = 0; };

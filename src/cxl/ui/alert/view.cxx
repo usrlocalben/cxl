@@ -26,14 +26,21 @@ bool Alert::HandleKeyEvent(TextKit::KeyEvent e) {
 	return false; }
 
 
+bool Alert::Refresh() {
+	if (d_first) {
+		d_first = false;
+		return true; }
+	return false; }
+
+
 const rcls::TextCanvas& Alert::Draw(int width, int height) {
 	const auto mySize = Pack(-1, -1);
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
 	auto& out = d_canvas;
-	if (d_dirty) {
-		d_dirty = false;
+	bool updated = Refresh();
+	if (updated) {
 		out.Resize(width, height);
 		out.Clear();
 		auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);

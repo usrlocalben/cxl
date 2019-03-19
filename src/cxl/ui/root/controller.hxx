@@ -6,7 +6,6 @@
 
 #include "src/cxl/host.hxx"
 #include "src/cxl/ui/host/controller.hxx"
-#include "src/cxl/ui/loading/controller.hxx"
 #include "src/cxl/ui/log/controller.hxx"
 #include "src/cxl/ui/pattern/controller.hxx"
 #include "src/cxl/ui/root/view.hxx"
@@ -56,7 +55,6 @@ private:
 	LogController d_logController;
 	HostController d_hostController;
 	SplashController d_splashController;
-	LoadingController d_loadingController;
 
 	RootView d_view;
 

@@ -21,9 +21,14 @@ public:
 	int GetType() override;
 
 private:
-	const float& d_t;
-	bool d_dirty{true};
+	bool Refresh();
+	const float& d_tSrc;
+	float d_t{0};
 	rcls::TextCanvas d_canvas; };
+
+
+inline std::shared_ptr<TextKit::Widget> MakeSplashView(const float& t) {
+	return std::make_shared<TextKit::LineBox>(std::make_shared<SplashView>(t)); }
 
 
 }  // namespace cxl

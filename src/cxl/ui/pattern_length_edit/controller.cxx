@@ -2,6 +2,7 @@
 
 #include <algorithm>
 
+#include "src/cxl/ui/pattern_length_edit/view.hxx"
 #include "src/rcl/rcls/rcls_console.hxx"
 #include "src/textkit/keyevent.hxx"
 
@@ -11,7 +12,7 @@ namespace cxl {
 using ScanCode = rcls::ScanCode;
 
 PatternLengthEditController::PatternLengthEditController(int value)
-	:d_value(value), d_view{d_value} {}
+	:d_value(value), d_view{MakePatternLengthEditView(d_value)} {}
 
 
 bool PatternLengthEditController::HandleKeyEvent(TextKit::KeyEvent e) {
@@ -20,8 +21,7 @@ bool PatternLengthEditController::HandleKeyEvent(TextKit::KeyEvent e) {
 			int offset = (e.scanCode == ScanCode::Comma ? -16 : 16);
 			int newValue = std::clamp(d_value+offset, 16, 64);
 			if (newValue != d_value) {
-				d_value = newValue;
-				d_view.Invalidate(); }
+				d_value = newValue; }
 			return true; }
 		if (e.scanCode == ScanCode::Enter) {
 			if (onSuccess) {

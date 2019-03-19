@@ -17,13 +17,16 @@ public:
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;
 
-	void Invalidate();
-
 private:
-	const int& d_value;
+	bool Refresh();
+	const int& d_valueSrc;
 
-	rcls::TextCanvas d_canvas;
-	bool d_dirty{true}; };
+	int d_value{0};
+	rcls::TextCanvas d_canvas; };
+
+
+inline std::shared_ptr<TextKit::Widget> MakePatternLengthEditView(const int& value) {
+	return std::make_shared<TextKit::LineBox>(std::make_shared<PatternLengthEditView>(value)); }
 
 
 }  // namespace cxl

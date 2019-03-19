@@ -30,7 +30,7 @@ const std::array<std::string, 12> kArtText{ {
 
 namespace cxl {
 
-SplashView::SplashView(const float& t) :d_t(t) {}
+SplashView::SplashView(const float& t) :d_tSrc(t) {}
 
 
 std::pair<int, int> SplashView::Pack(int w, int h) {
@@ -41,8 +41,12 @@ int SplashView::GetType() {
 	return TextKit::WT_FIXED; }
 
 
-void SplashView::Invalidate() {
-	d_dirty = true; }
+bool SplashView::Refresh() {
+	bool updated = false;
+	if (d_tSrc != d_t) {
+		updated = true;
+		d_t = d_tSrc; }
+	return updated; }
 
 
 const rcls::TextCanvas& SplashView::Draw(int width, int height) {
@@ -50,18 +54,16 @@ const rcls::TextCanvas& SplashView::Draw(int width, int height) {
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
-	if (!d_dirty) {
-		return d_canvas; }
-
-	d_dirty = false;
 	auto& out = d_canvas;
-	out.Resize(kArtText[0].size(), kArtText.size());
-	out.Clear();
-	const auto blue = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
-	const auto cyan = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongCyan);
-	int cyanY = static_cast<int>(d_t*24) % 48;
-	for (int y=0; y<kArtText.size(); y++) {
-		WriteXY(out, 0, y, kArtText[y], y==cyanY?cyan:blue); }
+	bool updated = Refresh();
+	if (updated) {
+		out.Resize(kArtText[0].size(), kArtText.size());
+		out.Clear();
+		const auto blue = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
+		const auto cyan = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongCyan);
+		int cyanY = static_cast<int>(d_t*24) % 48;
+		for (int y=0; y<kArtText.size(); y++) {
+			WriteXY(out, 0, y, kArtText[y], y==cyanY?cyan:blue); }}
 	return out; }
 
 

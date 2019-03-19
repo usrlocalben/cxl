@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "src/cxl/host.hxx"
+#include "src/cxl/ui/loading/view.hxx"
 #include "src/cxl/ui/log/controller.hxx"
 #include "src/cxl/ui/pattern/controller.hxx"
 #include "src/cxl/ui/root/state.hxx"
@@ -27,7 +28,6 @@ RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
 	d_logController(d_loop),
 	d_hostController(d_host, d_loop),
 	d_splashController(d_loop),
-	d_loadingController(d_unit),
 	d_view{d_unit, d_hostController.d_view, d_patternController.d_view, d_logController.d_view, d_mode} {
 
 	auto& reactor = rclmt::Reactor::GetInstance();
@@ -44,7 +44,7 @@ RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
 		rclmt::Delay(0, [&]() {
 			d_view.d_splash.reset();
 			d_loop.DrawScreenEventually(); }); });
-	d_view.d_splash = std::make_shared<TextKit::LineBox>(&d_splashController.d_view); }
+	d_view.d_splash = d_splashController.d_view; }
 
 
 void RootController::Run() {
@@ -85,7 +85,7 @@ void RootController::onCXLUnitPlaybackStateChanged() {
 
 void RootController::onLoaderStateChange() {
 	if (d_unit.IsLoading() && !d_view.d_loading) {
-		d_view.d_loading = std::make_shared<TextKit::LineBox>(&d_loadingController.d_view); }
+		d_view.d_loading = MakeLoadingView(d_unit); }
 	else if (!d_unit.IsLoading() && d_view.d_loading) {
 		d_view.d_loading.reset(); }
 	d_loop.DrawScreenEventually(); }

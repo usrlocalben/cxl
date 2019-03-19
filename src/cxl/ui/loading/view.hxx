@@ -16,13 +16,16 @@ public:
 	std::pair<int, int> Pack(int, int) override;
 	int GetType() override;
 
-	void Invalidate();
-
 private:
+	bool Refresh();
 	const CXLUnit& d_unit;
+	float d_pct{0};
+	bool d_first{true};
+	rcls::TextCanvas d_canvas; };
 
-	rcls::TextCanvas d_canvas;
-	bool d_dirty = true; };
+
+inline std::shared_ptr<TextKit::Widget> MakeLoadingView(const CXLUnit& unit) {
+	return std::make_shared<TextKit::LineBox>(std::make_shared<LoadingView>(unit)); }
 
 
 }  // namespace cxl

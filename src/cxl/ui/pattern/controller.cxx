@@ -157,7 +157,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 		if (fn) {
 			// open pattern length edit dialog
 			d_patternLengthEditController.emplace(d_unit.GetPatternLength());
-			d_view.d_popup = std::make_shared<TextKit::LineBox>(&(d_patternLengthEditController->d_view));
+			d_view.d_popup = d_patternLengthEditController->d_view;
 			d_patternLengthEditController->onSuccess = [&](int newValue) {
 				d_view.d_popup.reset();
 				d_unit.SetPatternLength(newValue);

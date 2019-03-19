@@ -1,8 +1,9 @@
 #pragma once
 #include <functional>
+#include <memory>
 
-#include "src/cxl/ui/splash/view.hxx"
 #include "src/textkit/mainloop.hxx"
+#include "src/textkit/widget.hxx"
 
 #include "wink/signal.hpp"
 
@@ -23,7 +24,7 @@ private:
 	TextKit::MainLoop& d_loop;
 	float d_t{0.0f};
 public:
-	SplashView d_view; };
+	std::shared_ptr<TextKit::Widget> d_view; };
 
 
 }  // namespace cxl

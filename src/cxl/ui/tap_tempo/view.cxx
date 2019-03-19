@@ -11,7 +11,7 @@
 namespace rqdq {
 namespace cxl {
 
-TapTempoView::TapTempoView(const int& taps) :d_taps(taps) {}
+TapTempoView::TapTempoView(const int& taps) :d_tapsSrc(taps) {}
 
 
 std::pair<int, int> TapTempoView::Pack(int w, int h) {
@@ -26,14 +26,22 @@ bool TapTempoView::HandleKeyEvent(TextKit::KeyEvent e) {
 	return false; }
 
 
+bool TapTempoView::Refresh() {
+	bool updated = false;
+	if (d_tapsSrc != d_taps) {
+		updated = true;
+		d_taps = d_tapsSrc; }
+	return updated; }
+
+
 const rcls::TextCanvas& TapTempoView::Draw(int width, int height) {
 	const auto mySize = Pack(-1, -1);
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
 	auto& out = d_canvas;
-	if (d_taps != d_lastTaps) {
-		d_lastTaps = d_taps;
+	bool updated = Refresh();
+	if (updated) {
 		out.Resize(width, height);
 		out.Clear();
 		auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);

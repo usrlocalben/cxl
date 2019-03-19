@@ -20,10 +20,10 @@ public:
 	int GetType() override;
 
 private:
-	int d_lastTaps{-1};
-	const int& d_taps;
-	rcls::TextCanvas d_canvas;
-	bool d_dirty{true}; };
+	bool Refresh();
+	const int& d_tapsSrc;
+	int d_taps{-1};
+	rcls::TextCanvas d_canvas; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakeTapTempoView(const int& taps) {

@@ -1,5 +1,6 @@
 #include "src/cxl/ui/splash/controller.hxx"
 
+#include "src/cxl/ui/splash/view.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_timer.hxx"
 
 namespace rqdq {
@@ -15,7 +16,7 @@ constexpr float kSplashDuration{5.0f};
 namespace cxl {
 
 SplashController::SplashController(TextKit::MainLoop& loop)
-	:d_loop(loop), d_view(d_t) {
+	:d_loop(loop), d_view{MakeSplashView(d_t)} {
 	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }
 
 
@@ -24,7 +25,6 @@ void SplashController::Tick() {
 	if (d_t > kSplashDuration) {
 		onComplete.emit();
 		return; }
-	d_view.Invalidate();
 	d_loop.DrawScreenEventually();
 	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }
 

@@ -20,9 +20,10 @@ public:
 	int GetType() override;
 
 private:
+	bool Refresh();
+	std::string d_text;
 	rcls::TextCanvas d_canvas;
-	bool d_dirty = true;
-	std::string d_text; };
+	bool d_first{true}; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakeAlert(const std::string& text) {

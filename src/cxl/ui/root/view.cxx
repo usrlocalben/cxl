@@ -4,7 +4,6 @@
 #include <utility>
 
 #include "src/cxl/ui/host/view.hxx"
-#include "src/cxl/ui/loading/view.hxx"
 #include "src/cxl/ui/log/view.hxx"
 #include "src/cxl/ui/pattern/view.hxx"
 #include "src/cxl/ui/root/state.hxx"

@@ -12,7 +12,7 @@ namespace rqdq {
 namespace cxl {
 
 PatternLengthEditView::PatternLengthEditView(const int& value)
-	:d_value(value) {}
+	:d_valueSrc(value) {}
 
 
 std::pair<int, int> PatternLengthEditView::Pack(int w, int h) {
@@ -23,8 +23,12 @@ int PatternLengthEditView::GetType() {
 	return TextKit::WT_FIXED; }
 
 
-void PatternLengthEditView::Invalidate() {
-	d_dirty = true; }
+bool PatternLengthEditView::Refresh() {
+	bool updated = false;
+	if (d_valueSrc != d_value) {
+		updated = true;
+		d_value = d_valueSrc; }
+	return updated; }
 
 
 const rcls::TextCanvas& PatternLengthEditView::Draw(int width, int height) {
@@ -33,15 +37,14 @@ const rcls::TextCanvas& PatternLengthEditView::Draw(int width, int height) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
 	auto& out = d_canvas;
-	if (d_dirty) {
-		d_dirty = false;
+	bool updated = Refresh();
+	if (updated) {
 		out.Resize(width, height);
 		out.Clear();
 		auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::White);
 		Fill(out, lo);
 		WriteXY(out, 0, 0, "Pattern Length");
 		WriteXY(out, 6, 1, fmt::sprintf("%d", d_value)); }
-
 	return out; }
 
 

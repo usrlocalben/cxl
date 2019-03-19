@@ -17,7 +17,6 @@ cc_library(
     deps = [
         "//3rdparty/fmt",
         "//src/cxl/ui/host:view",
-        "//src/cxl/ui/loading:view",
         "//src/cxl/ui/log:view",
         "//src/cxl/ui/pattern:view",
         "//src/cxl/ui/splash:view",
@@ -35,9 +34,8 @@ cc_library(
     srcs = ["controller.cxx"],
     hdrs = ["controller.hxx"],
     deps = [
-        # XXX "//3rdparty/fmt",
         "//src/cxl/ui/host:controller",
-        "//src/cxl/ui/loading:controller",
+        "//src/cxl/ui/loading:view",
         "//src/cxl/ui/log:controller",
         "//src/cxl/ui/pattern:controller",
         "//src/cxl/ui/splash:controller",

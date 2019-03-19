@@ -12,14 +12,3 @@ cc_library(
         "//src/rcl/rcls:text_canvas",
         "//src/textkit:widget", ],
     copts = RSR_DEFAULT_COPTS,)
-
-
-cc_library(
-    name = "controller",
-    srcs = ["controller.cxx"],
-    hdrs = ["controller.hxx"],
-    deps = [
-        "//src/cxl:unit",
-        ":view",
-        ],
-    copts = RSR_DEFAULT_COPTS,)
