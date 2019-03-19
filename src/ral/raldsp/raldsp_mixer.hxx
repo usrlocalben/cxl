@@ -17,9 +17,7 @@ public:
 	void Update(int tempo) override {}
 
 	void Process(float* inputs, float* outputs) override {
-		std::array<float, 6> sums;
-
-		std::fill(sums.begin(), sums.end(), 0);
+		std::array<float, 6> sums{};
 		for (int i=0; i<d_channels.size(); i++) {
 			std::array<float, 6> channelOut;
 			d_channels[i].Process(&(inputs[i]), channelOut.data());

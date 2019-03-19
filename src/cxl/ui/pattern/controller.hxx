@@ -56,7 +56,7 @@ private:
 	int d_timerId{-1};
 	rclmt::Event d_playbackPositionChangedEvent{rclmt::Event::MakeEvent()};
 	TextKit::KeyEvent d_prevKey{};
-	std::array<int, 16> d_clipboard{}; };
+	std::array<int, 16> d_clipboard; };
 
 
 }  // namespace cxl

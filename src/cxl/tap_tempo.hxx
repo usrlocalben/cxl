@@ -23,7 +23,7 @@ public:
 private:
 	rcls::Timer d_timer;
 	int d_tapCnt{0};
-	std::array<double, kMaxTapTempoSamples> d_samples{}; };
+	std::array<double, kMaxTapTempoSamples> d_samples; };
 
 
 }  // namespace cxl
