@@ -40,6 +40,8 @@ private:
 
 class GridSequencer {
 public:
+	GridSequencer();
+
 	void Play() {
 		if (d_state != PlayerState::Stopped) {
 			return; }
@@ -57,6 +59,8 @@ public:
 
 	void SetTempo(int bpm);
 	int GetTempo() const;
+	void SetSwing(int pct);
+	int GetSwing() const;
 	void AddTrack(raldsp::SingleSampler&, std::optional<int>);
 
 	int GetPatternLength() const { return d_patternLength; }
@@ -98,9 +102,13 @@ private:
 
 	// playing state
 	int d_tempoInBPM = 1200;
+	int d_swingPct{50};
+	std::array<int, 2> d_swing{{ 24, 24 }};
 	PlayerState d_state{PlayerState::Stopped}, d_nextState{PlayerState::Stopped};
 	int d_sampleCounter = 0;
+	int d_ppqCounter{0};
 	int d_t = 0;
+	int d_gridPos{0};
 	int d_ppqStamp = 0;
 	int d_lastPlayedGridPosition = 0;
 	std::array<int, 96> d_ppqLUT; };

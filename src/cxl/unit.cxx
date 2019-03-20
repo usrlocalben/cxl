@@ -25,6 +25,7 @@ namespace {
 constexpr int kNumVoices = 16;
 constexpr int kMaxWaves = 1024;
 constexpr int kDefaultTempo = 1200;
+constexpr int kDefaultSwing = 50;
 constexpr float kMasterGain = 0.666f;
 constexpr int kMaxKitNum = 99;
 
@@ -48,6 +49,7 @@ namespace cxl {
 CXLUnit::CXLUnit()
 	:d_waveTable(kMaxWaves) {
 	d_sequencer.SetTempo(kDefaultTempo);
+	d_sequencer.SetSwing(kDefaultSwing);
 	d_voices.reserve(kNumVoices);
 	d_effects.reserve(kNumVoices);
 	for (int i=0; i<kNumVoices; i++) {
@@ -139,6 +141,15 @@ void CXLUnit::SetTempo(int value) {
 
 int CXLUnit::GetTempo() const {
 	return d_sequencer.GetTempo(); }
+
+
+void CXLUnit::SetSwing(int value) {
+	d_sequencer.SetSwing(value);
+	d_tempoChanged.emit(value); }
+
+
+int CXLUnit::GetSwing() const {
+	return d_sequencer.GetSwing(); }
 
 
 // pattern editing

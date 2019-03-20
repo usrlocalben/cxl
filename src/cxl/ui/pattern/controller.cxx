@@ -86,6 +86,8 @@ void PatternController::KeyboardTick() {
 			AdjustPageParameter(d_unit, d_state.curVoicePage, d_state.curTrack, d_state.curParam.value(), offset); }
 		else if (d_loop.IsKeyDown(SC::Equals)) {
 			d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
+		else if (d_loop.IsKeyDown(SC::Minus)) {
+			d_unit.SetSwing(std::clamp(d_unit.GetSwing() + offset, 50, 75)); }
 		else {
 			return; }
 		d_loop.DrawScreenEventually(); }}

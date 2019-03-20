@@ -116,13 +116,15 @@ const rcls::TextCanvas& RootView::DrawTransportIndicator(int width) {
 	WriteXY(out, 14, 0, "| Kit: ", lo);
 	WriteXY(out, 21, 0, fmt::sprintf("%d", d_unit.GetCurrentKitNumber()+1), hi);
 
+	int swing = d_unit.GetSwing();
 	int tempo = d_unit.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
 
-	WriteXY(out, width-33, 0, "Tempo:", lo);
+	WriteXY(out, width-37, 0, "Tempo:", lo);
 	s = fmt::sprintf("%3d.%d bpm", whole, tenths);
-	WriteXY(out, width-26, 0, s, hi);
+	WriteXY(out, width-30, 0, s, hi);
+	WriteXY(out, width-20, 0, fmt::sprintf("%d%%", swing), swing==50?lo:higreen);
 	WriteXY(out, width-16, 0, "|", lo);
 	WriteXY(out, width-14, 0, d_unit.IsPlaying() ? "PLAYING" : "STOPPED", d_unit.IsPlaying() ? higreen : lo);
 	WriteXY(out, width-6, 0, "|", lo);

@@ -29,6 +29,8 @@ public:
 	int GetLastPlayedGridPosition() const;
 	void SetTempo(int value);
 	int GetTempo() const;
+	void SetSwing(int pct);
+	int GetSwing() const;
 
 	// pattern editing
 	void ToggleTrackGridNote(int track, int pos);
