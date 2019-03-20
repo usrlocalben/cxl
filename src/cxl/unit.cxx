@@ -170,23 +170,23 @@ const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) const {
 int CXLUnit::GetVoiceParameterValue(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
-	case 0: return d_voices[ti].d_waveId;
-	case 1: return d_voices[ti].d_attackPct;
-	case 2: return d_voices[ti].d_decayPct;
+	case 0: return d_voices[ti].params.waveId;
+	case 1: return d_voices[ti].params.attackTime;
+	case 2: return d_voices[ti].params.decayTime;
 
-	case 4: return d_voices[ti].d_tuningInNotes;
-	case 5: return d_voices[ti].d_tuningInCents;
+	case 4: return d_voices[ti].params.tuningInNotes;
+	case 5: return d_voices[ti].params.tuningInCents;
 	default: return 0; }}
 
 
 void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 	switch (pi) {
-	case 0: Adjust2(ti, d_voices[ti].d_waveId,          0, 1000, offset); break;
-	case 1: Adjust2(ti, d_voices[ti].d_attackPct,       0,  100, offset); break;
-	case 2: Adjust2(ti, d_voices[ti].d_decayPct,        0,  100, offset); break;
+	case 0: Adjust2(ti, d_voices[ti].params.waveId,          0, 1000, offset); break;
+	case 1: Adjust2(ti, d_voices[ti].params.attackTime,      0,  127, offset); break;
+	case 2: Adjust2(ti, d_voices[ti].params.decayTime,       0,  127, offset); break;
 
-	case 4: Adjust2(ti, d_voices[ti].d_tuningInNotes, -64,   63, offset); break;
-	case 5: Adjust2(ti, d_voices[ti].d_tuningInCents,-100,  100, offset); break;
+	case 4: Adjust2(ti, d_voices[ti].params.tuningInNotes, -64,   63, offset); break;
+	case 5: Adjust2(ti, d_voices[ti].params.tuningInCents,-100,  100, offset); break;
 	default: break; }}
 
 
@@ -289,7 +289,7 @@ void CXLUnit::SaveKit() {
 		for (int pi=0; pi<8; pi++) {
 			const auto paramName = GetVoiceParameterName(ti, pi);
 			if (paramName == "wav") {
-				auto& wave = d_waveTable.Get(d_voices[ti].d_waveId);
+				auto& wave = d_waveTable.Get(d_voices[ti].params.waveId);
 				if (wave.d_loaded) {
 					fd << "  voice.wav name=" << wave.d_descr << "\n"; }
 				else {
@@ -338,21 +338,21 @@ void CXLUnit::LoadKit() {
 					vid = stoi(line); }
 				else if (ConsumePrefix(line, "  voice.wav ")) {
 					if (line == "none") {
-						d_voices[vid].d_waveId = 0; }
+						d_voices[vid].params.waveId = 0; }
 					else if (ConsumePrefix(line, "name=")) {
 						int waveId = d_waveTable.FindByName(line);
 						if (waveId == 0) {
 							auto msg = fmt::sprintf("waveTable entry with name \"%s\" not found", line);
 							Log::GetInstance().info(msg); }
-						d_voices[vid].d_waveId = waveId; }
+						d_voices[vid].params.waveId = waveId; }
 					else {
 						auto msg = fmt::sprintf("invalid wave reference \"%s\"", line);
 						Log::GetInstance().info(msg);
-						d_voices[vid].d_waveId = 0; }}
-				else if (ConsumePrefix(line, "  voice.atk ")) { d_voices[vid].d_attackPct = stoi(line); }
-				else if (ConsumePrefix(line, "  voice.dcy ")) { d_voices[vid].d_decayPct = stoi(line); }
-				else if (ConsumePrefix(line, "  voice.tun ")) { d_voices[vid].d_tuningInNotes = stoi(line); }
-				else if (ConsumePrefix(line, "  voice.fin ")) { d_voices[vid].d_tuningInCents = stoi(line); }
+						d_voices[vid].params.waveId = 0; }}
+				else if (ConsumePrefix(line, "  voice.atk ")) { d_voices[vid].params.attackTime = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.dcy ")) { d_voices[vid].params.decayTime = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.tun ")) { d_voices[vid].params.tuningInNotes = stoi(line); }
+				else if (ConsumePrefix(line, "  voice.fin ")) { d_voices[vid].params.tuningInCents = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.flt ")) { d_effects[vid].d_lowpassFreq = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.rez ")) { d_effects[vid].d_lowpassQ = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.dly ")) { d_effects[vid].d_delaySend = stoi(line); }

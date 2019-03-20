@@ -7,53 +7,51 @@ namespace rqdq {
 namespace {
 
 constexpr int kMidiC3 = 48;
+
 constexpr int kSamplerRootNote = kMidiC3;
+
+constexpr double kMaxAttackTimeInMillis{4000.0};
+
+/**
+ * compute attack/decay time in #samples.
+ * 127 = kMaxAttackTimeInMillis
+ * input is pow^2'd to shift precision to the lower end of the range
+ */
+int adSamples(int midiValue) {
+	auto s = midiValue / 127.0;
+	auto millis = s*s * kMaxAttackTimeInMillis;
+	auto samples = millis * 44100.0 / 1000.0;
+	return samples; }
+
 
 }  // namespace
 
 namespace raldsp {
 
-void SingleSampler::Trigger(int note, double velocity, int ppqstamp) {
-	auto& wave = d_waveTable.Get(d_waveId);
+void SingleSampler::Trigger(int note, double volume, int ppqstamp) {
+	auto& wave = waveTable.Get(params.waveId);
 	if (!wave.d_loaded) {
-		return; }
-
-	if (d_isActive) {
-		d_wavePtr->Release();
-		d_isActive = false; }
-
-	// https://forum.juce.com/t/mapping-frequencies-to-midi-notes/1762/2
-	d_delta = pow(2.0, (note+d_tuningInNotes-kSamplerRootNote)/12.0 + (d_tuningInCents / 1200.0));
-	d_delta *= wave.d_freq / 44100.0;  // XXX
-	d_wavePtr = &wave;
-	d_isActive = true;
-	wave.AddReference();
-
-	const int samplesPerCent = (wave.d_selectionEnd - wave.d_selectionBegin) / 100;
-	if (d_attackPct != 0) {
-		d_attackVelocity = velocity / (d_attackPct*samplesPerCent); }
+		state = Idle{}; }
 	else {
-		d_attackVelocity = velocity; }
+		Playing s;
+		// https://forum.juce.com/t/mapping-frequencies-to-midi-notes/1762/2
+		s.delta = pow(2.0, (note+params.tuningInNotes-kSamplerRootNote)/12.0 + (params.tuningInCents / 1200.0));
+		s.delta *= wave.d_freq / 44100.0;  // XXX
+		s.wavePtr = &wave;
+		wave.AddReference();
 
-	const int invDecayPct = 100 - d_decayPct;
-	if (invDecayPct != 0) {
-		d_decayVelocity = velocity / (invDecayPct*samplesPerCent); }
-	else {
-		d_decayVelocity = velocity; }
+		auto t = adSamples(params.attackTime);
+		s.gainVelocity = t > 0 ? (volume / t) : volume;
 
-	d_decayBegin = wave.d_selectionEnd - invDecayPct*samplesPerCent;
-
-	d_targetGain = velocity;
-	d_curGain = 0.0;
-	d_position = wave.d_selectionBegin;
-	d_envState = EnvelopeState::Attack; }
-
+		s.targetGain = volume;
+		s.curGain = 0.0;
+		s.position = wave.d_selectionBegin;
+		state = s; }}
 
 
 void SingleSampler::Stop() {
-	if (d_isActive) {
-		d_isActive = false;
-		d_wavePtr->Release(); }}
+	if (!std::holds_alternative<Idle>(state)) {
+		state = Idle{}; }}
 
 
 void SingleSampler::Update(int tempo) {}
@@ -61,46 +59,38 @@ void SingleSampler::Update(int tempo) {}
 
 void SingleSampler::Process(float* inputs, float* outputs) {
 	auto& out = outputs[0];
-
 	out = 0;
-	if (d_isActive) {
-		if (d_envState == EnvelopeState::Attack) {
-			d_curGain += d_attackVelocity;
-			if (d_curGain >= d_targetGain) {
-				d_curGain = d_targetGain;
-				if (d_decayMode == DecayMode::Begin) {
-					d_envState = EnvelopeState::Decay; }}}
 
-		if (d_envState == EnvelopeState::Decay) {
-			d_curGain -= d_decayVelocity;
-			if (d_curGain < 0) {
-				d_curGain = 0; }}
-
-		if (d_loopType != LoopType::Loop) {
-			if ((d_position >= d_decayBegin) &&
-				(d_envState != EnvelopeState::Decay)) {
-				d_envState = EnvelopeState::Decay; }}
-
-		const auto[sampleLeft, sampleRight] = d_wavePtr->Sample(d_position);
-		out = (sampleLeft + sampleRight) / 2;
-		out *= d_curGain;
-		d_position += d_delta;
-
-		if (d_curGain >= d_targetGain) {
-			if (d_decayMode == DecayMode::Begin) {
-				d_envState = EnvelopeState::Decay; }}
-
-		if (d_curGain <= 0) {
-			d_isActive = false;
-			d_wavePtr->Release(); }
+	if (std::holds_alternative<Playing>(state)) {
+		auto& s = std::get<Playing>(state);
+		s.curGain += s.gainVelocity;
+		if (s.gainVelocity > 0) {
+			// attack
+			if (s.curGain >= s.targetGain) {
+				// switch to decay
+				s.targetGain = 0;
+				auto dv = (params.decayTime == 127) ? 0 : s.curGain / adSamples(params.decayTime);
+				s.gainVelocity = -dv; }}
 		else {
-			if (d_loopType == LoopType::Loop) {
-				if (int(d_position) > d_wavePtr->d_loopEnd) {
-					d_position -= d_wavePtr->d_loopEnd - d_wavePtr->d_loopBegin; }}
-			else {
-				if (int(d_position) >= d_wavePtr->d_selectionEnd) {
-					d_isActive = false;
-					d_wavePtr->Release(); }}}}}
+			// decay
+			if (s.curGain <= s.targetGain) {
+				state = Idle{}; }}}
+
+	if (std::holds_alternative<Idle>(state)) {
+		return; }
+
+	auto& s = std::get<Playing>(state);
+	const auto[sampleLeft, sampleRight] = s.wavePtr->Sample(s.position);
+	out = (sampleLeft + sampleRight) / 2;
+	out *= s.curGain;
+	s.position += s.delta;
+
+	if (params.loopType == LoopType::Loop) {
+		if (int(s.position) > s.wavePtr->d_loopEnd) {
+			s.position -= s.wavePtr->d_loopEnd - s.wavePtr->d_loopBegin; }}
+	else {
+		if (int(s.position) >= s.wavePtr->d_selectionEnd) {
+			state = Idle{}; }}}
 
 
 }  // namespace raldsp

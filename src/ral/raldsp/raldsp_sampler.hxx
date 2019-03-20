@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <utility>
+#include <variant>
 
 #include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
@@ -8,18 +9,6 @@
 
 namespace rqdq {
 namespace raldsp {
-
-class DecayMode {
-public:
-	enum Enumerator {
-		 Begin = 0
-		,End = 1
-		,Unknown };
-	DecayMode() :e(Unknown){}
-	DecayMode(Enumerator val) :e(val){}
-	operator Enumerator() const { assert(e!=Unknown); return e; }
-private:
-	Enumerator e; };
 
 
 class LoopType {
@@ -66,55 +55,53 @@ private:
 	Enumerator e; };
 
 
-
 class SingleSampler : public IAudioDevice {
+
+	struct Parameters {
+		int waveId{0};
+		int tuningInNotes{0};  // [-64...63] pitch semitone offset
+		int tuningInCents{0};  // pitch fine-tune in cents
+		LoopType loopType{LoopType::None};
+		int attackTime{0};     // [0...127] 0...4sec, pow^2 curve
+		int decayTime{127};    // [0...127] 0...4sec, pow^2 curve, 127=inf
+		int gain{10}; };       // [-600...+60] db gain*10
+
+	// std::variant FSM
+	struct Idle {};
+	struct Playing {
+		ralw::MPCWave* wavePtr;
+		double position;
+		double delta;
+		double curGain;
+		double targetGain;
+		double gainVelocity;
+		~Playing() {
+			if (wavePtr != nullptr) {
+				wavePtr->Release(); }} };
+
+	using State = std::variant<Idle, Playing>;
+
+public:
+	SingleSampler(ralw::WaveTable& wt) :waveTable(wt) {}
+
 public:
 	// IAudioDevice
 	void Update(int) override;
 	void Process(float*, float*) override;
 
-public:
-	SingleSampler(ralw::WaveTable& wt)
-		:d_waveTable(wt) {}
+	// user interface
+	void Initialize() {
+		params = Parameters{}; }
 
+	// audio thread only
 	void Trigger(int note, double velocity, int ppqstamp);
 	void Stop();
 
-	void Initialize() {
-		d_waveId = 0;
-		d_tuningInNotes = 0;
-		d_tuningInCents = 0;
-		d_loopType = LoopType::None;
-		d_attackPct = 0;
-		d_decayPct = 90;
-		d_decayMode = DecayMode::End;
-		d_gain = 10; }
-
 public:
-	// parameters
-	int d_waveId = 0;
-	int d_tuningInNotes = 0;  // [-64...63] pitch semitone offset
-	int d_tuningInCents = 0;  // pitch fine-tune in cents
-	LoopType d_loopType = LoopType::None;
-	int d_attackPct = 0;      // [0...100] % of sample duration
-	int d_decayPct = 90;      // [0...100] % of sample duration
-	DecayMode d_decayMode = DecayMode::End;
-	int d_gain = 10;          // [-600...+60] db gain*10
-
+	Parameters params{};
 private:
-	// playing state
-	ralw::MPCWave *d_wavePtr;
-	bool d_isActive = false;
-	double d_position;
-	double d_delta;
-	double d_curGain;
-	double d_targetGain;
-	EnvelopeState d_envState;
-	double d_attackVelocity;
-	double d_decayVelocity;
-	int d_decayBegin;
-
-	ralw::WaveTable& d_waveTable; };
+	State state{Idle{}};
+	ralw::WaveTable& waveTable; };
 
 
 }  // close package namespace
