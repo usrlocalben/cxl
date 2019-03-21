@@ -54,12 +54,12 @@ const rcls::TextCanvas& PatternView::Draw(int width, int height) {
 	auto& out = d_canvas;
 	out.Resize(width, height);
 	out.Clear();
-	WriteXY(out, 1, 1, DrawTrackSelection());
+	WriteXY(out, 2, 4, DrawTrackSelection());
+	WriteXY(out, 16, 3, DrawParameters());
 
 	WriteXY(out, 1, height-3, DrawGrid());
 	WriteXY(out, 68, height-2, DrawPageIndicator());
 
-	WriteXY(out, 8, 5, DrawParameters());
 
 	if (d_popup) {
 		auto attr = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
@@ -74,19 +74,25 @@ const rcls::TextCanvas& PatternView::Draw(int width, int height) {
 
 
 const rcls::TextCanvas& PatternView::DrawTrackSelection() {
-	static rcls::TextCanvas out{ 25, 2 };
+	static rcls::TextCanvas out{ 13, 4 };
 	out.Clear();
 	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
-	for (int ti = 0; ti < 8; ti++) {
+	for (int ti = 0; ti < 4; ti++) {
 		auto isMuted = d_unit.IsTrackMuted(ti);
-		WriteXY(out, ti*3+1, 0, tolower(kTrackNames[ti]), isMuted?lo:hi); }
-	for (int ti = 8; ti <16; ti++) {
+		WriteXY(out, (ti- 0)*3+1, 0, tolower(kTrackNames[ti]), isMuted?lo:hi); }
+	for (int ti = 4; ti < 8; ti++) {
 		auto isMuted = d_unit.IsTrackMuted(ti);
-		WriteXY(out, (ti-8)*3+1, 1, tolower(kTrackNames[ti]), isMuted?lo:hi); }
+		WriteXY(out, (ti- 4)*3+1, 1, tolower(kTrackNames[ti]), isMuted?lo:hi); }
+	for (int ti = 8; ti <12; ti++) {
+		auto isMuted = d_unit.IsTrackMuted(ti);
+		WriteXY(out, (ti- 8)*3+1, 2, tolower(kTrackNames[ti]), isMuted?lo:hi); }
+	for (int ti =12; ti <16; ti++) {
+		auto isMuted = d_unit.IsTrackMuted(ti);
+		WriteXY(out, (ti-12)*3+1, 3, tolower(kTrackNames[ti]), isMuted?lo:hi); }
 
-	int selY = d_state.curTrack / 8;
-	int selX = (d_state.curTrack % 8) * 3 + 1;
+	int selY = d_state.curTrack / 4;
+	int selX = (d_state.curTrack % 4) * 3 + 1;
 	auto isMuted = d_unit.IsTrackMuted(d_state.curTrack);
 	WriteXY(out, selX-1, selY, "[" + kTrackNames[d_state.curTrack] + "]", isMuted?lo:hi);
 	return out; }
