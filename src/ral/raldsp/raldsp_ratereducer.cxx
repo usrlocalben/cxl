@@ -10,7 +10,7 @@ namespace raldsp {
 RateReducer::RateReducer(int numChannels) {
 	d_bufs.resize(numChannels);
 	for (auto& buf : d_bufs) {
-		std::fill(buf.begin(), buf.end(), 0); }
+		std::fill(begin(buf), end(buf), 0); }
 	d_emit.resize(numChannels); }
 
 

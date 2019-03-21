@@ -54,7 +54,7 @@ public:
 		d_buf.resize(width*height);}
 
 	void Clear() {
-		std::fill(d_buf.begin(), d_buf.end(), ColorChar{});}
+		std::fill(begin(d_buf), end(d_buf), ColorChar{});}
 
 	ColorChar* GetDataPtr() { return d_buf.data(); }
 	int d_width;

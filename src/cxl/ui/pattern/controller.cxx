@@ -115,10 +115,10 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 		StopNudge(dir);
 		return true; }
 
-	auto paramSearch = std::find_if(begin(kParamScanLUT), end(kParamScanLUT),
+	auto paramSearch = std::find_if(cbegin(kParamScanLUT), cend(kParamScanLUT),
 	                                [&](auto &item) { return key == item; });
-	if (paramSearch != kParamScanLUT.end()) {
-		const auto paramIdx = std::distance(begin(kParamScanLUT), paramSearch);
+	if (paramSearch != cend(kParamScanLUT)) {
+		const auto paramIdx = std::distance(cbegin(kParamScanLUT), paramSearch);
 		if (down) {
 			d_state.curParam = paramIdx; }
 		else {
@@ -139,9 +139,9 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 		return true; }
 
 
-	auto gridSearch = std::find_if(begin(kGridScanLUT), end(kGridScanLUT),
+	auto gridSearch = std::find_if(cbegin(kGridScanLUT), cend(kGridScanLUT),
 	                               [&](auto &item) { return key == item; });
-	const int gridIdx = gridSearch != kGridScanLUT.end() ? std::distance(begin(kGridScanLUT), gridSearch) : -1;
+	const int gridIdx = gridSearch != cend(kGridScanLUT) ? std::distance(cbegin(kGridScanLUT), gridSearch) : -1;
 	// todo: set flag for parameter locks
 
 	bool fn = (e.control == rcls::kCKLeftCtrl);

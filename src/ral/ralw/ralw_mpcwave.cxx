@@ -52,8 +52,8 @@ MPCWave MPCWave::Load(const int size,
 
 void MPCWave::Trim() {
 	// drops regions outside the selection interval, e.g. photoshop _crop_
-	std::vector<int16_t>(d_dataLeft.begin()+d_selectionBegin, d_dataLeft.begin()+d_selectionEnd).swap(d_dataLeft);
-	std::vector<int16_t>(d_dataRight.begin()+d_selectionBegin, d_dataRight.begin()+d_selectionEnd).swap(d_dataRight);
+	std::vector<int16_t>(begin(d_dataLeft)+d_selectionBegin, begin(d_dataLeft)+d_selectionEnd).swap(d_dataLeft);
+	std::vector<int16_t>(begin(d_dataRight)+d_selectionBegin, begin(d_dataRight)+d_selectionEnd).swap(d_dataRight);
 	SelectAll();
 	ResetRegions(1); }
 

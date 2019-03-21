@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	log.info("Log started");
 
 	const array<string, 3> userDirs = {config::patternDir, config::sampleDir, config::kitDir};
-	for_each(userDirs.begin(), userDirs.end(), rcls::EnsureDirectoryExists);
+	for_each(begin(userDirs), end(userDirs), rcls::EnsureDirectoryExists);
 
 	CXLUnit unit;
 

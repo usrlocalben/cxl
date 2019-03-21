@@ -47,7 +47,7 @@ auto FindOpById(int id) {
 
 void onFileOpError(int id) {
 	auto op = FindOpById(id);
-	if (op==fileOps.end()) {
+	if (op == end(fileOps)) {
 		auto msg = fmt::sprintf("onFileOpError(): fileOp id=%d not found", id);
 		throw std::runtime_error(msg); }
 	op->deferred.Errback(op->error);
@@ -56,7 +56,7 @@ void onFileOpError(int id) {
 
 void onFileOpComplete(int id) {
 	auto op = FindOpById(id);
-	if (op==fileOps.end()) {
+	if (op == end(fileOps)) {
 		auto msg = fmt::sprintf("onFileOpComplete(): fileOp id=%d not found", id);
 		throw std::runtime_error(msg); }
 	op->deferred.Callback(op->buffer);
@@ -65,7 +65,7 @@ void onFileOpComplete(int id) {
 
 void onFileOpEvent(int id) {
 	auto search = FindOpById(id);
-	if (search == fileOps.end()) {
+	if (search == end(fileOps)) {
 		auto msg = fmt::sprintf("onFileOpEvent(): fileOp id=%d not found", id);
 		throw std::runtime_error(msg); }
 
