@@ -141,7 +141,7 @@ const rcls::TextCanvas& PatternView::DrawGrid() {
 	auto dark = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
-	const int curPos = d_unit.GetLastPlayedGridPosition();
+	const int curPos = d_unit.GetPlayingNoteIndex();
 	const int curPage = curPos/16;
 	const int curPagePos = curPos%16;
 
@@ -164,7 +164,7 @@ const rcls::TextCanvas& PatternView::DrawGrid() {
 const rcls::TextCanvas& PatternView::DrawPageIndicator() {
 	static rcls::TextCanvas out{ 9, 1 };
 	int curPage = d_state.curGridPage;
-	int playingPage = d_unit.GetLastPlayedGridPosition() / 16;
+	int playingPage = d_unit.GetPlayingNoteIndex() / 16;
 
 	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Brown);
 	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);

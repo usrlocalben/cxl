@@ -7,19 +7,40 @@
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 
 namespace rqdq {
+namespace {
+
+constexpr int kEighthNoteInPPQ{48};
+
+constexpr int kPPQ{96};
+
+/**
+ * compute the duration (in ppq) of a given noteIdx given
+ * a swing% value (integer, [50, 75])
+ */
+int ComputeSwing(int noteIdx, int swingPct) {
+	auto firstHalf = lround(kEighthNoteInPPQ * swingPct / 100.0);
+	auto remainder = kEighthNoteInPPQ - firstHalf;
+	return noteIdx % 2 == 0 ? firstHalf : remainder; }
+
+
+/**
+ * compute the duration of one ppq point (in samples) given
+ * a tempo (in BPM)
+ */
+double ComputeSamplesPerPoint(double bpm) {
+	auto oneBeatInSamples = 44100.0 / (bpm/60.0);
+	auto onePointInSamples = oneBeatInSamples / kPPQ;
+	return onePointInSamples; }
+
+
+}  // namespace
+
 namespace ralm {
 
-GridSequencer::GridSequencer() {
-	SetSwing(50); }
+GridSequencer::GridSequencer() = default;
 
 
 void GridSequencer::SetTempo(const int bpm) {
-	double ax = 44100.0 / (bpm/600.0);
-	for (int i=0; i<kPPQ; i++) {
-		double chunk = ax / (kPPQ-i);
-		int ichunk = lround(chunk);
-		ax = ax - ichunk;
-		d_ppqLUT[i] = ichunk; }
 	d_tempoInBPM = bpm; }
 
 
@@ -28,12 +49,7 @@ int GridSequencer::GetTempo() const {
 
 
 void GridSequencer::SetSwing(int pct) {
-	pct = std::clamp(pct, 50, 75);
-	const int eighthNoteInPPQ{48};
-	int first = lround(eighthNoteInPPQ * pct / 100.0);
-	int second = eighthNoteInPPQ - first;
-	d_swing = { first, second };
-	d_swingPct = pct; }
+	d_swingPct = std::clamp(pct, 50, 75); }
 
 
 int GridSequencer::GetSwing() const {
@@ -44,64 +60,50 @@ void GridSequencer::AddTrack(raldsp::SingleSampler& voice, std::optional<int> mu
 	d_tracks.emplace_back(&voice, muteGroupId); }
 
 
-void GridSequencer::IncrementT() {
-	d_t++;
-	d_ppqStamp++; }
-
-
-void GridSequencer::Rewind() {
-	d_gridPos = 0;
-	d_t = 0; }
-
-
 bool GridSequencer::Update() {
-	bool changed = false;
+	bool updated = false;
 	if (d_state==PlayerState::Stopped && d_nextState==PlayerState::Playing) {
-		changed = true;
+		updated = true;
 		d_state = PlayerState::Playing;
-		d_sampleCounter = 0;
-		d_ppqCounter = 1;
-		d_gridPos = -1;
-		d_t = -1;  // rewind
-		d_ppqStamp = 0; }
+		d_pointSamplesError = 0;
+		d_pointTimeRemainingInSamples = 0;
+		d_noteTimeRemainingInPoints = 0;
+		d_noteIdx = -1;
+		d_timeInPoints = 0; }
 	if (d_state==PlayerState::Playing && d_nextState==PlayerState::Stopped) {
-		changed = true;
-		//std::cout << "[->STOPPED]" << std::flush;
+		updated = true;
 		d_state = PlayerState::Stopped;
-		d_ppqStamp = 0; }
-	return changed; }
+		d_timeInPoints = 0; }
+	return updated; }
 
 
 bool GridSequencer::Process() {
-	bool tracksWillUpdate = false;
-	if (d_state == PlayerState::Playing) {
-		d_sampleCounter--;
-		if (d_sampleCounter <= 0) {
-			IncrementT();
-			d_ppqCounter--;
-			if (d_ppqCounter == 0) {
-				d_gridPos++;
-				d_ppqCounter = d_swing[d_gridPos%2];
-				tracksWillUpdate = true; }
-			d_sampleCounter = d_ppqLUT[d_t%kPPQ];
-			if (d_t >= (d_patternLength/4)*kPPQ) {
-				// end of pattern
-				Rewind(); }}}
-
 	bool updated = false;
-	if (tracksWillUpdate) {
-		d_lastPlayedGridPosition = d_gridPos;
-		updated = true;
-		for (auto& track : d_tracks) {
-			if (track.grid[d_gridPos] != 0 && !track.isMuted) {
-				track.voice->Trigger(48, 1.0, 0);
-				if (track.muteGroupId) {
-					for (auto& other : d_tracks) {
-						if (&track != &other &&
-							other.muteGroupId &&
-							other.muteGroupId.value() == track.muteGroupId.value()) {
-							other.voice->Stop(); }}}}}}
+	if (d_state == PlayerState::Playing) {
+		if (--d_pointTimeRemainingInSamples <= 0) {
+			auto onePointInSamples = ComputeSamplesPerPoint(d_tempoInBPM/10.0);
+			auto needed = onePointInSamples + d_pointSamplesError;
+			d_pointTimeRemainingInSamples = static_cast<int>(needed);
+			d_pointSamplesError = needed - d_pointTimeRemainingInSamples;
+			d_timeInPoints++;
+			if (--d_noteTimeRemainingInPoints <= 0) {
+				d_noteIdx = (d_noteIdx + 1) % d_patternLength;
+				d_noteTimeRemainingInPoints = ComputeSwing(d_noteIdx, d_swingPct);
+				updated = true;
+				TriggerCurrentNote(); }}}
 	return updated; }
+
+
+void GridSequencer::TriggerCurrentNote() {
+	for (auto& track : d_tracks) {
+		if (track.grid[d_noteIdx] != 0 && !track.isMuted) {
+			track.voice->Trigger(48, 1.0, 0);
+			if (track.muteGroupId) {
+				for (auto& other : d_tracks) {
+					if (&track != &other &&
+						other.muteGroupId &&
+						other.muteGroupId.value() == track.muteGroupId.value()) {
+						other.voice->Stop(); }}}}}}
 
 
 }  // namespace ralm

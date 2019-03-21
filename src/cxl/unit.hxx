@@ -26,7 +26,7 @@ public:
 	void Play();
 	void Stop();
 	bool IsPlaying() const;
-	int GetLastPlayedGridPosition() const;
+	int GetPlayingNoteIndex() const;
 	void SetTempo(int value);
 	int GetTempo() const;
 	void SetSwing(int pct);

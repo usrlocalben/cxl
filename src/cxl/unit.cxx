@@ -130,8 +130,8 @@ bool CXLUnit::IsPlaying() const {
 	return d_sequencer.IsPlaying(); }
 
 
-int CXLUnit::GetLastPlayedGridPosition() const {
-	return d_sequencer.GetLastPlayedGridPosition(); }
+int CXLUnit::GetPlayingNoteIndex() const {
+	return d_sequencer.GetPlayingNoteIndex(); }
 
 
 void CXLUnit::SetTempo(int value) {
@@ -416,7 +416,7 @@ void CXLUnit::Render(float* left, float* right, int numSamples) {
 		right[si] = masterOut[1] * kMasterGain; }
 
 	if (gridPositionUpdated) {
-		d_playbackPositionChanged.emit(GetLastPlayedGridPosition()); }}
+		d_playbackPositionChanged.emit(GetPlayingNoteIndex()); }}
 
 
 void CXLUnit::Trigger(int track) {

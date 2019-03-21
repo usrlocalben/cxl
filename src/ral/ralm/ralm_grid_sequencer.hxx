@@ -54,7 +54,10 @@ public:
 
 	bool Update();
 	bool Process();
+private:
+	void TriggerCurrentNote();
 
+public:
 	bool IsPlaying() const { return d_state == PlayerState::Playing; }
 
 	void SetTempo(int bpm);
@@ -92,26 +95,21 @@ public:
 	void InitializePattern() {
 		std::for_each(begin(d_tracks), end(d_tracks),
 		              [](auto& item) { item.grid.fill(0); }); }
-	int GetLastPlayedGridPosition() const { return d_lastPlayedGridPosition; }
+	int GetPlayingNoteIndex() const { return d_noteIdx; }
 
 private:
-	void IncrementT();
-	void Rewind();
 	std::vector<GridTrack> d_tracks;
-	int d_patternLength = 16;
+	int d_patternLength{16};
+	int d_tempoInBPM{1200};
+	int d_swingPct{50};
 
 	// playing state
-	int d_tempoInBPM = 1200;
-	int d_swingPct{50};
-	std::array<int, 2> d_swing{{ 24, 24 }};
 	PlayerState d_state{PlayerState::Stopped}, d_nextState{PlayerState::Stopped};
-	int d_sampleCounter = 0;
-	int d_ppqCounter{0};
-	int d_t = 0;
-	int d_gridPos{0};
-	int d_ppqStamp = 0;
-	int d_lastPlayedGridPosition = 0;
-	std::array<int, 96> d_ppqLUT; };
+	int d_pointTimeRemainingInSamples{0};
+	int d_noteTimeRemainingInPoints{0};
+	double d_pointSamplesError{0};
+	int d_noteIdx{0};
+	int d_timeInPoints{0}; };
 
 
 }  // close package namespace
