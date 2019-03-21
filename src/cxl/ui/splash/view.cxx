@@ -10,7 +10,7 @@
 namespace rqdq {
 namespace {
 
-const std::array<std::string, 12> kArtText{ {
+constexpr std::array<const char*, 12> kArtText = {{
 	R"(                                            )",
 	R"(                        __                  )",
 	R"(                 ____  /  \                 )",
@@ -22,8 +22,11 @@ const std::array<std::string, 12> kArtText{ {
 	R"(                                            )",
 	R"(                  cxl  v1.0                 )",
 	R"(                  f1 = help                 )",
-	R"(                                            )"
-	} };
+	R"(                                            )" }};
+
+constexpr int kArtHeight = kArtText.size();
+
+constexpr int kArtWidth = std::char_traits<char>::length(kArtText[0]);
 
 
 }  // namespace
@@ -34,7 +37,7 @@ SplashView::SplashView(const float& t) :d_tSrc(t) {}
 
 
 std::pair<int, int> SplashView::Pack(int w, int h) {
-	return {kArtText[0].size(), kArtText.size()}; }
+	return {kArtWidth, kArtHeight}; }
 
 
 int SplashView::GetType() {
@@ -57,12 +60,12 @@ const rcls::TextCanvas& SplashView::Draw(int width, int height) {
 	auto& out = d_canvas;
 	bool updated = Refresh();
 	if (updated) {
-		out.Resize(kArtText[0].size(), kArtText.size());
+		out.Resize(mySize.first, mySize.second);
 		out.Clear();
 		const auto blue = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
 		const auto cyan = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongCyan);
 		int cyanY = static_cast<int>(d_t*24) % 48;
-		for (int y=0; y<kArtText.size(); y++) {
+		for (int y=0; y<kArtHeight; y++) {
 			WriteXY(out, 0, y, kArtText[y], y==cyanY?cyan:blue); }}
 	return out; }
 

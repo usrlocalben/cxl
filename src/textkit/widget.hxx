@@ -11,9 +11,9 @@
 namespace rqdq {
 namespace TextKit {
 
-const int WT_FIXED = 1;
-const int WT_BOX = 2;
-const int WT_FLOW = 4;
+constexpr int WT_FIXED = 1;
+constexpr int WT_BOX = 2;
+constexpr int WT_FLOW = 4;
 
 class Widget {
 public:
