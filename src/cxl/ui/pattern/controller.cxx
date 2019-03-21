@@ -48,12 +48,29 @@ constexpr std::array<char, 8> kParamScanLUT = {
 	SC::T, SC::Y, SC::U, SC::I,
 	SC::G, SC::H, SC::J, SC::K, };
 
+constexpr auto kTempoKey{SC::Equals};
+constexpr auto kSwingKey{SC::Minus};
+constexpr auto kFnKey{SC::LeftCtrl};
+constexpr auto kLeftKey{SC::OpenBracket};
+constexpr auto kRightKey{SC::CloseBracket};
+constexpr auto kDecKnob{SC::Comma};
+constexpr auto kIncKnob{SC::Period};
+constexpr auto kPatternLengthKey{SC::Backslash};
+constexpr auto kRecordKey{SC::L};
+constexpr auto kPlayKey{SC::Semicolon};
+constexpr auto kStopKey{SC::Quote};
+constexpr auto kParamPageKey{SC::Backspace};
+constexpr auto kSaveKitKey{SC::F5};
+constexpr auto kLoadKitKey{SC::F6};
+constexpr auto kDecKitKey{SC::F7};
+constexpr auto kIncKitKey{SC::F8};
+constexpr auto kPatternLoadKey{SC::P};
+constexpr auto kMuteKey{SC::M};
+
 
 }  // namespace
 
 namespace cxl {
-
-using ScanCode = rcls::ScanCode;
 
 PatternController::PatternController(CXLUnit& unit, TextKit::MainLoop& loop)
 	:d_unit(unit), d_loop(loop), d_view(d_unit, d_state) {
@@ -84,9 +101,9 @@ void PatternController::KeyboardTick() {
 	if (offset != 0) {
 		if (d_state.curParam) {
 			AdjustPageParameter(d_unit, d_state.curVoicePage, d_state.curTrack, d_state.curParam.value(), offset); }
-		else if (d_loop.IsKeyDown(SC::Equals)) {
+		else if (d_loop.IsKeyDown(kTempoKey)) {
 			d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
-		else if (d_loop.IsKeyDown(SC::Minus)) {
+		else if (d_loop.IsKeyDown(kSwingKey)) {
 			d_unit.SetSwing(std::clamp(d_unit.GetSwing() + offset, 50, 75)); }
 		else {
 			return; }
@@ -104,14 +121,14 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 	const auto up = !e.down;
 	using SC = rcls::ScanCode;
 
-	if (up && key == SC::LeftCtrl) {
+	if (up && key == kFnKey) {
 		if (d_state.subMode == SM_TAP_TEMPO) {
 			d_view.d_popup.reset();
 			d_state.subMode = SM_NONE; }
 		return true; }
 
-	if (up && (key == SC::OpenBracket || key == SC::CloseBracket)) {
-		const int dir = key == SC::OpenBracket ? -1 : 1;
+	if (up && (key == kLeftKey || key == kRightKey)) {
+		const int dir = (key == kLeftKey ? -1 : 1);
 		StopNudge(dir);
 		return true; }
 
@@ -127,8 +144,8 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 		return true; }
 
 
-	if (key == SC::Comma || key == SC::Period) {
-		const int dir = key == SC::Comma ? -1 : 1;
+	if (key == kDecKnob || key == kIncKnob) {
+		const int dir = key == kDecKnob ? -1 : 1;
 		if (down) {
 			d_state.knobDir = dir;
 			StartTick(); }
@@ -149,12 +166,12 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 	if (!down) {
 		return false; }
 
-	if (key == SC::OpenBracket || key == SC::CloseBracket) {
-		const int dir = key == SC::OpenBracket ? -1 : 1;
+	if (key == kLeftKey || key == kRightKey) {
+		const int dir = (key == kLeftKey ? -1 : 1);
 		StartNudge(dir);
 		return true; }
 
-	if (key == SC::Backslash) {
+	if (key == kPatternLengthKey) {
 		// pattern length
 		if (fn) {
 			// open pattern length edit dialog
@@ -174,7 +191,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 				d_state.curGridPage = 0; }}
 		return true; }
 
-	if (key == SC::Equals) {
+	if (key == kSwingKey) {
 		if (fn) {
 			// tap tempo
 			if (d_state.subMode == SM_NONE) {
@@ -193,7 +210,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 					d_unit.SetTempo(newTempo); }}}
 		return true; }
 
-	if (key == SC::L) {
+	if (key == kRecordKey) {
 		// rec, copy
 		if (!fn) {
 			// toggle record
@@ -209,7 +226,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 					d_loop.DrawScreenEventually(); }); }}
 		return true; }
 
-	if (key == SC::Semicolon) {
+	if (key == kPlayKey) {
 		// play, clear
 		if (!fn) {
 			d_unit.Play(); }
@@ -222,7 +239,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 					d_loop.DrawScreenEventually(); }); }}
 		return true; }
 
-	if (key == SC::Quote) {
+	if (key == kStopKey) {
 		// stop, paste
 		if (!fn) {
 			d_unit.Stop(); }
@@ -235,21 +252,21 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 					d_loop.DrawScreenEventually(); }); }}
 		return true; }
 
-	if (key == SC::Backspace) {
+	if (key == kParamPageKey) {
 		d_state.curVoicePage = (d_state.curVoicePage+1)%3;
 		return true; }
 
 	// kit load/save/change
-	if (key == SC::F5) {
+	if (key == kSaveKitKey) {
 		d_unit.SaveKit();
 		return true; }
-	if (key == SC::F6) {
+	if (key == kLoadKitKey) {
 		d_unit.LoadKit();
 		return true; }
-	if (key == SC::F7) {
+	if (key == kDecKitKey) {
 		d_unit.DecrementKit();
 		return true; }
-	if (key == SC::F8) {
+	if (key == kIncKitKey) {
 		d_unit.IncrementKit();
 		return true; }
 
@@ -257,9 +274,9 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 	if (gridIdx > -1) {
 		if (fn) {
 			d_state.curTrack = gridIdx; }
-		else if (d_loop.IsKeyDown(SC::P)) {
+		else if (d_loop.IsKeyDown(kPatternLoadKey)) {
 			d_unit.SwitchPattern(gridIdx); }
-		else if (d_loop.IsKeyDown(SC::M)) {
+		else if (d_loop.IsKeyDown(kMuteKey)) {
 			d_unit.ToggleTrackMute(gridIdx); }
 		else if (d_state.isRecording) {
 			d_unit.ToggleTrackGridNote(d_state.curTrack, d_state.curGridPage*16+gridIdx); }
