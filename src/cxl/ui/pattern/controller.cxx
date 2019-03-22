@@ -191,7 +191,7 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 				d_state.curGridPage = 0; }}
 		return true; }
 
-	if (key == kSwingKey) {
+	if (key == kTempoKey) {
 		if (fn) {
 			// tap tempo
 			if (d_state.subMode == SM_NONE) {
