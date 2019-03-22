@@ -47,7 +47,6 @@ public:
 	PatternView d_view;
 
 private:
-	int d_subState{0};
 	TapTempo d_tapTempo{};
 	int d_taps{0};
 	int d_nudgeDir{0};
