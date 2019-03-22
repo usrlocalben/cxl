@@ -18,6 +18,7 @@ public:
 	void Tap();
 	void Reset();
 	double GetTempo();
+	int GetNumSamples() const;
 	int GetNumTaps() const { return d_tapCnt; }
 
 private:

@@ -4,7 +4,6 @@
 #include <numeric>
 #include <stdexcept>
 
-#include "src/cxl/log.hxx"
 #include "src/rcl/rcls/rcls_timer.hxx"
 
 #include <fmt/printf.h>
@@ -34,12 +33,14 @@ void TapTempo::Tap() {
 double TapTempo::GetTempo() {
 	if (d_tapCnt < 2) {
 		throw std::runtime_error("GetTempo() requires at least two taps"); }
-	const auto numSamples = std::min(d_tapCnt-1, kMaxTapTempoSamples);
-	const auto sum = std::accumulate(begin(d_samples), begin(d_samples)+numSamples, 0.0);
-	const auto avgSecsPerBeat = sum / numSamples;
-	const auto bpm = kOneMinuteInSecs / avgSecsPerBeat;
-	// Log::GetInstance().info(fmt::sprintf("TapTempo::GetTempo() sum: %.4f, avg: %.4f, bpm: %.4f", sum, avgSecsPerBeat, bpm));
-	return bpm; }
+	auto n = GetNumSamples();
+	auto avgBeatInSecs = std::accumulate(begin(d_samples), begin(d_samples)+n, 0.0) / n;
+	auto oneMinuteInBeats = kOneMinuteInSecs / avgBeatInSecs;
+	return oneMinuteInBeats; }
+
+
+int TapTempo::GetNumSamples() const {
+	return std::min(d_tapCnt - 1, kMaxTapTempoSamples); }
 
 
 void TapTempo::Reset() {
