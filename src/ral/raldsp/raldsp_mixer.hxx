@@ -7,6 +7,8 @@
 #include "src/ral/raldsp/raldsp_distortion.hxx"
 #include "src/ral/raldsp/raldsp_iaudiodevice.hxx"
 
+#include "3rdparty/freeverb/freeverb.hxx"
+
 namespace rqdq {
 namespace raldsp {
 
@@ -14,7 +16,10 @@ template <typename CHANNEL_STRIP>
 class BasicMixer : public IAudioDevice {
 	// IAudioDevice
 public:
-	void Update(int tempo) override {}
+	void Update(int tempo) override {
+		d_reverb.setroomsize(0.5);
+		d_reverb.setdamp(0.5);
+		d_reverb.setwidth(0.5); }
 
 	void Process(float* inputs, float* outputs) override {
 		std::array<float, 6> sums{};
@@ -28,9 +33,10 @@ public:
 		// d_delay.Process(&sums[2], fxOut.data());
 		// sums[0] += fxOut[0];
 		// sums[1] += fxOut[1];
-		// d_reverb.Process(&sums[4], fxOut.data());
-		// sums[0] += fxOut[0];
-		// sums[1] += fxOut[1];
+		std::array<float, 2> tmp{};
+		d_reverb.processmix(&sums[4], &sums[5], &tmp[0], &tmp[1], 1, 0);
+		sums[0] += tmp[0];
+		sums[1] += tmp[1];
 
 		outputs[0] = sums[0];
 		outputs[1] = sums[1]; }
@@ -55,7 +61,8 @@ private:
 			throw new std::runtime_error("invalid channel id"); }}
 
 public:
-	std::vector<CHANNEL_STRIP> d_channels; };
+	std::vector<CHANNEL_STRIP> d_channels;
+	Freeverb d_reverb{}; };
 
 
 }  // close package namespace

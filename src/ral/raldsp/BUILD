@@ -33,6 +33,7 @@ cc_library(
     srcs=["raldsp_mixer.cxx"],
     hdrs=["raldsp_mixer.hxx"],
     deps=[
+        "//3rdparty/freeverb",
         ":iaudiodevice",
         ":distortion",
         ],
