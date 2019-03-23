@@ -1,6 +1,6 @@
 #pragma once
-#include "src/ral/raldsp/raldsp_biquad.hxx"
 #include "src/ral/raldsp/raldsp_filter.hxx"
+#include "src/ral/raldsp/raldsp_multimode.hxx"
 #include "src/ral/raldsp/raldsp_ratereducer.hxx"
 #include "src/ral/raldsp/raldsp_syncdelay.hxx"
 
@@ -44,7 +44,7 @@ public:
 	int d_eqCenter2{-1};     // 0-127
 
 private:
-	raldsp::BiQuad d_eq;
+	raldsp::MultiModeFilter d_eq;
 	raldsp::CXLFilter d_filter{1};
 	raldsp::SyncDelay d_delay{1};
 	raldsp::RateReducer d_reducer{1}; };

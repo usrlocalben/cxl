@@ -10,25 +10,42 @@
 namespace rqdq {
 namespace raldsp {
 
-constexpr float kPi{3.14159265358979323846};
-
-constexpr float kLN2{0.693147180559945309417};
 
 
-class BiQuad {
-	enum class Type {
-		LPF,
-		HPF,
-		BPF,
+class MultiModeFilter {
+public:
+	enum class Mode {
+		LP,
+		HP,
+		BP,
 		NOTCH,
 		PEQ,
 		LSH,
 		HSH, };
-public:
-	BiQuad(Type type, float dbGain, float freq, float q, float sampleRate=44100.0f) {
-		Configure(type, dbGain, freq, q, sampleRate); }
 
-	void Configure(Type type, float dbGain, float freq, float q, float sampleRate);
+	enum class ParamType {
+		Q,
+		BW,
+		S, };
+
+	MultiModeFilter() {
+		Configure(Mode::PEQ, 0, 0, 0, ParamType::Q, 44100.0); }
+	MultiModeFilter(
+		Mode type,
+		float gainIndB,
+		float centerFreqInHz,
+		float param,
+		ParamType paramType,
+		float sampleFreqInHz=44100.0f) {
+		Configure(type, gainIndB, centerFreqInHz, param, paramType, sampleFreqInHz); }
+
+	void Configure(
+		Mode type,
+		float gainIndB,
+		float centerFreqInHz,
+		float param,
+		ParamType paramType,
+		float sampleFreqInHz=44100.0f);
 
 	float Process(float s) {
 		const auto result = b0_*s + b1_*x1_ + b2_*x2_ \

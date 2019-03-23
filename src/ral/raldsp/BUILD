@@ -3,9 +3,9 @@ load("//:copts.bzl", "RSR_DEFAULT_COPTS")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name="biquad",
-    srcs=["raldsp_biquad.cxx"],
-    hdrs=["raldsp_biquad.hxx"],
+    name="multimode",
+    srcs=["raldsp_multimode.cxx"],
+    hdrs=["raldsp_multimode.hxx"],
     deps=[],
     copts = RSR_DEFAULT_COPTS,)
 

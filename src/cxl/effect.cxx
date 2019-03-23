@@ -13,8 +13,7 @@ constexpr float kEQQ{4.0f};
 
 namespace cxl {
 
-CXLEffects::CXLEffects()
-	:d_eq{0, 0, 0, 44100.0f} {}
+CXLEffects::CXLEffects() = default;
 
 
 void CXLEffects::Update(int tempo) {
@@ -42,7 +41,12 @@ void CXLEffects::Update(int tempo) {
 		d_eqCenter2 = d_eqCenter;
 		float gain = std::clamp(d_eqGain, -64, 63) / 63.0 * 12;
 		float freq = pow(std::clamp(d_eqCenter, 0, 127) / 127.0, 2.0) * 8000.0;
-		d_eq.Configure(gain, freq, kEQQ, 44100.0); }}
+		d_eq.Configure(raldsp::MultiModeFilter::Mode::PEQ,
+		               gain,
+		               freq,
+		               kEQQ,
+		               raldsp::MultiModeFilter::ParamType::Q,
+		               44100.0); }}
 
 
 void CXLEffects::Process(float* inputs, float* outputs) {
