@@ -205,10 +205,10 @@ const std::string CXLUnit::GetEffectParameterName(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return "flt";
-	case 1: return "rez";
-	case 2: return "dly";
-	case 3: return "dtm";
-	case 4: return "dfb";
+	case 1: return "eqf";
+	//case 2: return "eqw";
+	case 3: return "eqg";
+	case 4: return "rez";
 
 	case 7: return "red";
 	default: return ""; }}
@@ -218,10 +218,10 @@ int CXLUnit::GetEffectParameterValue(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return d_effects[ti].d_lowpassFreq;
-	case 1: return d_effects[ti].d_lowpassQ;
-	case 2: return d_effects[ti].d_delaySend;
-	case 3: return d_effects[ti].d_delayTime;
-	case 4: return d_effects[ti].d_delayFeedback;
+	case 1: return d_effects[ti].d_eqCenter;
+	//case 2: return d_effects[ti].d_eqWidth;
+	case 3: return d_effects[ti].d_eqGain;
+	case 4: return d_effects[ti].d_lowpassQ;
 
 	case 7: return d_effects[ti].d_reduce;
 	default: return 0; }}
@@ -230,10 +230,10 @@ int CXLUnit::GetEffectParameterValue(int ti, int pi) const {
 void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
 	switch (pi) {
 	case 0: Adjust2(ti, d_effects[ti].d_lowpassFreq,   0,  127, offset); break;
-	case 1: Adjust2(ti, d_effects[ti].d_lowpassQ,      0,  127, offset); break;
-	case 2: Adjust2(ti, d_effects[ti].d_delaySend,     0,  127, offset); break;
-	case 3: Adjust2(ti, d_effects[ti].d_delayTime,     0,  127, offset); break;
-	case 4: Adjust2(ti, d_effects[ti].d_delayFeedback, 0,  127, offset); break;
+	case 1: Adjust2(ti, d_effects[ti].d_eqCenter,      0,  127, offset); break;
+	//case 2: Adjust2(ti, d_effects[ti].d_eqWidth,       0,  127, offset); break;
+	case 3: Adjust2(ti, d_effects[ti].d_eqGain,      -64,   64, offset); break;
+	case 4: Adjust2(ti, d_effects[ti].d_lowpassQ,      0,  127, offset); break;
 
 	case 7: Adjust2(ti, d_effects[ti].d_reduce,        0,  127, offset); break;
 	default: break; }}

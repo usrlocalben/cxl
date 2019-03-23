@@ -39,6 +39,7 @@ cc_library(
     srcs = ["effect.cxx"],
     hdrs = ["effect.hxx"],
     deps = [
+        "//src/ral/raldsp:biquad",
         "//src/ral/raldsp:filter",
         "//src/ral/raldsp:ratereducer",
         "//src/ral/raldsp:syncdelay",
