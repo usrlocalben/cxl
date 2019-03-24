@@ -230,7 +230,7 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\controller.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\tap_tempo\view.cxx" />
-    <ClCompile Include="..\src\ral\raldsp\raldsp_biquad.cxx" />
+    <ClCompile Include="..\src\ral\raldsp\raldsp_multimode.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

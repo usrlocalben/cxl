@@ -219,7 +219,7 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_biquad.cxx">
+    <ClCompile Include="..\src\ral\raldsp\raldsp_multimode.cxx">
       <Filter>ral</Filter>
     </ClCompile>
   </ItemGroup>
