@@ -1,7 +1,7 @@
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 
-#include <array>
 #include <utility>
+#include <variant>
 
 namespace rqdq {
 namespace {

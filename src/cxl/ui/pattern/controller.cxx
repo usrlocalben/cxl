@@ -34,7 +34,7 @@ using SC = rcls::ScanCode;
  * LUT for converting a 4x4 matrix of scan-codes to
  * indices for grid positions, track#, pattern# etc
  */
-constexpr std::array<char, 16> kGridScanLUT = {
+constexpr std::array kGridScanLUT = {
 	SC::Key1, SC::Key2, SC::Key3, SC::Key4,
 	SC::Q,    SC::W,    SC::E,    SC::R,
 	SC::A,    SC::S,    SC::D,    SC::F,
@@ -44,7 +44,7 @@ constexpr std::array<char, 16> kGridScanLUT = {
  * LUT for converting a 4x4 matrix of scan-codes to
  * indices for parameter controls
  */
-constexpr std::array<char, 8> kParamScanLUT = {
+constexpr std::array kParamScanLUT = {
 	SC::T, SC::Y, SC::U, SC::I,
 	SC::G, SC::H, SC::J, SC::K, };
 

@@ -2,6 +2,7 @@
 
 #include <array>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "src/cxl/ui/pattern/page.hxx"
@@ -15,7 +16,7 @@
 namespace rqdq {
 namespace {
 
-const std::array<const std::string, 16> kTrackNames = {
+const std::array kTrackNames = {
 	"BD", "SD", "HT", "MD", "LT", "CP", "RS", "CB",
 	"CH", "OH", "RC", "CC", "M1", "M2", "M3", "M4" };
 
@@ -26,7 +27,7 @@ char tolower(char ch) {
 	return ch; }
 
 
-const std::string& tolower(const std::string& s) {
+const std::string& tolower(std::string_view s) {
 	thread_local std::string tmp;
 	tmp.clear();
 	for (auto ch : s) {
@@ -94,7 +95,7 @@ const rcls::TextCanvas& PatternView::DrawTrackSelection() {
 	int selY = d_state.curTrack / 4;
 	int selX = (d_state.curTrack % 4) * 3 + 1;
 	auto isMuted = d_unit.IsTrackMuted(d_state.curTrack);
-	WriteXY(out, selX-1, selY, "[" + kTrackNames[d_state.curTrack] + "]", isMuted?lo:hi);
+	WriteXY(out, selX-1, selY, fmt::sprintf("[%s]", kTrackNames[d_state.curTrack]), isMuted?lo:hi);
 	return out; }
 
 
@@ -177,14 +178,13 @@ const rcls::TextCanvas& PatternView::DrawPageIndicator() {
 	auto red = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongRed);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "[. . . .]", lo);
-	const std::array<int,4> xa = { 1, 3, 5, 7 };
 
 	for (int n=0; n<4; n++) {
-	if (d_unit.IsPlaying() && playingPage == n) {
-		WriteXY(out, xa[n], 0, "o", red); }
-	else if (curPage == n) {
-		WriteXY(out, xa[n], 0, "o", hi); }
-	else {}}
+		if (d_unit.IsPlaying() && playingPage == n) {
+			WriteXY(out, n*2+1, 0, "o", red); }
+		else if (curPage == n) {
+			WriteXY(out, n*2+1, 0, "o", hi); }
+		else {}}
 
 	return out; }
 

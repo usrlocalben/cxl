@@ -10,7 +10,7 @@
 namespace rqdq {
 namespace {
 
-constexpr std::array<const char*, 12> kArtText = {{
+constexpr std::array kArtText = {
 	R"(                                            )",
 	R"(                        __                  )",
 	R"(                 ____  /  \                 )",
@@ -22,7 +22,7 @@ constexpr std::array<const char*, 12> kArtText = {{
 	R"(                                            )",
 	R"(                  cxl  v1.0                 )",
 	R"(                  f1 = help                 )",
-	R"(                                            )" }};
+	R"(                                            )" };
 
 constexpr int kArtHeight = kArtText.size();
 

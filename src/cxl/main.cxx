@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 	auto& log = Log::GetInstance();
 	log.info("Log started");
 
-	const array<string, 3> userDirs = {config::patternDir, config::sampleDir, config::kitDir};
+	const array userDirs = { config::patternDir, config::sampleDir, config::kitDir };
 	for_each(begin(userDirs), end(userDirs), rcls::EnsureDirectoryExists);
 
 	CXLUnit unit;
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
 
 	rclmt::Delay(0, [&]() {
 		if (host.SetDriver(config::asioDriverName)) {
-			const std::array<std::string, 2> chans = { config::masterLeftDest, config::masterRightDest };
+			const std::array chans = { config::masterLeftDest, config::masterRightDest };
 			for (int ci=0; ci<2; ci++) {
 				string mlc = chans[ci];
 				string msg;
