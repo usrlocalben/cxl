@@ -17,7 +17,7 @@ namespace raldsp {
 SyncDelay::SyncDelay(int numChannels) {
 	d_bufs.resize(numChannels);
 	for (auto& buf : d_bufs) {
-		buf.resize(kMaxDelayInSamples, 0.0f); }}
+		buf.resize(kMaxDelayInSamples, 0.0F); }}
 
 
 void SyncDelay::Update(int tempo) {

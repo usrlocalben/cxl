@@ -40,6 +40,7 @@ cc_library(
     hdrs = ["effect.hxx"],
     deps = [
         "//src/ral/raldsp:filter",
+        "//src/ral/raldsp:multimode",
         "//src/ral/raldsp:ratereducer",
         "//src/ral/raldsp:syncdelay",
         ],

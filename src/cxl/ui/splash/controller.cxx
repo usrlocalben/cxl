@@ -6,9 +6,9 @@
 namespace rqdq {
 namespace {
 
-constexpr float kAnimRateInHz{30.0f};
+constexpr float kAnimRateInHz{30.0F};
 
-constexpr float kSplashDuration{5.0f};
+constexpr float kSplashDuration{5.0F};
 
 
 }  // namespace
