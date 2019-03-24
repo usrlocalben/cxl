@@ -206,10 +206,11 @@ const std::string CXLUnit::GetEffectParameterName(int ti, int pi) const {
 	switch (pi) {
 	case 0: return "flt";
 	case 1: return "rez";
-	case 2: return "dly";
-	case 3: return "dtm";
-	case 4: return "dfb";
-
+	case 2: return "eqf";
+	case 3: return "eqg";
+	case 4: return "dly";
+	case 5: return "dtm";
+	case 6: return "dfb";
 	case 7: return "red";
 	default: return ""; }}
 
@@ -219,10 +220,11 @@ int CXLUnit::GetEffectParameterValue(int ti, int pi) const {
 	switch (pi) {
 	case 0: return d_effects[ti].d_lowpassFreq;
 	case 1: return d_effects[ti].d_lowpassQ;
-	case 2: return d_effects[ti].d_delaySend;
-	case 3: return d_effects[ti].d_delayTime;
-	case 4: return d_effects[ti].d_delayFeedback;
-
+	case 2: return d_effects[ti].d_eqCenter;
+	case 3: return d_effects[ti].d_eqGain;
+	case 4: return d_effects[ti].d_delaySend;
+	case 5: return d_effects[ti].d_delayTime;
+	case 6: return d_effects[ti].d_delayFeedback;
 	case 7: return d_effects[ti].d_reduce;
 	default: return 0; }}
 
@@ -231,10 +233,11 @@ void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
 	switch (pi) {
 	case 0: Adjust2(ti, d_effects[ti].d_lowpassFreq,   0,  127, offset); break;
 	case 1: Adjust2(ti, d_effects[ti].d_lowpassQ,      0,  127, offset); break;
-	case 2: Adjust2(ti, d_effects[ti].d_delaySend,     0,  127, offset); break;
-	case 3: Adjust2(ti, d_effects[ti].d_delayTime,     0,  127, offset); break;
-	case 4: Adjust2(ti, d_effects[ti].d_delayFeedback, 0,  127, offset); break;
-
+	case 2: Adjust2(ti, d_effects[ti].d_eqCenter,      0,  127, offset); break;
+	case 3: Adjust2(ti, d_effects[ti].d_eqGain,      -64,   64, offset); break;
+	case 4: Adjust2(ti, d_effects[ti].d_delaySend,     0,  127, offset); break;
+	case 5: Adjust2(ti, d_effects[ti].d_delayTime,     0,  127, offset); break;
+	case 6: Adjust2(ti, d_effects[ti].d_delayFeedback, 0,  127, offset); break;
 	case 7: Adjust2(ti, d_effects[ti].d_reduce,        0,  127, offset); break;
 	default: break; }}
 
@@ -370,6 +373,8 @@ void CXLUnit::LoadKit() {
 				else if (ConsumePrefix(line, "  effect.dtm ")) { d_effects[vid].d_delayTime = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.dfb ")) { d_effects[vid].d_delayFeedback = stoi(line); }
 				else if (ConsumePrefix(line, "  effect.red ")) { d_effects[vid].d_reduce = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.eqf ")) { d_effects[vid].d_eqCenter = stoi(line); }
+				else if (ConsumePrefix(line, "  effect.eqg ")) { d_effects[vid].d_eqGain = stoi(line); }
 				else if (ConsumePrefix(line, "  mix.dis ")) { d_mixer[vid].d_distortion = stoi(line); }
 				else if (ConsumePrefix(line, "  mix.vol ")) { d_mixer[vid].d_gain = stoi(line); }
 				else if (ConsumePrefix(line, "  mix.pan ")) { d_mixer[vid].d_pan = stoi(line); }

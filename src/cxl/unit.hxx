@@ -54,9 +54,6 @@ public:
 	int GetCurrentKitNumber() const { return d_kitNum; }
 	const std::string& GetCurrentKitName() const { return d_kitName; }
 
-	int GetVoiceLevel(int ti) const;
-	void AdjustVoiceLevel(int ti, int offset);
-
 	const std::string GetVoiceParameterName(int ti, int pi) const;
 	int GetVoiceParameterValue(int ti, int pi) const;
 	void AdjustVoiceParameter(int ti, int pi, int offset);
