@@ -1,6 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "src/cxl/channelstrip.hxx"
@@ -54,15 +55,15 @@ public:
 	int GetCurrentKitNumber() const { return d_kitNum; }
 	const std::string& GetCurrentKitName() const { return d_kitName; }
 
-	const std::string GetVoiceParameterName(int ti, int pi) const;
+	std::string_view GetVoiceParameterName(int ti, int pi) const;
 	int GetVoiceParameterValue(int ti, int pi) const;
 	void AdjustVoiceParameter(int ti, int pi, int offset);
 
-	const std::string GetEffectParameterName(int ti, int pi) const;
+	std::string_view GetEffectParameterName(int ti, int pi) const;
 	int GetEffectParameterValue(int ti, int pi) const;
 	void AdjustEffectParameter(int ti, int pi, int offset);
 
-	const std::string GetMixParameterName(int ti, int pi) const;
+	std::string_view GetMixParameterName(int ti, int pi) const;
 	int GetMixParameterValue(int ti, int pi) const;
 	void AdjustMixParameter(int ti, int pi, int offset);
 

@@ -23,6 +23,7 @@ struct FileOp {
 	FileOp& operator=(const FileOp&) = delete;
 	FileOp(FileOp&& other) = default;
 	FileOp& operator=(FileOp&& other) = default;
+	~FileOp() = default;
 
 	int id{-1};
 	rclw::WinFile fd{};

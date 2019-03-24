@@ -6,7 +6,7 @@
 namespace rqdq {
 namespace {
 
-constexpr float kEQQ{4.0f};
+constexpr float kEQQ{4.0F};
 
 
 }  // namespace
@@ -23,9 +23,9 @@ void CXLEffects::Update(int tempo) {
 		d_filter.SetBypass(true); }
 	else {
 		d_filter.SetBypass(false);
-		d_filter.SetCutoff(pow(freq/127.0f, 2.0f));
+		d_filter.SetCutoff(pow(freq/127.0F, 2.0F));
 		// scale Q-max slightly under 1.0
-		d_filter.SetQ(sqrt(q/128.9f)); }
+		d_filter.SetQ(sqrt(q/128.9F)); }
 
 	d_filter.Update(tempo);
 

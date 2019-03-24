@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -26,7 +27,7 @@ constexpr int kNumVoices = 16;
 constexpr int kMaxWaves = 1024;
 constexpr int kDefaultTempo = 1200;
 constexpr int kDefaultSwing = 50;
-constexpr float kMasterGain = 0.666f;
+constexpr float kMasterGain = 0.666F;
 constexpr int kMaxKitNum = 99;
 
 
@@ -143,9 +144,8 @@ int CXLUnit::GetTempo() const {
 	return d_sequencer.GetTempo(); }
 
 
-void CXLUnit::SetSwing(int value) {
-	d_sequencer.SetSwing(value);
-	d_tempoChanged.emit(value); }
+void CXLUnit::SetSwing(int pct) {
+	d_sequencer.SetSwing(pct); }
 
 
 int CXLUnit::GetSwing() const {
@@ -166,7 +166,7 @@ void CXLUnit::SetTrackGridNote(int track, int pos, int note) {
 	return d_sequencer.SetTrackGridNote(track, pos, note); }
 
 
-const std::string CXLUnit::GetVoiceParameterName(int ti, int pi) const {
+std::string_view CXLUnit::GetVoiceParameterName(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return "wav";
@@ -201,7 +201,7 @@ void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
 	default: break; }}
 
 
-const std::string CXLUnit::GetEffectParameterName(int ti, int pi) const {
+std::string_view CXLUnit::GetEffectParameterName(int ti, int pi) const {
 	// XXX track index is for future use
 	switch (pi) {
 	case 0: return "flt";
@@ -242,7 +242,7 @@ void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
 	default: break; }}
 
 
-const std::string CXLUnit::GetMixParameterName(int ti, int pi) const {
+std::string_view CXLUnit::GetMixParameterName(int ti, int pi) const {
 	switch (pi) {
 	case 0: return "dis";
 	case 1: return "vol";

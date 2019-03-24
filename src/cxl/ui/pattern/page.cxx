@@ -1,14 +1,14 @@
 #include "src/cxl/ui/pattern/page.hxx"
 
 #include <stdexcept>
-#include <string>
+#include <string_view>
 
 #include <fmt/printf.h>
 
 namespace rqdq {
 namespace cxl {
 
-const std::string GetPageParameterName(const CXLUnit& unit, int pageNum, int trackNum, int paramNum) {
+std::string_view GetPageParameterName(const CXLUnit& unit, int pageNum, int trackNum, int paramNum) {
 	if (pageNum == 0) {
 		return unit.GetVoiceParameterName(trackNum, paramNum); }
 	if (pageNum == 1) {
