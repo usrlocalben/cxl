@@ -1,16 +1,12 @@
 #pragma once
-#include <deque>
-#include <memory>
-// XXX #include <string>
 #include <utility>
 
-#include "src/cxl/host.hxx"
 #include "src/cxl/ui/host/controller.hxx"
 #include "src/cxl/ui/log/controller.hxx"
 #include "src/cxl/ui/pattern/controller.hxx"
+#include "src/cxl/ui/root/state.hxx"
 #include "src/cxl/ui/root/view.hxx"
 #include "src/cxl/ui/splash/controller.hxx"
-#include "src/cxl/unit.hxx"
 #include "src/rcl/rclmt/rclmt_event.hxx"
 #include "src/rcl/rclmt/rclmt_reactor.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"
@@ -23,11 +19,7 @@ namespace cxl {
 
 class RootController : public TextKit::Widget {
 public:
-	RootController(CXLUnit& /*unit*/, CXLASIOHost& /*host*/);
-
-	void Run();
-
-	void onLoaderStateChange();
+	RootController(class CXLUnit& /*unit*/, class CXLASIOHost& /*host*/);
 
 	// Widget impl
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/) override;
@@ -38,27 +30,24 @@ public:
 	int GetType() override {
 		return d_view.GetType(); }
 
+	void Run();
+
 private:
+	void onLoaderStateChange();
+
 	void IncrementMode();
 
 private:
-	rclmt::Event d_playbackStateChangedEvent = rclmt::Event::MakeEvent();
-	// XXX void AddKeyDebuggerEvent(KEY_EVENT_RECORD);
-
+	rclmt::Event d_playbackStateChangedEvent{rclmt::Event::MakeEvent()};
 	TextKit::MainLoop d_loop;
-	CXLUnit& d_unit;
-	CXLASIOHost& d_host;
+	class CXLUnit& d_unit;
+	class CXLASIOHost& d_host;
 	PatternController d_patternController;
 	LogController d_logController;
 	HostController d_hostController;
 	SplashController d_splashController;
-
 	RootView d_view;
-
-	int d_mode = 0;
-	// XXX bool d_enableKeyDebug = true;
-	// XXX std::deque<std::string> d_keyHistory; };
-	};
+	int d_mode{UM_PATTERN}; };
 
 
 }  // namespace cxl

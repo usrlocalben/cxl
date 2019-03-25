@@ -16,9 +16,11 @@
 namespace rqdq {
 namespace {
 
-const std::array kTrackNames = {
-	"BD", "SD", "HT", "MD", "LT", "CP", "RS", "CB",
-	"CH", "OH", "RC", "CC", "M1", "M2", "M3", "M4" };
+constexpr std::array kTrackNames = {
+	"BD", "SD", "HT", "MD",
+	"LT", "CP", "RS", "CB",
+	"CH", "OH", "RC", "CC",
+	"M1", "M2", "M3", "M4" };
 
 
 char tolower(char ch) {
@@ -60,7 +62,6 @@ const rcls::TextCanvas& PatternView::Draw(int width, int height) {
 
 	WriteXY(out, 1, height-3, DrawGrid());
 	WriteXY(out, 68, height-2, DrawPageIndicator());
-
 
 	if (d_popup) {
 		auto attr = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);

@@ -43,9 +43,6 @@ const rcls::TextCanvas& RootView::Draw(int width, int height) {
 	out.Clear();
 	WriteXY(out, 0, 0, DrawHeader(width));
 
-	//if (d_enableKeyDebug) {
-	//	WriteXY(out, width-20, height-15, DrawKeyHistory()); }
-
 	WriteXY(out, 0, height-1, DrawTransportIndicator(width));
 
 	if (d_mode == UM_PATTERN) {

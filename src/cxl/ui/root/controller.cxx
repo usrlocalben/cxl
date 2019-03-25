@@ -60,7 +60,6 @@ void RootController::IncrementMode() {
 
 
 bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
-	// XXX AddKeyDebuggerEvent(e);
 	using SC = rcls::ScanCode;
 	auto& reactor = rclmt::Reactor::GetInstance();
 	const auto key = e.scanCode;
@@ -77,29 +76,12 @@ bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
 	return false; }
 
 
-
-
 void RootController::onLoaderStateChange() {
 	if (d_unit.IsLoading() && !d_view.d_loading) {
 		d_view.d_loading = MakeLoadingView(d_unit); }
 	else if (!d_unit.IsLoading() && d_view.d_loading) {
 		d_view.d_loading.reset(); }
 	d_loop.DrawScreenEventually(); }
-
-/*
-XXX
-void RootController::AddKeyDebuggerEvent(KEY_EVENT_RECORD e) {
-	if (d_enableKeyDebug) {
-		auto s = fmt::sprintf("%c %c % 3d",
-		                      (e.bKeyDown != 0?'D':'U'),
-		                      //e.control,
-		                      e.uChar.AsciiChar,
-		                      //e.wRepeatCount,
-		                      //e.scanCode,
-		                      e.scanCode);
-		d_keyHistory.emplace_back(s);
-		if (d_keyHistory.size() > 8) {
-			d_keyHistory.pop_front(); }}}*/
 
 
 }  // namespace cxl
