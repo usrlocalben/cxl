@@ -3,14 +3,11 @@
 
 #include "src/cxl/unit.hxx"
 #include "src/ral/ralio/ralio_asio.hxx"
+#include "src/rcl/rclmt/rclmt_signal.hxx"
 #include "src/cxl/log.hxx"
-
-#include <wink/signal.hpp>
 
 namespace rqdq {
 namespace cxl {
-
-
 
 class CXLASIOHost {
 public:
@@ -120,7 +117,7 @@ private:
 	int d_rightIdx{-1};
 
 public:
-    wink::signal<std::function<void()>> d_updated; };
+    rclmt::Signal<void()> d_updated; };
 
 
 }  // namespace cxl

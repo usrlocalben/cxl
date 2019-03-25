@@ -23,7 +23,7 @@ SplashController::SplashController(TextKit::MainLoop& loop)
 void SplashController::Tick() {
 	d_t += 1/kAnimRateInHz;
 	if (d_t > kSplashDuration) {
-		onComplete.emit();
+		onComplete.Emit();
 		return; }
 	d_loop.DrawScreenEventually();
 	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }

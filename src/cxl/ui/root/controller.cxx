@@ -40,7 +40,7 @@ RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
 	d_unit.ConnectLoaderStateChanged([&]() {
 		onLoaderStateChange(); });
 
-	d_splashController.onComplete.connect([&]() {
+	d_splashController.onComplete.Connect([&]() {
 		// can't reset() the Splash ptr while onComplete is firing
 		// so queue this to run from the reactor
 		rclmt::Delay(0, [&]() {

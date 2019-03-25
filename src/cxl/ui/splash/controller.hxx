@@ -2,10 +2,9 @@
 #include <functional>
 #include <memory>
 
+#include "src/rcl/rclmt/rclmt_signal.hxx"
 #include "src/textkit/mainloop.hxx"
 #include "src/textkit/widget.hxx"
-
-#include "wink/signal.hpp"
 
 namespace rqdq {
 namespace cxl {
@@ -15,7 +14,7 @@ class SplashController {
 public:
 	SplashController(TextKit::MainLoop& loop);
 
-	wink::signal<std::function<void()>> onComplete;
+	rclmt::Signal<void()> onComplete;
 
 private:
 	void Tick();
