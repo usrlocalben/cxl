@@ -201,9 +201,6 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\controller.cxx">
       <Filter>cxl\ui\log</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\controller.cxx">
-      <Filter>cxl\ui\loading</Filter>
-    </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\view.cxx">
       <Filter>cxl\ui\loading</Filter>
     </ClCompile>
@@ -219,8 +216,6 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx">
       <Filter>cxl</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ral\raldsp\raldsp_multimode.cxx">
-      <Filter>ral</Filter>
-    </ClCompile>
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_multimode.cxx" />
   </ItemGroup>
 </Project>

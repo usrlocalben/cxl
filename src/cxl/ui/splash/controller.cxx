@@ -1,4 +1,4 @@
-#include "src/cxl/ui/splash/controller.hxx"
+#include "controller.hxx"
 
 #include "src/cxl/ui/splash/view.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_timer.hxx"

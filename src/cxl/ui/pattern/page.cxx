@@ -1,4 +1,4 @@
-#include "src/cxl/ui/pattern/page.hxx"
+#include "page.hxx"
 
 #include <stdexcept>
 #include <string_view>

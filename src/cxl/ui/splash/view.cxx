@@ -1,4 +1,4 @@
-#include "src/cxl/ui/splash/view.hxx"
+#include "view.hxx"
 
 #include <array>
 #include <stdexcept>

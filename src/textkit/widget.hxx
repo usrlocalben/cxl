@@ -17,7 +17,7 @@ constexpr int WT_FLOW = 4;
 
 class Widget {
 public:
-	virtual bool HandleKeyEvent(KeyEvent) {
+	virtual bool HandleKeyEvent(KeyEvent /*unused*/) {
 		return false; }
 	virtual const rcls::TextCanvas& Draw(int width, int height) = 0;
 	virtual std::pair<int, int> Pack(int, int) = 0;
@@ -32,9 +32,9 @@ public:
 	LineBox(std::shared_ptr<Widget> widget, const std::string& title);
 
 	// Widget
-	bool HandleKeyEvent(KeyEvent) override;
-	const rcls::TextCanvas& Draw(int, int) override;
-	std::pair<int, int> Pack(int, int) override;
+	bool HandleKeyEvent(KeyEvent /*e*/) override;
+	const rcls::TextCanvas& Draw(int /*width*/, int /*height*/) override;
+	std::pair<int, int> Pack(int /*width*/, int /*height*/) override;
 	int GetType() override;
 
 	std::shared_ptr<Widget> d_widget;

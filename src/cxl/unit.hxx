@@ -12,8 +12,8 @@ public:
 	CXLUnit();
 	~CXLUnit();
 
-	CXLUnit(CXLUnit&&) noexcept;
-	CXLUnit& operator=(CXLUnit&&) noexcept;
+	CXLUnit(CXLUnit&& /*unused*/);
+	CXLUnit& operator=(CXLUnit&& /*unused*/);
 	CXLUnit(const CXLUnit&) = delete;
 	CXLUnit& operator=(const CXLUnit&) = delete;
 
@@ -24,28 +24,28 @@ public:
 	void Play();
 	void Stop();
 	bool IsPlaying() const;
-	void SetTempo(int);
+	void SetTempo(int /*value*/);
 	int GetTempo() const;
-	void SetSwing(int);
+	void SetSwing(int /*pct*/);
 	int GetSwing() const;
-	void Trigger(int);
+	void Trigger(int /*track*/);
 
 	int GetCurrentKitNumber() const;
 	int GetCurrentPatternNumber() const;
-	void SetPatternLength(int);
+	void SetPatternLength(int /*value*/);
 	int GetPatternLength() const;
-	bool IsTrackMuted(int) const;
-	void ToggleTrackMute(int);
+	bool IsTrackMuted(int /*ti*/) const;
+	void ToggleTrackMute(int /*ti*/);
 	void CommitPattern();
 	void SaveKit();
 	void LoadKit();
 	void InitializeKit();
 	void IncrementKit();
 	void DecrementKit();
-	void ToggleTrackGridNote(int, int);
-	int GetTrackGridNote(int, int) const;
-	void SetTrackGridNote(int, int, int);
-	void SwitchPattern(int);
+	void ToggleTrackGridNote(int /*track*/, int /*pos*/);
+	int GetTrackGridNote(int /*track*/, int /*pos*/) const;
+	void SetTrackGridNote(int /*track*/, int /*pos*/, int /*note*/);
+	void SwitchPattern(int /*pid*/);
 
 	std::string_view GetVoiceParameterName(int ti, int pi) const;
 	int GetVoiceParameterValue(int ti, int pi) const;
@@ -61,10 +61,10 @@ public:
 	void ConnectPlaybackStateChanged(std::function<void(bool)> fn);
 	void ConnectLoaderStateChanged(std::function<void()> fn);
 
-    void Render(float*, float*, int);
+    void Render(float* /*left*/, float* /*right*/, int /*numSamples*/);
 	int GetPlayingNoteIndex() const;
 
-	std::string_view GetWaveName(int) const;
+	std::string_view GetWaveName(int /*waveId*/) const;
 
 private:
 	std::unique_ptr<impl> d_impl; };

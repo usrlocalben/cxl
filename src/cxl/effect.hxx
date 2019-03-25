@@ -10,8 +10,8 @@ namespace cxl {
 class CXLEffects {
 public:
 	CXLEffects();
-	void Update(int);
-	void Process(float*, float*);
+	void Update(int /*tempo*/);
+	void Process(float* /*inputs*/, float* /*outputs*/);
 
 	void Initialize() {
 		d_lowpassFreq = 127;

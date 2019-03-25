@@ -1,4 +1,4 @@
-#include "src/cxl/ui/pattern/view.hxx"
+#include "view.hxx"
 
 #include <array>
 #include <string>
@@ -27,12 +27,12 @@ char tolower(char ch) {
 	return ch; }
 
 
-const std::string& tolower(std::string_view s) {
+std::string_view tolower(std::string_view s) {
 	thread_local std::string tmp;
 	tmp.clear();
 	for (auto ch : s) {
 		tmp.push_back(tolower(ch)); }
-	return tmp; }
+	return tmp.data(); }
 
 }  // namespace
 

@@ -1,4 +1,4 @@
-#include "src/cxl/ui/host/controller.hxx"
+#include "controller.hxx"
 
 #include "src/cxl/host.hxx"
 #include "src/textkit/mainloop.hxx"

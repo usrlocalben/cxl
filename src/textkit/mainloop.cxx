@@ -1,4 +1,4 @@
-#include "src/textkit/mainloop.hxx"
+#include "mainloop.hxx"
 
 #include <algorithm>
 #include <functional>

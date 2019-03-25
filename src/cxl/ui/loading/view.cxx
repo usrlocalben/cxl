@@ -1,4 +1,4 @@
-#include "src/cxl/ui/loading/view.hxx"
+#include "view.hxx"
 
 #include <stdexcept>
 #include <utility>

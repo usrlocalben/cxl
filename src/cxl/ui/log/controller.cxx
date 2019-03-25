@@ -1,4 +1,4 @@
-#include "src/cxl/ui/log/controller.hxx"
+#include "controller.hxx"
 
 #include "src/cxl/log.hxx"
 #include "src/textkit/mainloop.hxx"

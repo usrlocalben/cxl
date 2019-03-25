@@ -1,4 +1,4 @@
-#include "src/cxl/ui/pattern/controller.hxx"
+#include "controller.hxx"
 
 #include <algorithm>
 #include <array>

@@ -1,4 +1,4 @@
-#include "src/cxl/ui/host/view.hxx"
+#include "view.hxx"
 
 #include "src/cxl/host.hxx"
 #include "src/rcl/rcls/rcls_text_canvas.hxx"

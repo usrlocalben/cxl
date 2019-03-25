@@ -1,4 +1,4 @@
-#include "src/cxl/ui/alert/view.hxx"
+#include "view.hxx"
 
 #include <string>
 

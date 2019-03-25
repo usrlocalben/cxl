@@ -1,4 +1,4 @@
-#include "src/cxl/ui/root/view.hxx"
+#include "view.hxx"
 
 #include <string>
 #include <utility>

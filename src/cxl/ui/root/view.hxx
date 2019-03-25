@@ -17,11 +17,11 @@ namespace cxl {
 
 class RootView : public TextKit::Widget {
 public:
-	RootView(const CXLUnit&, HostView&, PatternView&, LogView&, const int& mode);
+	RootView(const CXLUnit& /*unit*/, HostView& /*hostView*/, PatternView& /*patternView*/, LogView& /*logView*/, const int& mode);
 
 	// Widget impl
-	const rcls::TextCanvas& Draw(int, int) override;
-	std::pair<int, int> Pack(int, int) override;
+	const rcls::TextCanvas& Draw(int /*width*/, int /*height*/) override;
+	std::pair<int, int> Pack(int /*w*/, int /*h*/) override;
 	int GetType() override;
 
 private:

@@ -36,16 +36,16 @@ constexpr float kMasterGain = 0.666F;
 constexpr int kMaxKitNum = 99;
 
 
-const std::string& MakeKitPath(int n) {
+const char* MakeKitPath(int n) {
 	static std::string out;
 	out = rcls::JoinPath(cxl::config::kitDir, fmt::sprintf("%02d.kit", n));
-	return out; }
+	return out.data(); }
 
 
-const std::string& MakePatternPath(int n) {
+const char* MakePatternPath(int n) {
 	static std::string out;
 	out = rcls::JoinPath(cxl::config::patternDir, fmt::sprintf("A%02d.pattern", n));
-	return out; }
+	return out.data(); }
 
 
 }  // namespace
@@ -103,11 +103,11 @@ public:
 		return d_sequencer.SetTrackGridNote(track, pos, note); }
 
 	void SwitchPattern(int pid) {
-		const auto& path = MakePatternPath(pid);
+		auto path = MakePatternPath(pid);
 		d_sequencer.InitializePattern();
 		d_patternNum = pid;
 		try {
-			auto fd = std::ifstream(path.c_str());
+			auto fd = std::ifstream(path);
 			if (fd.good()) {
 				std::string line;
 				while (getline(fd, line)) {
@@ -140,9 +140,9 @@ public:
 			throw; }}
 
 	void CommitPattern() {
-		const auto& path = MakePatternPath(d_patternNum);
+		auto path = MakePatternPath(d_patternNum);
 		int patternLength = GetPatternLength();
-		auto fd = std::ofstream(path.c_str());
+		auto fd = std::ofstream(path);
 		fd << "Kit: " << d_kitNum << "\n";
 		fd << "Length: " << patternLength << "\n";
 		fd << "Tempo: " << (GetTempo()/10) << "." << (GetTempo()%10) << "\n";
@@ -188,8 +188,8 @@ public:
 			LoadKit(); }}
 
 	void SaveKit() {
-		const auto& path = MakeKitPath(d_kitNum);
-		auto fd = std::ofstream(path.c_str());
+		auto path = MakeKitPath(d_kitNum);
+		auto fd = std::ofstream(path);
 		fd << "Name: " << d_kitName << "\n";
 		for (int ti=0; ti<kNumVoices; ti++) {
 			fd << "Voice #" << ti << "\n";
@@ -223,9 +223,9 @@ public:
 
 	void LoadKit() {
 		using rclt::ConsumePrefix;
-		const auto& path = MakeKitPath(d_kitNum);
+		auto path = MakeKitPath(d_kitNum);
 		try {
-			auto fd = std::ifstream(path.c_str());
+			auto fd = std::ifstream(path);
 			InitializeKit();
 			int vid = 0;
 			if (fd.good()) {
@@ -284,7 +284,7 @@ public:
 	int GetCurrentKitNumber() const {
 		return d_kitNum; }
 
-	const std::string& GetCurrentKitName() const {
+	std::string_view GetCurrentKitName() const {
 		return d_kitName; }
 
 	std::string_view GetVoiceParameterName(int ti, int pi) const {
@@ -379,7 +379,7 @@ public:
 		case 4: Adjust2(ti, d_mixer[ti].d_send2, 0, 127, offset); break;
 		default: break; }}
 
-	const std::string& GetWaveName(int waveId) const {
+	std::string_view GetWaveName(int waveId) const {
 		return d_waveTable.Get(waveId).d_descr; }
 
 	void Trigger(int track) {

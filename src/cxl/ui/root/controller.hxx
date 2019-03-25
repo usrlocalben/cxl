@@ -23,14 +23,14 @@ namespace cxl {
 
 class RootController : public TextKit::Widget {
 public:
-	RootController(CXLUnit&, CXLASIOHost&);
+	RootController(CXLUnit& /*unit*/, CXLASIOHost& /*host*/);
 
 	void Run();
 
 	void onLoaderStateChange();
 
 	// Widget impl
-	bool HandleKeyEvent(TextKit::KeyEvent) override;
+	bool HandleKeyEvent(TextKit::KeyEvent /*e*/) override;
 	const rcls::TextCanvas& Draw(int w, int h) override {
 		return d_view.Draw(w, h); }
 	std::pair<int, int> Pack(int w, int h) override {

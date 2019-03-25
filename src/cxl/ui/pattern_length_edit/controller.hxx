@@ -14,7 +14,7 @@ namespace cxl {
 class PatternLengthEditController {
 public:
 	PatternLengthEditController(int value);
-	bool HandleKeyEvent(TextKit::KeyEvent);
+	bool HandleKeyEvent(TextKit::KeyEvent /*e*/);
 
 	std::function<void(int)> onSuccess;
 	std::function<void()> onCancel;

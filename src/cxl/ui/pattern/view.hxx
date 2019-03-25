@@ -12,11 +12,11 @@ namespace cxl {
 
 class PatternView : public TextKit::Widget {
 public:
-	PatternView(const CXLUnit&, const EditorState&);
+	PatternView(const CXLUnit& /*unit*/, const EditorState& /*state*/);
 
 	// Widget impl
-	const rcls::TextCanvas& Draw(int, int) override;
-	std::pair<int, int> Pack(int, int) override;
+	const rcls::TextCanvas& Draw(int /*width*/, int /*height*/) override;
+	std::pair<int, int> Pack(int /*w*/, int /*h*/) override;
 	int GetType() override;
 
 private:

@@ -22,7 +22,7 @@ private:
 
 private:
 	TextKit::MainLoop& d_loop;
-	float d_t{0.0f};
+	float d_t{0.0F};
 public:
 	std::shared_ptr<TextKit::Widget> d_view; };
 

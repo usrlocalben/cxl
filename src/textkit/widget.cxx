@@ -1,4 +1,4 @@
-#include "src/textkit/widget.hxx"
+#include "widget.hxx"
 
 #include <memory>
 #include <string>

@@ -17,12 +17,12 @@ namespace cxl {
 
 class PatternController {
 public:
-	PatternController(CXLUnit&, TextKit::MainLoop& loop);
+	PatternController(CXLUnit& /*unit*/, TextKit::MainLoop& loop);
 	~PatternController();
 
-	bool HandleKeyEvent(TextKit::KeyEvent);
+	bool HandleKeyEvent(TextKit::KeyEvent /*e*/);
 private:
-	bool HandleKeyEvent2(TextKit::KeyEvent);
+	bool HandleKeyEvent2(TextKit::KeyEvent /*e*/);
 	void KeyboardTick();
 	void StartTick();
 	void StopTick();

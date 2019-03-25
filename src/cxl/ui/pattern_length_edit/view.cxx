@@ -1,4 +1,4 @@
-#include "src/cxl/ui/pattern_length_edit/view.hxx"
+#include "view.hxx"
 
 #include <stdexcept>
 #include <string>

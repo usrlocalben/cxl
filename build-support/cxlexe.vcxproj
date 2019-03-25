@@ -172,21 +172,37 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="$(SolutionDir)\src\cxl\channelstrip.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\config.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\effect.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\host.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\log.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\main.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\controller.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\page.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\state.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\controller.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\state.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\controller.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\view.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\ui\tap_tempo\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\unit.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\effect.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\channelstrip.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_filter.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_iaudiodevice.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_math.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_mixer.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_multimode.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_panning.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_sampler.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_syncdelay.cxx" />
@@ -201,9 +217,9 @@
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_event.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_jobsys.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_timer.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_file.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_keyboard.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\rcl\rclmt\rclmt_reactor_timer.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_console.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_file.cxx" />
     <ClCompile Include="$(SolutionDir)\src\rcl\rcls\rcls_text_canvas.cxx" />
@@ -214,23 +230,6 @@
     <ClCompile Include="$(SolutionDir)\src\textkit\keyevent.cxx" />
     <ClCompile Include="$(SolutionDir)\src\textkit\mainloop.cxx" />
     <ClCompile Include="$(SolutionDir)\src\textkit\widget.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\loading\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\log\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\page.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\state.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\pattern_length_edit\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\root\state.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\splash\controller.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\cxl\ui\tap_tempo\view.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_multimode.cxx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

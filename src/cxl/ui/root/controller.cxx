@@ -1,4 +1,4 @@
-#include "src/cxl/ui/root/controller.hxx"
+#include "controller.hxx"
 
 #include <memory>
 #include <utility>
