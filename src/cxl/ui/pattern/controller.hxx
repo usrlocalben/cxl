@@ -20,9 +20,6 @@ public:
 	PatternController(CXLUnit&, TextKit::MainLoop& loop);
 	~PatternController();
 
-	void onCXLUnitPlaybackPositionChangedASIO(int);
-	void onCXLUnitPlaybackPositionChanged();
-
 	bool HandleKeyEvent(TextKit::KeyEvent);
 private:
 	bool HandleKeyEvent2(TextKit::KeyEvent);

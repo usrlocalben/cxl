@@ -32,11 +32,13 @@ RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
 
 	auto& reactor = rclmt::Reactor::GetInstance();
 
-	d_unit.d_playbackStateChanged.connect(this, &RootController::onCXLUnitPlaybackStateChangedASIO);
-	reactor.ListenMany(d_playbackStateChangedEvent,
-	                   [&]() { onCXLUnitPlaybackStateChanged(); });
+	d_unit.ConnectPlaybackStateChanged([&](int playing) {
+		d_playbackStateChangedEvent.Signal(); });
+	reactor.ListenMany(d_playbackStateChangedEvent, [&]() {
+		d_loop.DrawScreenEventually(); });
 
-	d_unit.d_loaderStateChanged.connect(this, &RootController::onLoaderStateChange);
+	d_unit.ConnectLoaderStateChanged([&]() {
+		onLoaderStateChange(); });
 
 	d_splashController.onComplete.connect([&]() {
 		// can't reset() the Splash ptr while onComplete is firing
@@ -75,12 +77,6 @@ bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
 	return false; }
 
 
-void RootController::onCXLUnitPlaybackStateChangedASIO(bool isPlaying) {
-	// this is called from the ASIO thread.
-	// use a Reactor event to bounce to main
-	d_playbackStateChangedEvent.Signal(); }
-void RootController::onCXLUnitPlaybackStateChanged() {
-	d_loop.DrawScreenEventually(); }
 
 
 void RootController::onLoaderStateChange() {

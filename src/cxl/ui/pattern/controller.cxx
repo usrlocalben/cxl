@@ -77,17 +77,12 @@ PatternController::PatternController(CXLUnit& unit, TextKit::MainLoop& loop)
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	// XXX dtor should stop listening to these!
-	d_unit.d_playbackPositionChanged.connect(this, &PatternController::onCXLUnitPlaybackPositionChangedASIO);
-	reactor.ListenMany(d_playbackPositionChangedEvent,
-	                   [&]() { onCXLUnitPlaybackPositionChanged(); });}
-
-
-void PatternController::onCXLUnitPlaybackPositionChangedASIO(int pos) {
-	// this is called from the ASIO thread.
-	// use a Reactor event to bounce to main
-	d_playbackPositionChangedEvent.Signal(); }
-void PatternController::onCXLUnitPlaybackPositionChanged() {
-	d_loop.DrawScreenEventually(); }
+	d_unit.ConnectPlaybackPositionChanged([&](int pos) {
+		// this is called from the ASIO thread.
+		// use a Reactor event to bounce to main
+		d_playbackPositionChangedEvent.Signal(); });
+	reactor.ListenMany(d_playbackPositionChangedEvent, [&]() {
+		d_loop.DrawScreenEventually(); }); }
 
 
 bool PatternController::HandleKeyEvent(const TextKit::KeyEvent e) {

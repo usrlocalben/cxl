@@ -135,7 +135,7 @@ const rcls::TextCanvas& PatternView::DrawParameters() {
 			WriteXY(out, 7*(pi-4)+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
 
 	int waveId = d_unit.GetVoiceParameterValue(d_state.curTrack, 0);
-	std::string waveName = d_unit.GetWaveName(waveId);
+	auto waveName = d_unit.GetWaveName(waveId);
 	WriteXY(out, 0, 4+1, fmt::sprintf("Wave: %s", waveName));
 	return out; }
 

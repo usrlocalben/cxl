@@ -27,9 +27,6 @@ public:
 
 	void Run();
 
-	void onCXLUnitPlaybackStateChangedASIO(bool);
-	void onCXLUnitPlaybackStateChanged();
-
 	void onLoaderStateChange();
 
 	// Widget impl
