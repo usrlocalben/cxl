@@ -1,4 +1,4 @@
-#include "src/cxl/log.hxx"
+#include "log.hxx"
 
 #include <fstream>
 #include <string>

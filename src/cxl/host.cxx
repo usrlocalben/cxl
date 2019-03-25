@@ -1,4 +1,4 @@
-#include "src/cxl/host.hxx"
+#include "host.hxx"
 
 #include <algorithm>
 #include <array>

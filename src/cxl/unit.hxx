@@ -12,8 +12,8 @@ public:
 	CXLUnit();
 	~CXLUnit();
 
-	CXLUnit(CXLUnit&&);
-	CXLUnit& operator=(CXLUnit&&);
+	CXLUnit(CXLUnit&&) noexcept;
+	CXLUnit& operator=(CXLUnit&&) noexcept;
 	CXLUnit(const CXLUnit&) = delete;
 	CXLUnit& operator=(const CXLUnit&) = delete;
 

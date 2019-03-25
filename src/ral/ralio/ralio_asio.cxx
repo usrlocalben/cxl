@@ -137,7 +137,10 @@ std::pair<int, int> ASIOSystem::GetChannels() {
 
 std::tuple<int, int, int, int> ASIOSystem::GetBufferSize() {
 	EnsureDriverOpen();
-	long a, b, c, d;
+	long a;
+	long b;
+	long c;
+	long d;
 	int result = theAsioDriver->getBufferSize(&a, &b, &c, &d);
 	if (result != ASE_OK) {
 		throw ASIOException("getBufferSize failed", result); }

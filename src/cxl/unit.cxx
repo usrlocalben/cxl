@@ -1,4 +1,4 @@
-#include "src/cxl/unit.hxx"
+#include "unit.hxx"
 
 #include <algorithm>
 #include <fstream>
@@ -445,11 +445,10 @@ public:
 		float total = d_filesToLoad.size();
 		float done = d_nextFileId;
 		return done / total; }
-	const std::string GetLoadingName() const {
+	std::string_view GetLoadingName() const {
 		if (d_nextFileId < d_filesToLoad.size()) {
 			return d_filesToLoad[d_nextFileId]; }
-		else {
-			return "";}}
+		return "";}
 	bool IsLoading() const { return d_loading; }
 private:
 	void BeginLoadingWaves() {

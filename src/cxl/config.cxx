@@ -1,4 +1,4 @@
-#include "src/cxl/config.hxx"
+#include "config.hxx"
 
 #include <algorithm>
 #include <iostream>

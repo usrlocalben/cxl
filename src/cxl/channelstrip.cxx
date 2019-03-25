@@ -1,4 +1,4 @@
-#include "src/cxl/channelstrip.hxx"
+#include "channelstrip.hxx"
 
 #include "src/ral/raldsp/raldsp_panning.hxx"
 

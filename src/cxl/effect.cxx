@@ -1,4 +1,4 @@
-#include "src/cxl/effect.hxx"
+#include "effect.hxx"
 
 #include <algorithm>
 #include <cmath>
