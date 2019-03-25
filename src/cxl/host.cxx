@@ -12,7 +12,6 @@
 #include "src/ral/ralio/ralio_asio.hxx"
 
 #include <fmt/printf.h>
-#include <wink/signal.hpp>
 
 namespace rqdq {
 namespace cxl {
@@ -216,7 +215,7 @@ void CXLASIOHost::Start() {
 		d_driverName = "error";
 		auto msg = fmt::sprintf("ASIO OpenDriver error: %s", err.what());
 		log.info(msg);
-		d_updated.emit();
+		d_updated.Emit();
 		d_state = State::Failed;
 		return; }
 
@@ -276,7 +275,7 @@ void CXLASIOHost::Start() {
 
 	asio.Start();
 	d_state = State::Running;
-	d_updated.emit(); }
+	d_updated.Emit(); }
 
 
 void CXLASIOHost::LinkChannel(const int num, const std::string& name) {
@@ -304,7 +303,7 @@ void CXLASIOHost::Stop() {
 	asio.Stop();
 	asio.DisposeBuffers();
 	d_state = State::Stopped;
-	d_updated.emit(); }
+	d_updated.Emit(); }
 
 
 void CXLASIOHost::Restart() {

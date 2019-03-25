@@ -17,8 +17,8 @@ cc_library(
     srcs = ["controller.cxx"],
     hdrs = ["controller.hxx"],
     deps = [
-        "//3rdparty/wink",
         "//src/rcl/rclmt:reactor_timer",
+        "//src/rcl/rclmt:signal",
         "//src/textkit:mainloop",
         ":view", ],
     copts = RSR_DEFAULT_COPTS,)

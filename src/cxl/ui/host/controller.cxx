@@ -9,7 +9,7 @@ namespace cxl {
 HostController::HostController(CXLASIOHost& host,
                                TextKit::MainLoop& loop)
 	:d_host(host), d_loop(loop), d_view{d_host} {
-	d_host.d_updated.connect([&]() { onHostUpdated(); }); }
+	d_host.d_updated.Connect([&]() { onHostUpdated(); }); }
 
 
 void HostController::onHostUpdated() {

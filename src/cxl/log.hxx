@@ -3,8 +3,7 @@
 #include <string>
 #include <vector>
 
-#include <wink/signal.hpp>
-#include <wink/slot.hpp>
+#include "src/rcl/rclmt/rclmt_signal.hxx"
 
 namespace rqdq {
 namespace cxl {
@@ -30,8 +29,8 @@ public:
 		return d_buf[ri]; }
 
 public:
-	//wink::signal<wink::slot<void()>> d_updated;
-	wink::signal<std::function<void()>> d_updated;
+	rclmt::Signal<void()> d_updated;
+
 private:
 	int d_head = 0;
 	std::vector<std::string> d_buf; };

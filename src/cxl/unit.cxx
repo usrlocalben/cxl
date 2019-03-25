@@ -19,11 +19,11 @@
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_file.hxx"
+#include "src/rcl/rclmt/rclmt_signal.hxx"
 #include "src/rcl/rcls/rcls_file.hxx"
 #include "src/rcl/rclt/rclt_util.hxx"
 
 #include <fmt/printf.h>
-#include <wink/signal.hpp>
 
 namespace rqdq {
 namespace {
@@ -83,7 +83,7 @@ public:
 		return d_sequencer.GetPlayingNoteIndex(); }
 	void SetTempo(int value) {
 		d_sequencer.SetTempo(value);
-		d_tempoChanged.emit(value); }
+		d_tempoChanged.Emit(value); }
 	int GetTempo() const {
 		return d_sequencer.GetTempo(); }
 	void SetSwing(int pct) {
@@ -94,7 +94,7 @@ public:
 	// pattern editing
 	void ToggleTrackGridNote(int track, int pos) {
 		d_sequencer.ToggleTrackGridNote(track, pos);
-		d_patternDataChanged.emit(track); }
+		d_patternDataChanged.Emit(track); }
 
 	int GetTrackGridNote(int track, int pos) const {
 		return d_sequencer.GetTrackGridNote(track, pos); }
@@ -167,7 +167,7 @@ public:
 
 	void ToggleTrackMute(int ti) {
 		d_sequencer.ToggleTrackMute(ti);
-		d_patternDataChanged.emit(ti); }
+		d_patternDataChanged.Emit(ti); }
 
 	// sampler voices
 	void InitializeKit() {
@@ -389,7 +389,7 @@ public:
     void Render(float* left, float* right, int numSamples) {
 		bool stateChanged = d_sequencer.Update();
 		if (stateChanged) {
-			d_playbackStateChanged.emit(IsPlaying()); }
+			d_playbackStateChanged.Emit(IsPlaying()); }
 
 		const auto tempo = GetTempo();
 		for (int i=0; i<kNumVoices; i++) {
@@ -414,7 +414,7 @@ public:
 			right[si] = masterOut[1] * kMasterGain; }
 
 		if (gridPositionUpdated) {
-			d_playbackPositionChanged.emit(GetPlayingNoteIndex()); }}
+			d_playbackPositionChanged.Emit(GetPlayingNoteIndex()); }}
 
 private:
 	template<typename T>
@@ -423,15 +423,15 @@ private:
 		T newValue = std::clamp(oldValue+amt, lower, upper);
 		if (oldValue != newValue) {
 			slot = newValue;
-			d_voiceParameterChanged.emit(id);}}
+			d_voiceParameterChanged.Emit(id);}}
 
 public:
-	wink::signal<std::function<void(int)>> d_voiceParameterChanged;
-	wink::signal<std::function<void(int)>> d_tempoChanged;
-	wink::signal<std::function<void(int)>> d_patternDataChanged;
-	wink::signal<std::function<void(bool)>> d_playbackStateChanged;
-	wink::signal<std::function<void(int)>> d_playbackPositionChanged;
-	wink::signal<std::function<void()>> d_currentPatternChanged;
+	rclmt::Signal<void(int)> d_voiceParameterChanged;
+	rclmt::Signal<void(int)> d_tempoChanged;
+	rclmt::Signal<void(int)> d_patternDataChanged;
+	rclmt::Signal<void(bool)> d_playbackStateChanged;
+	rclmt::Signal<void(int)> d_playbackPositionChanged;
+	rclmt::Signal<void()> d_currentPatternChanged;
 
 	// BEGIN wave-table loader
 private:
@@ -440,7 +440,7 @@ private:
 	int d_nextWaveId = 1;
 	std::vector<std::string> d_filesToLoad;
 public:
-	wink::signal<std::function<void()>> d_loaderStateChanged;
+	rclmt::Signal<void()> d_loaderStateChanged;
 	float GetLoadingProgress() const {
 		float total = d_filesToLoad.size();
 		float done = d_nextFileId;
@@ -457,7 +457,7 @@ private:
 		sort(begin(d_filesToLoad), end(d_filesToLoad));
 		d_nextFileId = 0;
 		d_nextWaveId = 1;
-		d_loaderStateChanged.emit();
+		d_loaderStateChanged.Emit();
 		MakeProgressLoadingWaves(); }
 
 	void MakeProgressLoadingWaves() {
@@ -477,7 +477,7 @@ private:
 		auto baseName = fileName.substr(0, fileName.size() - 4);
 		d_waveTable.Get(waveId) = ralw::MPCWave::Load(data, baseName);
 		Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
-		d_loaderStateChanged.emit();
+		d_loaderStateChanged.Emit();
 
 		if (d_nextFileId >= d_filesToLoad.size()) {
 			onLoadingComplete(); }}
@@ -488,7 +488,7 @@ private:
 
 	void onLoadingComplete() {
 		d_loading = false;
-		d_loaderStateChanged.emit();
+		d_loaderStateChanged.Emit();
 		SwitchPattern(0); }
 	//  END  wave-table loader
 
@@ -537,11 +537,11 @@ int CXLUnit::GetCurrentPatternNumber() const {
 	return d_impl->GetCurrentPatternNumber(); }
 
 void CXLUnit::ConnectPlaybackPositionChanged(std::function<void(int)> fn) {
-	d_impl->d_playbackPositionChanged.connect(std::move(fn)); }
+	d_impl->d_playbackPositionChanged.Connect(std::move(fn)); }
 void CXLUnit::ConnectPlaybackStateChanged(std::function<void(bool)> fn) {
-	d_impl->d_playbackStateChanged.connect(std::move(fn)); }
+	d_impl->d_playbackStateChanged.Connect(std::move(fn)); }
 void CXLUnit::ConnectLoaderStateChanged(std::function<void()> fn) {
-	d_impl->d_loaderStateChanged.connect(std::move(fn)); }
+	d_impl->d_loaderStateChanged.Connect(std::move(fn)); }
 
 std::string_view CXLUnit::GetVoiceParameterName(int ti, int pi) const {
 	return d_impl->GetVoiceParameterName(ti, pi); }

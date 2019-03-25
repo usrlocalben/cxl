@@ -37,7 +37,7 @@ void Log::info(const std::string& msg) {
 	d_head++;
 	if (d_head >= 1024) {
 		d_head = 0; }
-	d_updated.emit(); }
+	d_updated.Emit(); }
 
 
 }  // namespace cxl

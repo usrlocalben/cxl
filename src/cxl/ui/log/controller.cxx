@@ -8,7 +8,7 @@ namespace cxl {
 
 LogController::LogController(TextKit::MainLoop& loop) :d_loop(loop) {
 	auto& log = Log::GetInstance();
-	log.d_updated.connect([&]() { onLogWrite(); }); }
+	log.d_updated.Connect([&]() { onLogWrite(); }); }
 
 
 void LogController::onLogWrite() {

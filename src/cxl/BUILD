@@ -19,12 +19,12 @@ cc_library(
     hdrs = ["unit.hxx"],
     deps = [
         "//3rdparty/fmt",
-        "//3rdparty/wink",
         "//src/ral/raldsp:mixer",
         "//src/ral/raldsp:sampler",
         "//src/ral/ralm:grid_sequencer",
         "//src/ral/ralw:wavetable",
         "//src/rcl/rclmt:reactor_file",
+        "//src/rcl/rclmt:signal",
         "//src/rcl/rcls:file",
         ":channelstrip",
         ":config",
@@ -81,7 +81,7 @@ cc_library(
     srcs = ["log.cxx"],
     hdrs = ["log.hxx"],
     deps = [
-        "//3rdparty/wink",
+        "//src/rcl/rclmt:signal",
         "//src/rcl/rcls:file",
         ":config",
         ],
@@ -94,8 +94,8 @@ cc_library(
     hdrs = ["host.hxx"],
     deps = [
         "//3rdparty/fmt",
-        "//3rdparty/wink",
         "//src/ral/ralio:asio",
+        "//src/rcl/rclmt:signal",
         ":log",
         ":unit", ],
     copts = RSR_DEFAULT_COPTS,)
