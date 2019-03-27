@@ -21,27 +21,24 @@
 namespace rqdq {
 namespace cxl {
 
-using namespace std;
-
-
 int main(int argc, char **argv) {
 	config::Load();
 	auto& log = Log::GetInstance();
 	log.info("Log started");
 
-	const array userDirs = { config::patternDir, config::sampleDir, config::kitDir };
+	const std::array userDirs = { config::patternDir, config::sampleDir, config::kitDir };
 	for_each(begin(userDirs), end(userDirs), rcls::EnsureDirectoryExists);
 
 	CXLUnit unit;
 
 	CXLASIOHost host{unit};
 
-	rclmt::Delay(0, [&]() {
+	rclmt::Delay(1000, [&]() {
 		if (host.SetDriver(config::asioDriverName)) {
 			const std::array chans = { config::masterLeftDest, config::masterRightDest };
 			for (int ci=0; ci<2; ci++) {
-				string mlc = chans[ci];
-				string msg;
+				std::string mlc = chans[ci];
+				std::string msg;
 				if (rclt::ConsumePrefix(mlc, "name=")) {
 					// identify connection by channel name
 					host.SetChannel(config::asioDriverName, ci, mlc); }
@@ -69,8 +66,8 @@ int main(int argc, char **argv) {
 	RootController(unit, host).Run();
 
 	for (int n=0; n<25; n++) {
-		cout << "\n"; }
-	cout << "CXL Session Ended.\n";
+		std::cout << "\n"; }
+	std::cout << "CXL Session Ended.\n";
 	return 0; }
 
 

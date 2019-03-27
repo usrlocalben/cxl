@@ -70,7 +70,7 @@ public:
 	std::string_view GetWaveName(int /*waveId*/) const;
 
 private:
-	std::unique_ptr<impl> d_impl; };
+	std::unique_ptr<impl> impl_; };
 
 
 }  // namespace cxl

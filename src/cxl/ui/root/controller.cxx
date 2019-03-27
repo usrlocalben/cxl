@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "src/cxl/host.hxx"
+#include "src/cxl/log.hxx"
 #include "src/cxl/ui/loading/view.hxx"
 #include "src/cxl/ui/log/controller.hxx"
 #include "src/cxl/ui/pattern/controller.hxx"
@@ -77,10 +78,13 @@ bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
 
 
 void RootController::onLoaderStateChange() {
-	if (d_unit.IsLoading() && !d_view.d_loading) {
-		d_view.d_loading = MakeLoadingView(d_unit); }
-	else if (!d_unit.IsLoading() && d_view.d_loading) {
-		d_view.d_loading.reset(); }
+	auto& log = Log::GetInstance();
+	if (d_unit.IsLoading()) {
+		if (!d_view.d_loading) {
+			d_view.d_loading = MakeLoadingView(d_unit); }}
+	else {
+		if (d_view.d_loading) {
+			d_view.d_loading.reset(); }}
 	d_loop.DrawScreenEventually(); }
 
 

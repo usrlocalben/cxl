@@ -40,6 +40,7 @@ cc_library(
         "//src/cxl/ui/pattern:controller",
         "//src/cxl/ui/splash:controller",
         "//src/cxl:host",
+        "//src/cxl:log",
         "//src/cxl:unit",
         "//src/rcl/rclmt:event",
         "//src/rcl/rclmt:reactor",

@@ -18,7 +18,6 @@ namespace cxl {
 
 using namespace std;
 
-
 CXLASIOHost::CXLASIOHost(CXLUnit& unit) :d_unit(unit) {}
 
 
@@ -49,9 +48,9 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 				for (int si=0; si<buffSize; si++) {
 					dst[si] = static_cast<int16_t>(srcPtr[si] * std::numeric_limits<int16_t>::max());}}
 				break;
-			case ASIOSTInt24LSB:		// used for 20 bits as well
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 3);
-				break;
+			// case ASIOSTInt24LSB:		// used for 20 bits as well
+			//	memset (d_bufferInfos[i].buffers[index], 0, buffSize * 3);
+			//	break;
 			case ASIOSTInt32LSB: {
 				auto dst = static_cast<int32_t*>(d_bufferInfos[i].buffers[index]);
 				for (int si=0; si<buffSize; si++) {
@@ -70,6 +69,7 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 					dst[si] = srcPtr[si];}}
 				break;
 
+/*
 				// these are used for 32 bit data buffer, with different alignment of the data inside
 				// 32 bit PCI bus systems can more easily used with these
 			case ASIOSTInt32LSB16:		// 32 bit data with 18 bit alignment
@@ -102,6 +102,10 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 			case ASIOSTInt32MSB20:		// 32 bit data with 20 bit alignment
 			case ASIOSTInt32MSB24:		// 32 bit data with 24 bit alignment
 				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 4);
+				break;
+*/
+			default:
+				// wtf = d_channelInfos[i].type;
 				break; }}}
 
 	// finally if the driver supports the ASIOOutputReady() optimization, do it here, all data are in place
@@ -275,6 +279,7 @@ void CXLASIOHost::Start() {
 
 	asio.Start();
 	d_state = State::Running;
+	log.info("host: Running");
 	d_updated.Emit(); }
 
 
@@ -289,8 +294,10 @@ void CXLASIOHost::LinkChannel(const int num, std::string_view name) {
 				foundIdx = i; }}}
 
 	if (num == 0) {
+		log.info(fmt::sprintf("linked left output to %d", foundIdx));
 		d_leftIdx = foundIdx; }
 	else if (num == 1) {
+		log.info(fmt::sprintf("linked right output to %d", foundIdx));
 		d_rightIdx = foundIdx; }
 	else {
 		log.info(fmt::sprintf("refusing to attach host to channel %d", num)); }}
@@ -303,6 +310,8 @@ void CXLASIOHost::Stop() {
 	asio.Stop();
 	asio.DisposeBuffers();
 	d_state = State::Stopped;
+	auto& log = Log::GetInstance();
+	log.info("host: Stopped");
 	d_updated.Emit(); }
 
 

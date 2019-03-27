@@ -28,12 +28,12 @@
 namespace rqdq {
 namespace {
 
-constexpr int kNumVoices = 16;
-constexpr int kMaxWaves = 1024;
-constexpr int kDefaultTempo = 1200;
-constexpr int kDefaultSwing = 50;
-constexpr float kMasterGain = 0.666F;
-constexpr int kMaxKitNum = 99;
+constexpr int kNumVoices{16};
+constexpr int kMaxWaves{1024};
+constexpr int kDefaultTempo{1200};
+constexpr int kDefaultSwing{50};
+constexpr float kMasterGain{0.666F};
+constexpr int kMaxKitNum{99};
 
 
 const char* MakeKitPath(int n) {
@@ -55,57 +55,57 @@ namespace cxl {
 
 class CXLUnit::impl {
 public:
-	impl() :d_waveTable(kMaxWaves) {
-		d_sequencer.SetTempo(kDefaultTempo);
-		d_sequencer.SetSwing(kDefaultSwing);
-		d_voices.reserve(kNumVoices);
-		d_effects.reserve(kNumVoices);
+	impl() :waveTable_(kMaxWaves) {
+		sequencer_.SetTempo(kDefaultTempo);
+		sequencer_.SetSwing(kDefaultSwing);
+		voices_.reserve(kNumVoices);
+		effects_.reserve(kNumVoices);
 		for (int i=0; i<kNumVoices; i++) {
-			d_voices.emplace_back(d_waveTable);
-			d_effects.emplace_back();
-			d_mixer.AddChannel();
+			voices_.emplace_back(waveTable_);
+			effects_.emplace_back();
+			mixer_.AddChannel();
 
 			std::optional<int> muteGroupId;
 			if (i == 8 || i == 9) {
 				muteGroupId = 1; }  // CH & OH are in a fixed mute-group
 
-			d_sequencer.AddTrack(d_voices.back(), muteGroupId); }
+			sequencer_.AddTrack(voices_.back(), muteGroupId); }
 		BeginLoadingWaves(); }
 
 	// transport controls
 	void Play() {
-		d_sequencer.Play(); }
+		sequencer_.Play(); }
 	void Stop() {
-		d_sequencer.Stop(); }
+		sequencer_.Stop(); }
 	bool IsPlaying() const {
-		return d_sequencer.IsPlaying(); }
+		return sequencer_.IsPlaying(); }
 	int GetPlayingNoteIndex() const {
-		return d_sequencer.GetPlayingNoteIndex(); }
+		return sequencer_.GetPlayingNoteIndex(); }
 	void SetTempo(int value) {
-		d_sequencer.SetTempo(value);
-		d_tempoChanged.Emit(value); }
+		sequencer_.SetTempo(value);
+		tempoChanged_.Emit(value); }
 	int GetTempo() const {
-		return d_sequencer.GetTempo(); }
+		return sequencer_.GetTempo(); }
 	void SetSwing(int pct) {
-		d_sequencer.SetSwing(pct); }
+		sequencer_.SetSwing(pct); }
 	int GetSwing() const {
-		return d_sequencer.GetSwing(); }
+		return sequencer_.GetSwing(); }
 
 	// pattern editing
 	void ToggleTrackGridNote(int track, int pos) {
-		d_sequencer.ToggleTrackGridNote(track, pos);
-		d_patternDataChanged.Emit(track); }
+		sequencer_.ToggleTrackGridNote(track, pos);
+		patternDataChanged_.Emit(track); }
 
 	int GetTrackGridNote(int track, int pos) const {
-		return d_sequencer.GetTrackGridNote(track, pos); }
+		return sequencer_.GetTrackGridNote(track, pos); }
 
 	void SetTrackGridNote(int track, int pos, int note) {
-		return d_sequencer.SetTrackGridNote(track, pos, note); }
+		return sequencer_.SetTrackGridNote(track, pos, note); }
 
 	void SwitchPattern(int pid) {
 		auto path = MakePatternPath(pid);
-		d_sequencer.InitializePattern();
-		d_patternNum = pid;
+		sequencer_.InitializePattern();
+		patternNum_ = pid;
 		try {
 			auto fd = std::ifstream(path);
 			if (fd.good()) {
@@ -140,10 +140,10 @@ public:
 			throw; }}
 
 	void CommitPattern() {
-		auto path = MakePatternPath(d_patternNum);
+		auto path = MakePatternPath(patternNum_);
 		int patternLength = GetPatternLength();
 		auto fd = std::ofstream(path);
-		fd << "Kit: " << d_kitNum << "\n";
+		fd << "Kit: " << kitNum_ << "\n";
 		fd << "Length: " << patternLength << "\n";
 		fd << "Tempo: " << (GetTempo()/10) << "." << (GetTempo()%10) << "\n";
 		for (int ti=0; ti<kNumVoices; ti++) {
@@ -151,53 +151,53 @@ public:
 			for (int pos=0; pos<patternLength; pos++) {
 				fd << (GetTrackGridNote(ti, pos) != 0 ? "X" : ".");}
 			fd << "\n"; }
-		Log::GetInstance().info(fmt::sprintf("saved pattern %d to \"%s\"", d_patternNum, path)); }
+		Log::GetInstance().info(fmt::sprintf("saved pattern %d to \"%s\"", patternNum_, path)); }
 
 	int GetCurrentPatternNumber() const {
-		return d_patternNum; }
+		return patternNum_; }
 
 	int GetPatternLength() const {
-		return d_sequencer.GetPatternLength(); }
+		return sequencer_.GetPatternLength(); }
 
 	void SetPatternLength(int value) {
-		d_sequencer.SetPatternLength(value); }
+		sequencer_.SetPatternLength(value); }
 
 	bool IsTrackMuted(int ti) const {
-		return d_sequencer.IsTrackMuted(ti); }
+		return sequencer_.IsTrackMuted(ti); }
 
 	void ToggleTrackMute(int ti) {
-		d_sequencer.ToggleTrackMute(ti);
-		d_patternDataChanged.Emit(ti); }
+		sequencer_.ToggleTrackMute(ti);
+		patternDataChanged_.Emit(ti); }
 
 	// sampler voices
 	void InitializeKit() {
-		d_kitName = "new kit";
+		kitName_ = "new kit";
 		for (int i=0; i<kNumVoices; i++) {
-			d_voices[i].Initialize();
-			d_effects[i].Initialize();
-			d_mixer[i].Initialize(); }}
+			voices_[i].Initialize();
+			effects_[i].Initialize();
+			mixer_[i].Initialize(); }}
 
 	void IncrementKit() {
-		if (d_kitNum < kMaxKitNum) {
-			d_kitNum++;
+		if (kitNum_ < kMaxKitNum) {
+			kitNum_++;
 			LoadKit(); }}
 
 	void DecrementKit() {
-		if (d_kitNum > 0) {
-			d_kitNum--;
+		if (kitNum_ > 0) {
+			kitNum_--;
 			LoadKit(); }}
 
 	void SaveKit() {
-		auto path = MakeKitPath(d_kitNum);
+		auto path = MakeKitPath(kitNum_);
 		auto fd = std::ofstream(path);
-		fd << "Name: " << d_kitName << "\n";
+		fd << "Name: " << kitName_ << "\n";
 		for (int ti=0; ti<kNumVoices; ti++) {
 			fd << "Voice #" << ti << "\n";
 
 			for (int pi=0; pi<8; pi++) {
 				const auto paramName = GetVoiceParameterName(ti, pi);
 				if (paramName == "wav") {
-					auto& wave = d_waveTable.Get(d_voices[ti].params.waveId);
+					auto& wave = waveTable_.Get(voices_[ti].params.waveId);
 					if (wave.d_loaded) {
 						fd << "  voice.wav name=" << wave.d_descr << "\n"; }
 					else {
@@ -223,7 +223,7 @@ public:
 
 	void LoadKit() {
 		using rclt::ConsumePrefix;
-		auto path = MakeKitPath(d_kitNum);
+		auto path = MakeKitPath(kitNum_);
 		try {
 			auto fd = std::ifstream(path);
 			InitializeKit();
@@ -232,60 +232,60 @@ public:
 				std::string line;
 				while (getline(fd, line)) {
 					if (ConsumePrefix(line, "Name: ")) {
-						d_kitName = line; }
+						kitName_ = line; }
 					else if (ConsumePrefix(line, "Voice #")) {
 						vid = stoi(line); }
 					else if (ConsumePrefix(line, "  voice.wav ")) {
 						if (line == "none") {
-							d_voices[vid].params.waveId = 0; }
+							voices_[vid].params.waveId = 0; }
 						else if (ConsumePrefix(line, "name=")) {
-							int waveId = d_waveTable.FindByName(line);
+							int waveId = waveTable_.FindByName(line);
 							if (waveId == 0) {
 								auto msg = fmt::sprintf("waveTable entry with name \"%s\" not found", line);
 								Log::GetInstance().info(msg); }
-							d_voices[vid].params.waveId = waveId; }
+							voices_[vid].params.waveId = waveId; }
 						else {
 							auto msg = fmt::sprintf("invalid wave reference \"%s\"", line);
 							Log::GetInstance().info(msg);
-							d_voices[vid].params.waveId = 0; }}
-					else if (ConsumePrefix(line, "  voice.atk ")) { d_voices[vid].params.attackTime = stoi(line); }
-					else if (ConsumePrefix(line, "  voice.dcy ")) { d_voices[vid].params.decayTime = stoi(line); }
-					else if (ConsumePrefix(line, "  voice.tun ")) { d_voices[vid].params.tuningInNotes = stoi(line); }
-					else if (ConsumePrefix(line, "  voice.fin ")) { d_voices[vid].params.tuningInCents = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.flt ")) { d_effects[vid].d_lowpassFreq = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.rez ")) { d_effects[vid].d_lowpassQ = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.dly ")) { d_effects[vid].d_delaySend = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.dtm ")) { d_effects[vid].d_delayTime = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.dfb ")) { d_effects[vid].d_delayFeedback = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.red ")) { d_effects[vid].d_reduce = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.eqf ")) { d_effects[vid].d_eqCenter = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.eqg ")) { d_effects[vid].d_eqGain = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.dis ")) { d_mixer[vid].d_distortion = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.vol ")) { d_mixer[vid].d_gain = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.pan ")) { d_mixer[vid].d_pan = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.dly ")) { d_mixer[vid].d_send1 = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.rev ")) { d_mixer[vid].d_send2 = stoi(line); }
+							voices_[vid].params.waveId = 0; }}
+					else if (ConsumePrefix(line, "  voice.atk ")) { voices_[vid].params.attackTime = stoi(line); }
+					else if (ConsumePrefix(line, "  voice.dcy ")) { voices_[vid].params.decayTime = stoi(line); }
+					else if (ConsumePrefix(line, "  voice.tun ")) { voices_[vid].params.tuningInNotes = stoi(line); }
+					else if (ConsumePrefix(line, "  voice.fin ")) { voices_[vid].params.tuningInCents = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.flt ")) { effects_[vid].d_lowpassFreq = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.rez ")) { effects_[vid].d_lowpassQ = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.dly ")) { effects_[vid].d_delaySend = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.dtm ")) { effects_[vid].d_delayTime = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.dfb ")) { effects_[vid].d_delayFeedback = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.red ")) { effects_[vid].d_reduce = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.eqf ")) { effects_[vid].d_eqCenter = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.eqg ")) { effects_[vid].d_eqGain = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.dis ")) { mixer_[vid].d_distortion = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.vol ")) { mixer_[vid].d_gain = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.pan ")) { mixer_[vid].d_pan = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.dly ")) { mixer_[vid].d_send1 = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.rev ")) { mixer_[vid].d_send2 = stoi(line); }
 					else {
 						auto msg = fmt::sprintf("unknown kit line \"%s\"", line);
 						throw std::runtime_error(msg); }}
-				auto msg = fmt::sprintf("kit %d loaded from %s", d_kitNum, path);
+				auto msg = fmt::sprintf("kit %d loaded from %s", kitNum_, path);
 				Log::GetInstance().info(msg); }
 			else {
-				auto msg = fmt::sprintf("kit %d could not be read, using init kit", d_kitNum);
+				auto msg = fmt::sprintf("kit %d could not be read, using init kit", kitNum_);
 				Log::GetInstance().info(msg); }}
 		catch (const std::exception& err) {
 			Log::GetInstance().info(err.what());
 			throw; }}
 
 	void SwitchKit(int n) {
-		d_kitNum = n;
+		kitNum_ = n;
 		LoadKit(); }
 
 	int GetCurrentKitNumber() const {
-		return d_kitNum; }
+		return kitNum_; }
 
 	std::string_view GetCurrentKitName() const {
-		return d_kitName; }
+		return kitName_; }
 
 	std::string_view GetVoiceParameterName(int ti, int pi) const {
 		// XXX track index is for future use
@@ -300,21 +300,21 @@ public:
 	int GetVoiceParameterValue(int ti, int pi) const {
 		// XXX track index is for future use
 		switch (pi) {
-		case 0: return d_voices[ti].params.waveId;
-		case 1: return d_voices[ti].params.attackTime;
-		case 2: return d_voices[ti].params.decayTime;
+		case 0: return voices_[ti].params.waveId;
+		case 1: return voices_[ti].params.attackTime;
+		case 2: return voices_[ti].params.decayTime;
 
-		case 4: return d_voices[ti].params.tuningInNotes;
-		case 5: return d_voices[ti].params.tuningInCents;
+		case 4: return voices_[ti].params.tuningInNotes;
+		case 5: return voices_[ti].params.tuningInCents;
 		default: return 0; }}
 	void AdjustVoiceParameter(int ti, int pi, int offset) {
 		switch (pi) {
-		case 0: Adjust2(ti, d_voices[ti].params.waveId,          0, 1000, offset); break;
-		case 1: Adjust2(ti, d_voices[ti].params.attackTime,      0,  127, offset); break;
-		case 2: Adjust2(ti, d_voices[ti].params.decayTime,       0,  127, offset); break;
+		case 0: Adjust2(ti, voices_[ti].params.waveId,          0, 1000, offset); break;
+		case 1: Adjust2(ti, voices_[ti].params.attackTime,      0,  127, offset); break;
+		case 2: Adjust2(ti, voices_[ti].params.decayTime,       0,  127, offset); break;
 
-		case 4: Adjust2(ti, d_voices[ti].params.tuningInNotes, -64,   63, offset); break;
-		case 5: Adjust2(ti, d_voices[ti].params.tuningInCents,-100,  100, offset); break;
+		case 4: Adjust2(ti, voices_[ti].params.tuningInNotes, -64,   63, offset); break;
+		case 5: Adjust2(ti, voices_[ti].params.tuningInCents,-100,  100, offset); break;
 		default: break; }}
 
 	std::string_view GetEffectParameterName(int ti, int pi) const {
@@ -333,25 +333,25 @@ public:
 	int GetEffectParameterValue(int ti, int pi) const {
 		// XXX track index is for future use
 		switch (pi) {
-		case 0: return d_effects[ti].d_lowpassFreq;
-		case 1: return d_effects[ti].d_lowpassQ;
-		case 2: return d_effects[ti].d_eqCenter;
-		case 3: return d_effects[ti].d_eqGain;
-		case 4: return d_effects[ti].d_delaySend;
-		case 5: return d_effects[ti].d_delayTime;
-		case 6: return d_effects[ti].d_delayFeedback;
-		case 7: return d_effects[ti].d_reduce;
+		case 0: return effects_[ti].d_lowpassFreq;
+		case 1: return effects_[ti].d_lowpassQ;
+		case 2: return effects_[ti].d_eqCenter;
+		case 3: return effects_[ti].d_eqGain;
+		case 4: return effects_[ti].d_delaySend;
+		case 5: return effects_[ti].d_delayTime;
+		case 6: return effects_[ti].d_delayFeedback;
+		case 7: return effects_[ti].d_reduce;
 		default: return 0; }}
 	void AdjustEffectParameter(int ti, int pi, int offset) {
 		switch (pi) {
-		case 0: Adjust2(ti, d_effects[ti].d_lowpassFreq,   0,  127, offset); break;
-		case 1: Adjust2(ti, d_effects[ti].d_lowpassQ,      0,  127, offset); break;
-		case 2: Adjust2(ti, d_effects[ti].d_eqCenter,      0,  127, offset); break;
-		case 3: Adjust2(ti, d_effects[ti].d_eqGain,      -64,   64, offset); break;
-		case 4: Adjust2(ti, d_effects[ti].d_delaySend,     0,  127, offset); break;
-		case 5: Adjust2(ti, d_effects[ti].d_delayTime,     0,  127, offset); break;
-		case 6: Adjust2(ti, d_effects[ti].d_delayFeedback, 0,  127, offset); break;
-		case 7: Adjust2(ti, d_effects[ti].d_reduce,        0,  127, offset); break;
+		case 0: Adjust2(ti, effects_[ti].d_lowpassFreq,   0,  127, offset); break;
+		case 1: Adjust2(ti, effects_[ti].d_lowpassQ,      0,  127, offset); break;
+		case 2: Adjust2(ti, effects_[ti].d_eqCenter,      0,  127, offset); break;
+		case 3: Adjust2(ti, effects_[ti].d_eqGain,      -64,   64, offset); break;
+		case 4: Adjust2(ti, effects_[ti].d_delaySend,     0,  127, offset); break;
+		case 5: Adjust2(ti, effects_[ti].d_delayTime,     0,  127, offset); break;
+		case 6: Adjust2(ti, effects_[ti].d_delayFeedback, 0,  127, offset); break;
+		case 7: Adjust2(ti, effects_[ti].d_reduce,        0,  127, offset); break;
 		default: break; }}
 
 	std::string_view GetMixParameterName(int ti, int pi) const {
@@ -364,57 +364,57 @@ public:
 		default: return ""; }}
 	int GetMixParameterValue(int ti, int pi) const {
 		switch (pi) {
-		case 0: return d_mixer[ti].d_distortion;
-		case 1: return d_mixer[ti].d_gain;
-		case 2: return d_mixer[ti].d_pan;
-		case 3: return d_mixer[ti].d_send1;
-		case 4: return d_mixer[ti].d_send2;
+		case 0: return mixer_[ti].d_distortion;
+		case 1: return mixer_[ti].d_gain;
+		case 2: return mixer_[ti].d_pan;
+		case 3: return mixer_[ti].d_send1;
+		case 4: return mixer_[ti].d_send2;
 		default: return 0; }}
 	void AdjustMixParameter(int ti, int pi, int offset) {
 		switch (pi) {
-		case 0: Adjust2(ti, d_mixer[ti].d_distortion, 0, 127, offset); break;
-		case 1: Adjust2(ti, d_mixer[ti].d_gain, 0, 127, offset); break;
-		case 2: Adjust2(ti, d_mixer[ti].d_pan, -64, 63, offset); break;
-		case 3: Adjust2(ti, d_mixer[ti].d_send1, 0, 127, offset); break;
-		case 4: Adjust2(ti, d_mixer[ti].d_send2, 0, 127, offset); break;
+		case 0: Adjust2(ti, mixer_[ti].d_distortion, 0, 127, offset); break;
+		case 1: Adjust2(ti, mixer_[ti].d_gain, 0, 127, offset); break;
+		case 2: Adjust2(ti, mixer_[ti].d_pan, -64, 63, offset); break;
+		case 3: Adjust2(ti, mixer_[ti].d_send1, 0, 127, offset); break;
+		case 4: Adjust2(ti, mixer_[ti].d_send2, 0, 127, offset); break;
 		default: break; }}
 
 	std::string_view GetWaveName(int waveId) const {
-		return d_waveTable.Get(waveId).d_descr; }
+		return waveTable_.Get(waveId).d_descr; }
 
 	void Trigger(int track) {
-		d_voices[track].Trigger(48, 1.0, 0); }
+		voices_[track].Trigger(48, 1.0, 0); }
 
     // audio render
     void Render(float* left, float* right, int numSamples) {
-		bool stateChanged = d_sequencer.Update();
+		bool stateChanged = sequencer_.Update();
 		if (stateChanged) {
-			d_playbackStateChanged.Emit(IsPlaying()); }
+			playbackStateChanged_.Emit(IsPlaying()); }
 
 		const auto tempo = GetTempo();
 		for (int i=0; i<kNumVoices; i++) {
-			d_voices[i].Update(tempo);
-			d_effects[i].Update(tempo); }
-		d_mixer.Update(tempo);
+			voices_[i].Update(tempo);
+			effects_[i].Update(tempo); }
+		mixer_.Update(tempo);
 
 		bool gridPositionUpdated = false;
 		for (int si = 0; si < numSamples; si++) {
-			bool updated = d_sequencer.Process();
+			bool updated = sequencer_.Process();
 			gridPositionUpdated = gridPositionUpdated || updated;
 
 			std::array<float, 2> masterOut;
 			std::array<float, kNumVoices> toMixer;
 			for (int i=0; i<kNumVoices; i++) {
 				float tmp;
-				d_voices[i].Process(nullptr, &tmp);
-				d_effects[i].Process(&tmp, &(toMixer[i])); }
+				voices_[i].Process(nullptr, &tmp);
+				effects_[i].Process(&tmp, &(toMixer[i])); }
 
-			d_mixer.Process(toMixer.data(), masterOut.data());
+			mixer_.Process(toMixer.data(), masterOut.data());
 			left[si] = masterOut[0] * kMasterGain;
 			right[si] = masterOut[1] * kMasterGain; }
 
 		if (gridPositionUpdated) {
-			d_playbackPositionChanged.Emit(GetPlayingNoteIndex()); }}
+			playbackPositionChanged_.Emit(GetPlayingNoteIndex()); }}
 
 private:
 	template<typename T>
@@ -423,21 +423,21 @@ private:
 		T newValue = std::clamp(oldValue+amt, lower, upper);
 		if (oldValue != newValue) {
 			slot = newValue;
-			d_voiceParameterChanged.Emit(id);}}
+			voiceParameterChanged_.Emit(id);}}
 
 public:
-	rclmt::Signal<void(int)> d_voiceParameterChanged;
-	rclmt::Signal<void(int)> d_tempoChanged;
-	rclmt::Signal<void(int)> d_patternDataChanged;
-	rclmt::Signal<void(bool)> d_playbackStateChanged;
-	rclmt::Signal<void(int)> d_playbackPositionChanged;
+	rclmt::Signal<void(int)> voiceParameterChanged_;
+	rclmt::Signal<void(int)> tempoChanged_;
+	rclmt::Signal<void(int)> patternDataChanged_;
+	rclmt::Signal<void(bool)> playbackStateChanged_;
+	rclmt::Signal<void(int)> playbackPositionChanged_;
 	rclmt::Signal<void()> d_currentPatternChanged;
 
 	// BEGIN wave-table loader
 private:
-	bool d_loading = false;
-	int d_nextFileId = 0;
-	int d_nextWaveId = 1;
+	bool d_loading{false};
+	int d_nextFileId{0};
+	int d_nextWaveId{1};
 	std::vector<std::string> d_filesToLoad;
 public:
 	rclmt::Signal<void()> d_loaderStateChanged;
@@ -449,7 +449,8 @@ public:
 		if (d_nextFileId < d_filesToLoad.size()) {
 			return d_filesToLoad[d_nextFileId]; }
 		return "";}
-	bool IsLoading() const { return d_loading; }
+	bool IsLoading() const {
+        return d_loading; }
 private:
 	void BeginLoadingWaves() {
 		d_loading = true;
@@ -475,14 +476,17 @@ private:
 
 		auto& fileName = d_filesToLoad[fileId];
 		auto baseName = fileName.substr(0, fileName.size() - 4);
-		d_waveTable.Get(waveId) = ralw::MPCWave::Load(data, baseName);
-		Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
+		waveTable_.Get(waveId) = ralw::MPCWave::Load(data, baseName);
+		// Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
 		d_loaderStateChanged.Emit();
 
 		if (d_nextFileId >= d_filesToLoad.size()) {
 			onLoadingComplete(); }}
 
 	void onWaveIOError(int error) {
+        auto& log = Log::GetInstance();
+		auto msg = fmt::sprintf("onWaveIOError %d", error);
+        log.info(msg);
 		d_nextFileId++;
 		MakeProgressLoadingWaves(); }
 
@@ -492,120 +496,120 @@ private:
 		SwitchPattern(0); }
 	//  END  wave-table loader
 
-	int d_kitNum = 0;
-	std::string d_kitName = "new kit";
-	int d_patternNum = 0;
-	ralw::WaveTable d_waveTable;
-	raldsp::BasicMixer<CXLChannelStrip> d_mixer;
-	ralm::GridSequencer d_sequencer;
-	std::vector<raldsp::SingleSampler> d_voices;
-	std::vector<CXLEffects> d_effects; };
+	int kitNum_{0};
+	std::string kitName_{"new kit"};
+	int patternNum_{0};
+	ralw::WaveTable waveTable_;
+	raldsp::BasicMixer<CXLChannelStrip> mixer_;
+	ralm::GridSequencer sequencer_;
+	std::vector<raldsp::SingleSampler> voices_;
+	std::vector<CXLEffects> effects_; };
 
 
-CXLUnit::CXLUnit() :d_impl(std::make_unique<impl>()) {}
+CXLUnit::CXLUnit() :impl_(std::make_unique<impl>()) {}
 CXLUnit::~CXLUnit() = default;
 CXLUnit::CXLUnit(CXLUnit&&) = default;
 CXLUnit& CXLUnit::operator=(CXLUnit&&) = default;
 
 bool CXLUnit::IsLoading() const {
-	return d_impl->IsLoading(); }
+	return impl_->IsLoading(); }
 float CXLUnit::GetLoadingProgress() const {
-	return d_impl->GetLoadingProgress(); }
+	return impl_->GetLoadingProgress(); }
 std::string_view CXLUnit::GetLoadingName() const {
-	return d_impl->GetLoadingName(); }
+	return impl_->GetLoadingName(); }
 
 void CXLUnit::Play() {
-	d_impl->Play(); }
+	impl_->Play(); }
 void CXLUnit::Stop() {
-	d_impl->Stop(); }
+	impl_->Stop(); }
 bool CXLUnit::IsPlaying() const {
-	return d_impl->IsPlaying(); }
+	return impl_->IsPlaying(); }
 void CXLUnit::SetTempo(int value) {
-	d_impl->SetTempo(value); }
+	impl_->SetTempo(value); }
 int CXLUnit::GetTempo() const {
-	return d_impl->GetTempo(); }
+	return impl_->GetTempo(); }
 void CXLUnit::SetSwing(int pct) {
-	d_impl->SetSwing(pct); }
+	impl_->SetSwing(pct); }
 int CXLUnit::GetSwing() const {
-	return d_impl->GetSwing(); }
+	return impl_->GetSwing(); }
 void CXLUnit::Trigger(int track) {
-	d_impl->Trigger(track); }
+	impl_->Trigger(track); }
 
 int CXLUnit::GetCurrentKitNumber() const {
-	return d_impl->GetCurrentKitNumber(); }
+	return impl_->GetCurrentKitNumber(); }
 int CXLUnit::GetCurrentPatternNumber() const {
-	return d_impl->GetCurrentPatternNumber(); }
+	return impl_->GetCurrentPatternNumber(); }
 
 int CXLUnit::ConnectPlaybackPositionChanged(std::function<void(int)> fn) {
-	return d_impl->d_playbackPositionChanged.Connect(std::move(fn)); }
+	return impl_->playbackPositionChanged_.Connect(std::move(fn)); }
 int CXLUnit::ConnectPlaybackStateChanged(std::function<void(bool)> fn) {
-	return d_impl->d_playbackStateChanged.Connect(std::move(fn)); }
+	return impl_->playbackStateChanged_.Connect(std::move(fn)); }
 int CXLUnit::ConnectLoaderStateChanged(std::function<void()> fn) {
-	return d_impl->d_loaderStateChanged.Connect(std::move(fn)); }
+	return impl_->d_loaderStateChanged.Connect(std::move(fn)); }
 void CXLUnit::DisconnectPlaybackPositionChanged(int id) {
-	d_impl->d_playbackPositionChanged.Disconnect(id); }
+	impl_->playbackPositionChanged_.Disconnect(id); }
 void CXLUnit::DisconnectPlaybackStateChanged(int id) {
-	d_impl->d_playbackStateChanged.Disconnect(id); }
+	impl_->playbackStateChanged_.Disconnect(id); }
 void CXLUnit::DisconnectLoaderStateChanged(int id) {
-	d_impl->d_loaderStateChanged.Disconnect(id); }
+	impl_->d_loaderStateChanged.Disconnect(id); }
 
 std::string_view CXLUnit::GetVoiceParameterName(int ti, int pi) const {
-	return d_impl->GetVoiceParameterName(ti, pi); }
+	return impl_->GetVoiceParameterName(ti, pi); }
 int CXLUnit::GetVoiceParameterValue(int ti, int pi) const {
-	return d_impl->GetVoiceParameterValue(ti, pi); }
+	return impl_->GetVoiceParameterValue(ti, pi); }
 void CXLUnit::AdjustVoiceParameter(int ti, int pi, int offset) {
-	d_impl->AdjustVoiceParameter(ti, pi, offset); }
+	impl_->AdjustVoiceParameter(ti, pi, offset); }
 
 std::string_view CXLUnit::GetEffectParameterName(int ti, int pi) const {
-	return d_impl->GetEffectParameterName(ti, pi); }
+	return impl_->GetEffectParameterName(ti, pi); }
 int CXLUnit::GetEffectParameterValue(int ti, int pi) const {
-	return d_impl->GetEffectParameterValue(ti, pi); }
+	return impl_->GetEffectParameterValue(ti, pi); }
 void CXLUnit::AdjustEffectParameter(int ti, int pi, int offset) {
-	d_impl->AdjustEffectParameter(ti, pi, offset); }
+	impl_->AdjustEffectParameter(ti, pi, offset); }
 
 std::string_view CXLUnit::GetMixParameterName(int ti, int pi) const {
-	return d_impl->GetMixParameterName(ti, pi); }
+	return impl_->GetMixParameterName(ti, pi); }
 int CXLUnit::GetMixParameterValue(int ti, int pi) const {
-	return d_impl->GetMixParameterValue(ti, pi); }
+	return impl_->GetMixParameterValue(ti, pi); }
 void CXLUnit::AdjustMixParameter(int ti, int pi, int offset) {
-	d_impl->AdjustMixParameter(ti, pi, offset); }
+	impl_->AdjustMixParameter(ti, pi, offset); }
 
 int CXLUnit::GetPatternLength() const {
-	return d_impl->GetPatternLength(); }
+	return impl_->GetPatternLength(); }
 void CXLUnit::SetPatternLength(int value) {
-	d_impl->SetPatternLength(value); }
+	impl_->SetPatternLength(value); }
 bool CXLUnit::IsTrackMuted(int ti) const {
-	return d_impl->IsTrackMuted(ti); }
+	return impl_->IsTrackMuted(ti); }
 void CXLUnit::ToggleTrackMute(int ti) {
-	d_impl->ToggleTrackMute(ti); }
+	impl_->ToggleTrackMute(ti); }
 void CXLUnit::CommitPattern() {
-	d_impl->CommitPattern(); }
+	impl_->CommitPattern(); }
 void CXLUnit::SaveKit() {
-	d_impl->SaveKit(); }
+	impl_->SaveKit(); }
 void CXLUnit::LoadKit() {
-	d_impl->LoadKit(); }
+	impl_->LoadKit(); }
 void CXLUnit::InitializeKit() {
-	d_impl->InitializeKit(); }
+	impl_->InitializeKit(); }
 void CXLUnit::IncrementKit() {
-	d_impl->IncrementKit(); }
+	impl_->IncrementKit(); }
 void CXLUnit::DecrementKit() {
-	d_impl->DecrementKit(); }
+	impl_->DecrementKit(); }
 void CXLUnit::ToggleTrackGridNote(int track, int pos) {
-	d_impl->ToggleTrackGridNote(track, pos); }
+	impl_->ToggleTrackGridNote(track, pos); }
 int CXLUnit::GetTrackGridNote(int track, int pos) const {
-	return d_impl->GetTrackGridNote(track, pos); }
+	return impl_->GetTrackGridNote(track, pos); }
 void CXLUnit::SetTrackGridNote(int track, int pos, int note) {
-	d_impl->SetTrackGridNote(track, pos, note); }
+	impl_->SetTrackGridNote(track, pos, note); }
 void CXLUnit::SwitchPattern(int pid) {
-	d_impl->SwitchPattern(pid); }
+	impl_->SwitchPattern(pid); }
 
 void CXLUnit::Render(float* left, float* right, int numSamples) {
-	d_impl->Render(left, right, numSamples); }
+	impl_->Render(left, right, numSamples); }
 int CXLUnit::GetPlayingNoteIndex() const {
-	return d_impl->GetPlayingNoteIndex(); }
+	return impl_->GetPlayingNoteIndex(); }
 
 std::string_view CXLUnit::GetWaveName(int waveId) const {
-	return d_impl->GetWaveName(waveId); }
+	return impl_->GetWaveName(waveId); }
 
 
 }  // namespace cxl
