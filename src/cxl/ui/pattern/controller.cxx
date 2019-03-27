@@ -77,7 +77,7 @@ PatternController::PatternController(CXLUnit& unit, TextKit::MainLoop& loop)
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	// XXX dtor should stop listening to these!
-	d_unit.ConnectPlaybackPositionChanged([&](int pos) {
+	d_signalId = d_unit.ConnectPlaybackPositionChanged([&](int pos) {
 		// this is called from the ASIO thread.
 		// use a Reactor event to bounce to main
 		d_playbackPositionChangedEvent.Signal(); });
@@ -330,6 +330,7 @@ void PatternController::StopNudge(const int dir) {
 
 
 PatternController::~PatternController() {
+	d_unit.DisconnectPlaybackPositionChanged(d_signalId);
 	StopTick(); }
 
 

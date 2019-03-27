@@ -20,6 +20,9 @@ namespace cxl {
 class RootController : public TextKit::Widget {
 public:
 	RootController(class CXLUnit& /*unit*/, class CXLASIOHost& /*host*/);
+	~RootController();
+	RootController& operator=(const RootController& other) = delete;
+	RootController(const RootController& other) = delete;
 
 	// Widget impl
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/) override;
@@ -47,7 +50,11 @@ private:
 	HostController d_hostController;
 	SplashController d_splashController;
 	RootView d_view;
-	int d_mode{UM_PATTERN}; };
+	int d_mode{UM_PATTERN};
+
+	int d_unitPlaybackStateChangedSignalId{-1};
+	int d_unitLoaderStateChangedSignalId{-1};
+	int d_splashCompleteSignalId{-1}; };
 
 
 }  // namespace cxl

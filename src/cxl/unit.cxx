@@ -536,12 +536,18 @@ int CXLUnit::GetCurrentKitNumber() const {
 int CXLUnit::GetCurrentPatternNumber() const {
 	return d_impl->GetCurrentPatternNumber(); }
 
-void CXLUnit::ConnectPlaybackPositionChanged(std::function<void(int)> fn) {
-	d_impl->d_playbackPositionChanged.Connect(std::move(fn)); }
-void CXLUnit::ConnectPlaybackStateChanged(std::function<void(bool)> fn) {
-	d_impl->d_playbackStateChanged.Connect(std::move(fn)); }
-void CXLUnit::ConnectLoaderStateChanged(std::function<void()> fn) {
-	d_impl->d_loaderStateChanged.Connect(std::move(fn)); }
+int CXLUnit::ConnectPlaybackPositionChanged(std::function<void(int)> fn) {
+	return d_impl->d_playbackPositionChanged.Connect(std::move(fn)); }
+int CXLUnit::ConnectPlaybackStateChanged(std::function<void(bool)> fn) {
+	return d_impl->d_playbackStateChanged.Connect(std::move(fn)); }
+int CXLUnit::ConnectLoaderStateChanged(std::function<void()> fn) {
+	return d_impl->d_loaderStateChanged.Connect(std::move(fn)); }
+void CXLUnit::DisconnectPlaybackPositionChanged(int id) {
+	d_impl->d_playbackPositionChanged.Disconnect(id); }
+void CXLUnit::DisconnectPlaybackStateChanged(int id) {
+	d_impl->d_playbackStateChanged.Disconnect(id); }
+void CXLUnit::DisconnectLoaderStateChanged(int id) {
+	d_impl->d_loaderStateChanged.Disconnect(id); }
 
 std::string_view CXLUnit::GetVoiceParameterName(int ti, int pi) const {
 	return d_impl->GetVoiceParameterName(ti, pi); }

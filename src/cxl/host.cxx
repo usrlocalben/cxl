@@ -174,13 +174,13 @@ long CXLASIOHost::onASIOMessage(long selector, long value, void* message, double
 	return ret; }
 
 
-bool CXLASIOHost::SetDriver(const std::string& name) {
+bool CXLASIOHost::SetDriver(std::string_view name) {
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	auto& log = Log::GetInstance();
 
 	asio.RefreshDriverList();
 
-	int idx = asio.FindDriverByName(name);
+	int idx = asio.FindDriver(name);
 	if (idx == -1) {
 		auto msg = fmt::sprintf("ASIO driver \"%s\" not found in ASIO registry "
 		                        "(HKEY_LOCAL_MACHINE\\Software\\ASIO)",
@@ -194,7 +194,7 @@ bool CXLASIOHost::SetDriver(const std::string& name) {
 	return true; }
 
 
-void CXLASIOHost::SetChannel(const std::string& driverName, int num, const std::string& name) {
+void CXLASIOHost::SetChannel(const std::string& driverName, int num, std::string_view name) {
 	d_wantedChannels[driverName][num] = name;
 	if (driverName == d_driverName) {
 		Restart(); }}
@@ -206,7 +206,7 @@ void CXLASIOHost::Start() {
 	if (d_state == State::Running) {
 		return; }
 
-	int idx = asio.FindDriverByName(d_wantedDriver);
+	int idx = asio.FindDriver(d_wantedDriver);
 	assert(idx > -1);
 
 	try {
@@ -278,7 +278,7 @@ void CXLASIOHost::Start() {
 	d_updated.Emit(); }
 
 
-void CXLASIOHost::LinkChannel(const int num, const std::string& name) {
+void CXLASIOHost::LinkChannel(const int num, std::string_view name) {
 	auto& log = Log::GetInstance();
 
 	int foundIdx = -1;

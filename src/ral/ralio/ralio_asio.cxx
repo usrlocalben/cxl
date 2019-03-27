@@ -75,15 +75,17 @@ void ASIOSystem::RefreshDriverList() {
 			std::cerr << err.what() << "\n"; }}}
 
 
-int ASIOSystem::FindDriverByName(const std::wstring& text) const {
-	auto search = std::find_if(begin(d_drivers), end(d_drivers), [&](auto& item) { return item.name == text; });
+int ASIOSystem::FindDriver(std::wstring_view name) const {
+	auto search = std::find_if(begin(d_drivers), end(d_drivers),
+	                           [&](auto& item) { return item.name == name; });
 	if (search == end(d_drivers)) {
 		return -1; }
 	return std::distance(begin(d_drivers), search); }
 
 
-int ASIOSystem::FindDriverByName(const std::string& text) const {
-	return FindDriverByName(rclt::UTF8Codec::Decode(text)); }
+int ASIOSystem::FindDriver(std::string_view name) const {
+	auto tmp = rclt::UTF8Codec::Decode(name);
+	return FindDriver(tmp); }
 
 
 void ASIOSystem::OpenDriver(int idx) {

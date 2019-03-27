@@ -32,15 +32,15 @@ RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
 
 	auto& reactor = rclmt::Reactor::GetInstance();
 
-	d_unit.ConnectPlaybackStateChanged([&](int playing) {
+	d_unitPlaybackStateChangedSignalId = d_unit.ConnectPlaybackStateChanged([&](int playing) {
 		d_playbackStateChangedEvent.Signal(); });
 	reactor.ListenMany(d_playbackStateChangedEvent, [&]() {
 		d_loop.DrawScreenEventually(); });
 
-	d_unit.ConnectLoaderStateChanged([&]() {
+	d_unitLoaderStateChangedSignalId = d_unit.ConnectLoaderStateChanged([&]() {
 		onLoaderStateChange(); });
 
-	d_splashController.onComplete.Connect([&]() {
+	d_splashCompleteSignalId = d_splashController.onComplete.Connect([&]() {
 		// can't reset() the Splash ptr while onComplete is firing
 		// so queue this to run from the reactor
 		rclmt::Delay(0, [&]() {
@@ -82,6 +82,12 @@ void RootController::onLoaderStateChange() {
 	else if (!d_unit.IsLoading() && d_view.d_loading) {
 		d_view.d_loading.reset(); }
 	d_loop.DrawScreenEventually(); }
+
+
+RootController::~RootController() {
+	d_unit.DisconnectPlaybackStateChanged(d_unitPlaybackStateChangedSignalId);
+	d_unit.DisconnectLoaderStateChanged(d_unitLoaderStateChangedSignalId);
+	d_splashController.onComplete.Disconnect(d_splashCompleteSignalId); }
 
 
 }  // namespace cxl

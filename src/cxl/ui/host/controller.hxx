@@ -13,6 +13,9 @@ namespace cxl {
 class HostController {
 public:
 	HostController(CXLASIOHost& host, TextKit::MainLoop& loop);
+	~HostController();
+	HostController& operator=(const HostController& other) = delete;
+	HostController(const HostController& other) = delete;
 
 private:
 	void onHostUpdated();
@@ -20,8 +23,9 @@ private:
 private:
 	CXLASIOHost& d_host;
 	TextKit::MainLoop& d_loop;
+	int d_signalId{-1};
 public:
-	HostView d_view; };
+	HostView d_view;};
 
 
 }  // namespace cxl

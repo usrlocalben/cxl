@@ -19,6 +19,8 @@ class PatternController {
 public:
 	PatternController(CXLUnit& /*unit*/, TextKit::MainLoop& loop);
 	~PatternController();
+	PatternController& operator=(const PatternController& other) = delete;
+	PatternController(const PatternController& other) = delete;
 
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/);
 private:
@@ -52,7 +54,8 @@ private:
 	int d_timerId{-1};
 	rclmt::Event d_playbackPositionChangedEvent{rclmt::Event::MakeEvent()};
 	TextKit::KeyEvent d_prevKey{};
-	std::array<int, 16> d_clipboard; };
+	std::array<int, 16> d_clipboard;
+	int d_signalId{-1}; };
 
 
 }  // namespace cxl

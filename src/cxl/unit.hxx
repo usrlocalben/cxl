@@ -57,9 +57,12 @@ public:
 	int GetMixParameterValue(int ti, int pi) const;
 	void AdjustMixParameter(int ti, int pi, int offset);
 
-	void ConnectPlaybackPositionChanged(std::function<void(int)> fn);
-	void ConnectPlaybackStateChanged(std::function<void(bool)> fn);
-	void ConnectLoaderStateChanged(std::function<void()> fn);
+	int ConnectPlaybackPositionChanged(std::function<void(int)> fn);
+	int ConnectPlaybackStateChanged(std::function<void(bool)> fn);
+	int ConnectLoaderStateChanged(std::function<void()> fn);
+	void DisconnectPlaybackPositionChanged(int id);
+	void DisconnectPlaybackStateChanged(int id);
+	void DisconnectLoaderStateChanged(int id);
 
     void Render(float* /*left*/, float* /*right*/, int /*numSamples*/);
 	int GetPlayingNoteIndex() const;

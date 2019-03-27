@@ -2,6 +2,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -265,8 +266,8 @@ public:
 	static ASIOSystem& GetInstance();
 
 	void RefreshDriverList();
-	int FindDriverByName(const std::wstring& text) const;
-	int FindDriverByName(const std::string& text) const;
+	int FindDriver(std::wstring_view text) const;
+	int FindDriver(std::string_view text) const;
 	void OpenDriver(int idx);
 
 	rqdq::ralio::ASIODriverInfo Init(void *sysRef);

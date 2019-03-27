@@ -1,5 +1,10 @@
 #pragma once
+#include <array>
+#include <functional>
 #include <string>
+#include <string_view>
+#include <unordered_map>
+#include <vector>
 
 #include "src/cxl/unit.hxx"
 #include "src/ral/ralio/ralio_asio.hxx"
@@ -27,20 +32,20 @@ public:
 		Failed, };
 
 public:
-	bool SetDriver(const std::string& name);
-	void SetChannel(const std::string& driverName, int num, const std::string& name);
+	bool SetDriver(std::string_view name);
+	void SetChannel(const std::string& driverName, int num, std::string_view name);
 
 	void Start();
 	void Stop();
 	void Restart();
 
 public:
-	std::string GetRunningDriverName() const { return d_driverName; }
+	std::string_view GetRunningDriverName() const { return d_driverName; }
 	int GetRunningSampleRate() const { return static_cast<int>(d_sampleRate); }
 	int GetRunningBufferSize() const { return d_bufPreferredSize; }
 
 private:
-	void LinkChannel(int num, const std::string& name);
+	void LinkChannel(int num, std::string_view name);
 
 	ralio::ASIOCallbacks* MakeASIOCallbacks() {
 		static rqdq::ralio::ASIOCallbacks out{
