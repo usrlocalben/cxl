@@ -1,4 +1,4 @@
-#include "src/ral/raldsp/raldsp_sampler.hxx"
+#include "sampler.hxx"
 
 #include <utility>
 #include <variant>
@@ -26,7 +26,7 @@ int adSamples(int midiValue) {
 
 }  // namespace
 
-namespace raldsp {
+namespace cxl {
 
 void SingleSampler::Trigger(int note, double volume, int ppqstamp) {
 	auto& wave = waveTable_.Get(params_.waveId);
@@ -93,5 +93,5 @@ void SingleSampler::Process(float* inputs, float* outputs) {
 			state_ = Idle{}; }}}
 
 
-}  // namespace raldsp
+}  // namespace cxl
 }  // namespace rqdq

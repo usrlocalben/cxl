@@ -81,8 +81,8 @@
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_panning.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_sampler.cxx">
-      <Filter>ral</Filter>
+    <ClCompile Include="$(SolutionDir)\src\cxl\sampler.cxx">
+      <Filter>cxl</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_syncdelay.cxx">
       <Filter>ral</Filter>

@@ -4,14 +4,20 @@
 #include <cmath>
 #include <optional>
 
-#include "src/ral/raldsp/raldsp_sampler.hxx"
+#include "src/cxl/sampler.hxx"
 
 namespace rqdq {
 namespace {
 
-constexpr int kEighthNoteInPPQ{48};
-
 constexpr int kPPQ{96};
+
+constexpr int kEighthNoteInPPQ{kPPQ / 2};
+
+constexpr float kSampleRateInHz{44100.0F};
+
+constexpr int kSwingMin{50};
+
+constexpr int kSwingMax{75};
 
 /**
  * compute the duration (in ppq) of a given noteIdx given
@@ -28,7 +34,7 @@ int ComputeSwing(int noteIdx, int swingPct) {
  * a tempo (in BPM)
  */
 double ComputeSamplesPerPoint(double bpm) {
-	auto oneBeatInSamples = 44100.0 / (bpm/60.0);
+	auto oneBeatInSamples = kSampleRateInHz / (bpm/60.0);
 	auto onePointInSamples = oneBeatInSamples / kPPQ;
 	return onePointInSamples; }
 
@@ -48,15 +54,15 @@ int GridSequencer::GetTempo() const {
 	return tempoInBPM_; }
 
 
-void GridSequencer::SetSwing(int pct) {
-	swingPct_ = std::clamp(pct, 50, 75); }
+void GridSequencer::SetSwing(int value) {
+	swingPct_ = std::clamp(value, kSwingMin, kSwingMax); }
 
 
 int GridSequencer::GetSwing() const {
 	return swingPct_; }
 
 
-void GridSequencer::AddTrack(raldsp::SingleSampler& voice, std::optional<int> muteGroupId) {
+void GridSequencer::AddTrack(SingleSampler& voice, std::optional<int> muteGroupId) {
 	tracks_.emplace_back(&voice, muteGroupId); }
 
 

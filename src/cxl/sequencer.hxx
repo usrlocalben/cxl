@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "src/ral/raldsp/raldsp_sampler.hxx"
+#include "src/cxl/sampler.hxx"
 
 namespace rqdq {
 namespace cxl {
@@ -17,10 +17,10 @@ constexpr int kBeatsPerBar = 4;
 
 class GridSequencer {
 	struct Track {
-		Track(raldsp::SingleSampler* voice, std::optional<int> muteGroupId)
+		Track(SingleSampler* voice, std::optional<int> muteGroupId)
 			:voice(voice), muteGroupId(muteGroupId) {};
 
-		raldsp::SingleSampler* voice = nullptr;
+		SingleSampler* voice = nullptr;
 		bool isMuted = false;
 		std::array<int, 16*4> grid{};
 		std::optional<int> muteGroupId{}; };
@@ -63,7 +63,7 @@ public:
 	int GetTempo() const;
 	void SetSwing(int pct);
 	int GetSwing() const;
-	void AddTrack(raldsp::SingleSampler&, std::optional<int>);
+	void AddTrack(SingleSampler&, std::optional<int>);
 
 	int GetPatternLength() const { return patternLength_; }
 	void SetPatternLength(int value) {

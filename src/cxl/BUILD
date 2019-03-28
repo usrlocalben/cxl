@@ -20,7 +20,6 @@ cc_library(
     deps = [
         "//3rdparty/fmt",
         "//src/ral/raldsp:mixer",
-        "//src/ral/raldsp:sampler",
         "//src/ral/ralw:wavetable",
         "//src/rcl/rclmt:reactor_file",
         "//src/rcl/rclmt:signal",
@@ -29,6 +28,7 @@ cc_library(
         ":config",
         ":effect",
         ":log",
+        ":sampler",
         ":sequencer",
         ],
     copts = RSR_DEFAULT_COPTS,)
@@ -117,7 +117,16 @@ cc_library(
     srcs=["sequencer.cxx"],
     hdrs=["sequencer.hxx"],
     deps=[
-        "//src/ral/raldsp:sampler",
-        ],
-    copts = RSR_DEFAULT_COPTS,
-    )
+        ":sampler", ],
+    copts = RSR_DEFAULT_COPTS,)
+
+
+cc_library(
+    name="sampler",
+    srcs=["sampler.cxx"],
+    hdrs=["sampler.hxx"],
+    deps=[
+        "//src/ral/ralw:mpcwave",
+        "//src/ral/ralw:wavetable",
+        "//src/ral/raldsp:iaudiodevice", ],
+    copts = RSR_DEFAULT_COPTS,)

@@ -74,17 +74,6 @@ cc_library(
 
 
 cc_library(
-    name="sampler",
-    srcs=["raldsp_sampler.cxx"],
-    hdrs=["raldsp_sampler.hxx"],
-    deps=[
-        "//src/ral/ralw:mpcwave",
-        "//src/ral/ralw:wavetable",
-        ":iaudiodevice", ],
-    copts = RSR_DEFAULT_COPTS,)
-
-
-cc_library(
     name="panning",
     srcs=["raldsp_panning.cxx"],
     hdrs=["raldsp_panning.hxx"],

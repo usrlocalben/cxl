@@ -12,10 +12,10 @@
 #include "src/cxl/channelstrip.hxx"
 #include "src/cxl/config.hxx"
 #include "src/cxl/effect.hxx"
-#include "src/cxl/sequencer.hxx"
 #include "src/cxl/log.hxx"
+#include "src/cxl/sampler.hxx"
+#include "src/cxl/sequencer.hxx"
 #include "src/ral/raldsp/raldsp_mixer.hxx"
-#include "src/ral/raldsp/raldsp_sampler.hxx"
 #include "src/ral/ralw/ralw_mpcwave.hxx"
 #include "src/ral/ralw/ralw_wavetable.hxx"
 #include "src/rcl/rclmt/rclmt_reactor_file.hxx"
@@ -501,7 +501,7 @@ private:
 	ralw::WaveTable waveTable_;
 	raldsp::BasicMixer<CXLChannelStrip> mixer_;
 	GridSequencer sequencer_;
-	std::vector<raldsp::SingleSampler> voices_;
+	std::vector<SingleSampler> voices_;
 	std::vector<CXLEffects> effects_; };
 
 
