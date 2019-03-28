@@ -12,7 +12,7 @@ namespace cxl {
 
 class SplashController {
 public:
-	SplashController(TextKit::MainLoop& loop);
+	explicit SplashController(TextKit::MainLoop& loop);
 
 	rclmt::Signal<void()> onComplete;
 

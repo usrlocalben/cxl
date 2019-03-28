@@ -11,7 +11,7 @@ namespace cxl {
 
 class Alert : public TextKit::Widget {
 public:
-	Alert(std::string text);
+	explicit Alert(std::string text);
 
 	// Widget
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/) override;

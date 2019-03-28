@@ -16,7 +16,7 @@ namespace cxl {
 
 class CXLASIOHost {
 public:
-	CXLASIOHost(CXLUnit& unit);
+	explicit CXLASIOHost(CXLUnit& unit);
 
 	// not copyable or movable
 	CXLASIOHost& operator=(const CXLASIOHost&) = delete;

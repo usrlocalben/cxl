@@ -7,7 +7,7 @@ namespace cxl {
 
 class LogController {
 public:
-	LogController(TextKit::MainLoop& loop);
+	explicit LogController(TextKit::MainLoop& loop);
 	~LogController();
 	LogController(const LogController& other) = delete;
 	LogController& operator=(const LogController& other) = delete;

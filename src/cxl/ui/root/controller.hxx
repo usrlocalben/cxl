@@ -20,7 +20,7 @@ namespace cxl {
 class RootController : public TextKit::Widget {
 public:
 	RootController(class CXLUnit& /*unit*/, class CXLASIOHost& /*host*/);
-	~RootController();
+	~RootController() override;
 	RootController& operator=(const RootController& other) = delete;
 	RootController(const RootController& other) = delete;
 

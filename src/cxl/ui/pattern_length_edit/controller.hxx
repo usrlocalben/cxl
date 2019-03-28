@@ -13,7 +13,7 @@ namespace cxl {
 
 class PatternLengthEditController {
 public:
-	PatternLengthEditController(int value);
+	explicit PatternLengthEditController(int value);
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/);
 
 	std::function<void(int)> onSuccess;

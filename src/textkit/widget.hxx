@@ -27,8 +27,8 @@ public:
 
 class LineBox : public Widget {
 public:
-	LineBox(Widget* widget);
-	LineBox(std::shared_ptr<Widget> widget);
+	explicit LineBox(Widget* widget);
+	explicit LineBox(std::shared_ptr<Widget> widget);
 	LineBox(std::shared_ptr<Widget> widget, const std::string& title);
 
 	// Widget

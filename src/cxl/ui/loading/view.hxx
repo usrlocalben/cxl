@@ -9,7 +9,7 @@ namespace cxl {
 
 class LoadingView : public TextKit::Widget {
 public:
-	LoadingView(const CXLUnit& unit);
+	explicit LoadingView(const CXLUnit& unit);
 
 	// Widget
 	const rcls::TextCanvas& Draw(int /*width*/, int /*height*/) override;

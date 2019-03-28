@@ -11,7 +11,7 @@ namespace cxl {
 
 class HostView : public TextKit::Widget {
 public:
-	HostView(CXLASIOHost& host);
+	explicit HostView(CXLASIOHost& host);
 
 	// Widget impl
 	const rcls::TextCanvas& Draw(int /*width*/, int /*height*/) override;

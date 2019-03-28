@@ -11,7 +11,7 @@ namespace cxl {
 
 class SplashView : public TextKit::Widget {
 public:
-	SplashView(const float& t);
+	explicit SplashView(const float& t);
 
 	void Invalidate();
 

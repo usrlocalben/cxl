@@ -14,7 +14,7 @@ namespace TextKit {
 
 class MainLoop {
 public:
-	MainLoop(rclmt::Reactor* reactor_=nullptr);
+	explicit MainLoop(rclmt::Reactor* reactor_=nullptr);
 
 	void Run();
 	void Stop();

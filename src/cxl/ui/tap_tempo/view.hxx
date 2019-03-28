@@ -11,7 +11,7 @@ namespace cxl {
 
 class TapTempoView : public TextKit::Widget {
 public:
-	TapTempoView(const int& taps);
+	explicit TapTempoView(const int& taps);
 
 	// Widget
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/) override;

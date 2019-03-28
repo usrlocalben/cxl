@@ -10,7 +10,7 @@ namespace cxl {
 
 class PatternLengthEditView : public TextKit::Widget {
 public:
-	PatternLengthEditView(const int& value);
+	explicit PatternLengthEditView(const int& value);
 
 	// Widget
 	const rcls::TextCanvas& Draw(int /*width*/, int /*height*/) override;
