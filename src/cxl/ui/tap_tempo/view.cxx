@@ -11,7 +11,7 @@
 namespace rqdq {
 namespace cxl {
 
-TapTempoView::TapTempoView(const int& taps) :d_tapsSrc(taps) {}
+TapTempoView::TapTempoView(const int& taps) :tapsSrc_(taps) {}
 
 
 std::pair<int, int> TapTempoView::Pack(int w, int h) {
@@ -28,9 +28,9 @@ bool TapTempoView::HandleKeyEvent(TextKit::KeyEvent e) {
 
 bool TapTempoView::Refresh() {
 	bool updated = false;
-	if (d_tapsSrc != d_taps) {
+	if (tapsSrc_ != taps_) {
 		updated = true;
-		d_taps = d_tapsSrc; }
+		taps_ = tapsSrc_; }
 	return updated; }
 
 
@@ -39,7 +39,7 @@ const rcls::TextCanvas& TapTempoView::Draw(int width, int height) {
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	bool updated = Refresh();
 	if (updated) {
 		out.Resize(width, height);
@@ -49,10 +49,10 @@ const rcls::TextCanvas& TapTempoView::Draw(int width, int height) {
 		WriteXY(out, 2, 0, "tap tempo");
 		// "  tap tempo   "
 		// "  x  _  _  _  "
-		WriteXY(out, 2, 2, d_taps >= 1 ? "x" : ".");
-		WriteXY(out, 5, 2, d_taps >= 2 ? "x" : ".");
-		WriteXY(out, 8, 2, d_taps >= 3 ? "x" : ".");
-		WriteXY(out,11, 2, d_taps >= 4 ? "x" : ".");}
+		WriteXY(out, 2, 2, taps_ >= 1 ? "x" : ".");
+		WriteXY(out, 5, 2, taps_ >= 2 ? "x" : ".");
+		WriteXY(out, 8, 2, taps_ >= 3 ? "x" : ".");
+		WriteXY(out,11, 2, taps_ >= 4 ? "x" : ".");}
 	return out; }
 
 

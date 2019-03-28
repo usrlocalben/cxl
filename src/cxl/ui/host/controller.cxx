@@ -8,16 +8,16 @@ namespace cxl {
 
 HostController::HostController(CXLASIOHost& host,
                                TextKit::MainLoop& loop)
-	:d_host(host), d_loop(loop), d_view{d_host} {
-	d_signalId = d_host.d_updated.Connect([&]() { onHostUpdated(); }); }
+	:host_(host), loop_(loop), view_{host_} {
+	signalId_ = host_.updated_.Connect([&]() { onHostUpdated(); }); }
 
 
 HostController::~HostController() {
-	d_host.d_updated.Disconnect(d_signalId); }
+	host_.updated_.Disconnect(signalId_); }
 
 
 void HostController::onHostUpdated() {
-	d_loop.DrawScreenEventually(); }
+	loop_.DrawScreenEventually(); }
 
 
 }  // namespace cxl

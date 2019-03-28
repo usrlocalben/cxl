@@ -16,16 +16,16 @@ constexpr float kSplashDuration{5.0F};
 namespace cxl {
 
 SplashController::SplashController(TextKit::MainLoop& loop)
-	:d_loop(loop), d_view{MakeSplashView(d_t)} {
+	:loop_(loop), view_{MakeSplashView(t_)} {
 	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }
 
 
 void SplashController::Tick() {
-	d_t += 1/kAnimRateInHz;
-	if (d_t > kSplashDuration) {
+	t_ += 1/kAnimRateInHz;
+	if (t_ > kSplashDuration) {
 		onComplete.Emit();
 		return; }
-	d_loop.DrawScreenEventually();
+	loop_.DrawScreenEventually();
 	rclmt::Delay(1000.0/kAnimRateInHz, [&]() { Tick(); }); }
 
 

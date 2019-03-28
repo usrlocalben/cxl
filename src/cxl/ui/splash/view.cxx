@@ -33,7 +33,7 @@ constexpr int kArtWidth = std::char_traits<char>::length(kArtText[0]);
 
 namespace cxl {
 
-SplashView::SplashView(const float& t) :d_tSrc(t) {}
+SplashView::SplashView(const float& t) :tSrc_(t) {}
 
 
 std::pair<int, int> SplashView::Pack(int w, int h) {
@@ -46,9 +46,9 @@ int SplashView::GetType() {
 
 bool SplashView::Refresh() {
 	bool updated = false;
-	if (d_tSrc != d_t) {
+	if (tSrc_ != t_) {
 		updated = true;
-		d_t = d_tSrc; }
+		t_ = tSrc_; }
 	return updated; }
 
 
@@ -57,14 +57,14 @@ const rcls::TextCanvas& SplashView::Draw(int width, int height) {
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	bool updated = Refresh();
 	if (updated) {
 		out.Resize(mySize.first, mySize.second);
 		out.Clear();
 		const auto blue = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
 		const auto cyan = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongCyan);
-		int cyanY = static_cast<int>(d_t*24) % 48;
+		int cyanY = static_cast<int>(t_*24) % 48;
 		for (int y=0; y<kArtHeight; y++) {
 			WriteXY(out, 0, y, kArtText[y], y==cyanY?cyan:blue); }}
 	return out; }

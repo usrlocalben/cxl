@@ -17,31 +17,31 @@ CXLEffects::CXLEffects() = default;
 
 
 void CXLEffects::Update(int tempo) {
-	const int freq = d_lowpassFreq;
-	const int q = d_lowpassQ;
+	const int freq = params_.lowpassFreq;
+	const int q = params_.lowpassQ;
 	if (freq == 127) {
-		d_filter.SetBypass(true); }
+		filter_.SetBypass(true); }
 	else {
-		d_filter.SetBypass(false);
-		d_filter.SetCutoff(pow(freq/127.0F, 2.0F));
+		filter_.SetBypass(false);
+		filter_.SetCutoff(pow(freq/127.0F, 2.0F));
 		// scale Q-max slightly under 1.0
-		d_filter.SetQ(sqrt(q/128.9F)); }
+		filter_.SetQ(sqrt(q/128.9F)); }
 
-	d_filter.Update(tempo);
+	filter_.Update(tempo);
 
-	d_delay.SetTime(d_delayTime);
-	d_delay.SetFeedbackGain(d_delayFeedback / 127.0);
-	d_delay.Update(tempo);
+	delay_.SetTime(params_.delayTime);
+	delay_.SetFeedbackGain(params_.delayFeedback / 127.0);
+	delay_.Update(tempo);
 
-	d_reducer.d_midi = d_reduce;
-	d_reducer.Update(tempo);
+	reducer_.d_midi = params_.reduce;
+	reducer_.Update(tempo);
 
-	if (d_eqGain != d_eqGain2 || d_eqCenter != d_eqCenter2) {
-		d_eqGain2 = d_eqGain;
-		d_eqCenter2 = d_eqCenter;
-		float gain = std::clamp(d_eqGain, -64, 63) / 63.0 * 12;
-		float freq = pow(std::clamp(d_eqCenter, 0, 127) / 127.0, 2.0) * 8000.0;
-		d_eq.Configure(raldsp::MultiModeFilter::Mode::PEQ,
+	if (params_.eqGain != curEQGain_ || params_.eqCenter != curEQCenter_) {
+		curEQGain_ = params_.eqGain;
+		curEQCenter_ = params_.eqCenter;
+		float gain = std::clamp(params_.eqGain, -64, 63) / 63.0 * 12;
+		float freq = pow(std::clamp(params_.eqCenter, 0, 127) / 127.0, 2.0) * 8000.0;
+		eq_.Configure(raldsp::MultiModeFilter::Mode::PEQ,
 		               gain,
 		               freq,
 		               kEQQ,
@@ -50,17 +50,17 @@ void CXLEffects::Update(int tempo) {
 
 
 void CXLEffects::Process(float* inputs, float* outputs) {
-	inputs[0] = d_eq.Process(inputs[0]);
+	inputs[0] = eq_.Process(inputs[0]);
 	float filtered;
-	d_filter.Process(inputs, &filtered);
+	filter_.Process(inputs, &filtered);
 
-	float delaySend = d_delaySend / 127.0;
+	float delaySend = params_.delaySend / 127.0;
 	float toDelay = filtered * delaySend;
 	float fromDelay;
-	d_delay.Process(&toDelay, &fromDelay);
+	delay_.Process(&toDelay, &fromDelay);
 
 	float filteredPlusDelay = filtered + fromDelay;
-	d_reducer.Process(&filteredPlusDelay, outputs); }
+	reducer_.Process(&filteredPlusDelay, outputs); }
 
 
 }  // namespace cxl

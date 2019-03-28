@@ -20,10 +20,10 @@ public:
 	std::function<void()> onCancel;
 
 public:
-	std::shared_ptr<TextKit::Widget> d_view;
+	std::shared_ptr<TextKit::Widget> view_;
 
 private:
-	int d_value = 0; };
+	int value_ = 0; };
 
 
 }  // namespace cxl

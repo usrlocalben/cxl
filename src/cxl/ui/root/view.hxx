@@ -30,18 +30,18 @@ private:
 	const rcls::TextCanvas& DrawTransportIndicator(int width);
 
 private:
-	const CXLUnit& d_unit;
-	HostView& d_hostView;
-	PatternView& d_patternView;
-	LogView& d_logView;
-	const int& d_mode;
+	const CXLUnit& unit_;
+	HostView& hostView_;
+	PatternView& patternView_;
+	LogView& logView_;
+	const int& mode_;
 
 public:
-	std::shared_ptr<TextKit::Widget> d_loading;
-	std::shared_ptr<TextKit::Widget> d_splash;
+	std::shared_ptr<TextKit::Widget> loading_;
+	std::shared_ptr<TextKit::Widget> splash_;
 
 private:
-	rcls::TextCanvas d_canvas; };
+	rcls::TextCanvas canvas_; };
 
 
 }  // namespace cxl

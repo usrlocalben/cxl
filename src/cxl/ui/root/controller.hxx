@@ -27,11 +27,11 @@ public:
 	// Widget impl
 	bool HandleKeyEvent(TextKit::KeyEvent /*e*/) override;
 	const rcls::TextCanvas& Draw(int w, int h) override {
-		return d_view.Draw(w, h); }
+		return view_.Draw(w, h); }
 	std::pair<int, int> Pack(int w, int h) override {
-		return d_view.Pack(w, h); }
+		return view_.Pack(w, h); }
 	int GetType() override {
-		return d_view.GetType(); }
+		return view_.GetType(); }
 
 	void Run();
 
@@ -41,20 +41,20 @@ private:
 	void IncrementMode();
 
 private:
-	rclmt::Event d_playbackStateChangedEvent{rclmt::Event::MakeEvent()};
-	TextKit::MainLoop d_loop;
-	class CXLUnit& d_unit;
-	class CXLASIOHost& d_host;
-	PatternController d_patternController;
-	LogController d_logController;
-	HostController d_hostController;
-	SplashController d_splashController;
-	RootView d_view;
-	int d_mode{UM_PATTERN};
+	rclmt::Event playbackStateChangedEvent_{rclmt::Event::MakeEvent()};
+	TextKit::MainLoop loop_;
+	class CXLUnit& unit_;
+	class CXLASIOHost& host_;
+	PatternController patternController_;
+	LogController logController_;
+	HostController hostController_;
+	SplashController splashController_;
+	RootView view_;
+	int mode_{UM_PATTERN};
 
-	int d_unitPlaybackStateChangedSignalId{-1};
-	int d_unitLoaderStateChangedSignalId{-1};
-	int d_splashCompleteSignalId{-1}; };
+	int unitPlaybackStateChangedSignalId_{-1};
+	int unitLoaderStateChangedSignalId_{-1};
+	int splashCompleteSignalId_{-1}; };
 
 
 }  // namespace cxl

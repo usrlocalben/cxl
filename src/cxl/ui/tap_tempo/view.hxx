@@ -21,9 +21,9 @@ public:
 
 private:
 	bool Refresh();
-	const int& d_tapsSrc;
-	int d_taps{-1};
-	rcls::TextCanvas d_canvas; };
+	const int& tapsSrc_;
+	int taps_{-1};
+	rcls::TextCanvas canvas_; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakeTapTempoView(const int& taps) {

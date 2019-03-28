@@ -82,7 +82,7 @@ class SingleSampler : public IAudioDevice {
 	using State = std::variant<Idle, Playing>;
 
 public:
-	SingleSampler(ralw::WaveTable& wt) :waveTable(wt) {}
+	SingleSampler(ralw::WaveTable& wt) :waveTable_(wt) {}
 
 public:
 	// IAudioDevice
@@ -91,17 +91,17 @@ public:
 
 	// user interface
 	void Initialize() {
-		params = Parameters{}; }
+		params_ = Parameters{}; }
 
 	// audio thread only
 	void Trigger(int note, double velocity, int ppqstamp);
 	void Stop();
 
 public:
-	Parameters params{};
+	Parameters params_{};
 private:
-	State state{Idle{}};
-	ralw::WaveTable& waveTable; };
+	State state_{Idle{}};
+	ralw::WaveTable& waveTable_; };
 
 
 }  // close package namespace

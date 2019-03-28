@@ -8,46 +8,37 @@ namespace rqdq {
 namespace cxl {
 
 class CXLEffects {
+	struct Parameters {
+		int lowpassFreq{127};
+		int lowpassQ{0};
+
+		int delaySend{0};      // 0-127 = 0...1.0
+		int delayTime{16};     // 0-127, 128th notes
+		int delayFeedback{0};  // 0-127 = 0...1.0
+
+		int reduce{0};
+
+		int eqGain{0};         // -64-63
+		int eqCenter{64}; };    // 0-127
+
 public:
 	CXLEffects();
 	void Update(int /*tempo*/);
 	void Process(float* /*inputs*/, float* /*outputs*/);
 
 	void Initialize() {
-		d_lowpassFreq = 127;
-		d_lowpassQ = 0;
-
-		d_delaySend = 0;
-		d_delayTime = 16;
-		d_delayFeedback = 0;
-
-		d_reduce = 0;
-
-		d_eqGain = 0;
-		d_eqCenter = 64;
-		d_eqGain2 = 0;
-		d_eqCenter2 = 64; }
+		params_ = Parameters{}; }
 
 public:
-	int d_lowpassFreq{127};
-	int d_lowpassQ{0};
-
-	int d_delaySend{0};      // 0-127 = 0...1.0
-	int d_delayTime{16};     // 0-127, 128th notes
-	int d_delayFeedback{0};  // 0-127 = 0...1.0
-
-	int d_reduce{0};
-
-	int d_eqGain{0};         // -64-63
-	int d_eqCenter{64};      // 0-127
-	int d_eqGain2{-1};        // 0-127
-	int d_eqCenter2{-1};     // 0-127
+	Parameters params_{};
 
 private:
-	raldsp::MultiModeFilter d_eq;
-	raldsp::CXLFilter d_filter{1};
-	raldsp::SyncDelay d_delay{1};
-	raldsp::RateReducer d_reducer{1}; };
+	raldsp::MultiModeFilter eq_;
+	raldsp::CXLFilter filter_{1};
+	raldsp::SyncDelay delay_{1};
+	raldsp::RateReducer reducer_{1};
+	int curEQGain_{-1};
+	int curEQCenter_{-1}; };
 
 
 }  // namespace cxl

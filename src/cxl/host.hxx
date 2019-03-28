@@ -40,9 +40,9 @@ public:
 	void Restart();
 
 public:
-	std::string_view GetRunningDriverName() const { return d_driverName; }
-	int GetRunningSampleRate() const { return static_cast<int>(d_sampleRate); }
-	int GetRunningBufferSize() const { return d_bufPreferredSize; }
+	std::string_view GetRunningDriverName() const { return driverName_; }
+	int GetRunningSampleRate() const { return static_cast<int>(sampleRate_); }
+	int GetRunningBufferSize() const { return bufPreferredSize_; }
 
 private:
 	void LinkChannel(int num, std::string_view name);
@@ -88,41 +88,41 @@ private:
 	long onASIOMessage(long selector, long value, void* message, double* opt);
 
 private:
-	CXLUnit& d_unit;
+	CXLUnit& unit_;
 
-	std::string d_wantedDriver;
-	std::unordered_map<std::string, std::array<std::string, 2>> d_wantedChannels;
+	std::string wantedDriver_;
+	std::unordered_map<std::string, std::array<std::string, 2>> wantedChannels_;
 
 	// channels
-	int d_numInputChannels{0};
-	int d_numOutputChannels{0};
+	int numInputChannels_{0};
+	int numOutputChannels_{0};
 
-    std::string d_driverName{"offline"};
+    std::string driverName_{"offline"};
 
 	// buffers
-	int d_bufMinSize;
-	int d_bufMaxSize;
-	int d_bufPreferredSize;
-	int d_bufGranularity;
+	int bufMinSize_;
+	int bufMaxSize_;
+	int bufPreferredSize_;
+	int bufGranularity_;
 
-	State d_state{State::Stopped};
+	State state_{State::Stopped};
 
 	// samplerate
-	double d_sampleRate;
+	double sampleRate_;
 
 	// output ready
-	bool d_supportsOutputReadyOptimization;
+	bool supportsOutputReadyOptimization_;
 
 	// buffers and channels
-	std::vector<ralio::ASIOBufferInfo> d_bufferInfos;
-	std::vector<ralio::ASIOChannelInfo> d_channelInfos;
+	std::vector<ralio::ASIOBufferInfo> bufferInfos_;
+	std::vector<ralio::ASIOChannelInfo> channelInfos_;
 
-	std::vector<float> d_dl, d_dr;
-	int d_leftIdx{-1};
-	int d_rightIdx{-1};
+	std::vector<float> dl_, dr_;
+	int leftIdx_{-1};
+	int rightIdx_{-1};
 
 public:
-    rclmt::Signal<void()> d_updated; };
+    rclmt::Signal<void()> updated_; };
 
 
 }  // namespace cxl

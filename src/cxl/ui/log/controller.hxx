@@ -16,10 +16,10 @@ private:
 	void onLogWrite();
 
 public:
-	LogView d_view;
+	LogView view_;
 private:
-	TextKit::MainLoop& d_loop;
-	int d_signalId{-1}; };
+	TextKit::MainLoop& loop_;
+	int signalId_{-1}; };
 
 
 }  // namespace cxl

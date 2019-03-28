@@ -19,8 +19,8 @@ public:
 	int GetType() override;
 
 private:
-	const CXLASIOHost& d_host;
-	rcls::TextCanvas d_canvas; };
+	const CXLASIOHost& host_;
+	rcls::TextCanvas canvas_; };
 
 
 }  // namespace cxl

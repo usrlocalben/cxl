@@ -26,14 +26,14 @@ private:
 	const rcls::TextCanvas& DrawPageIndicator();
 
 private:
-	const CXLUnit& d_unit;
-	const EditorState& d_state;
+	const CXLUnit& unit_;
+	const EditorState& state_;
 
 public:
-    std::shared_ptr<TextKit::Widget> d_popup;
+    std::shared_ptr<TextKit::Widget> popup_;
 
 private:
-	rcls::TextCanvas d_canvas; };
+	rcls::TextCanvas canvas_; };
 
 
 }  // namespace cxl

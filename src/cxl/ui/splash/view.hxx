@@ -22,9 +22,9 @@ public:
 
 private:
 	bool Refresh();
-	const float& d_tSrc;
-	float d_t{0};
-	rcls::TextCanvas d_canvas; };
+	const float& tSrc_;
+	float t_{0};
+	rcls::TextCanvas canvas_; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakeSplashView(const float& t) {

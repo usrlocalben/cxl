@@ -197,7 +197,7 @@ public:
 			for (int pi=0; pi<8; pi++) {
 				const auto paramName = GetVoiceParameterName(ti, pi);
 				if (paramName == "wav") {
-					auto& wave = waveTable_.Get(voices_[ti].params.waveId);
+					auto& wave = waveTable_.Get(voices_[ti].params_.waveId);
 					if (wave.d_loaded) {
 						fd << "  voice.wav name=" << wave.d_descr << "\n"; }
 					else {
@@ -237,34 +237,34 @@ public:
 						vid = stoi(line); }
 					else if (ConsumePrefix(line, "  voice.wav ")) {
 						if (line == "none") {
-							voices_[vid].params.waveId = 0; }
+							voices_[vid].params_.waveId = 0; }
 						else if (ConsumePrefix(line, "name=")) {
 							int waveId = waveTable_.FindByName(line);
 							if (waveId == 0) {
 								auto msg = fmt::sprintf("waveTable entry with name \"%s\" not found", line);
 								Log::GetInstance().info(msg); }
-							voices_[vid].params.waveId = waveId; }
+							voices_[vid].params_.waveId = waveId; }
 						else {
 							auto msg = fmt::sprintf("invalid wave reference \"%s\"", line);
 							Log::GetInstance().info(msg);
-							voices_[vid].params.waveId = 0; }}
-					else if (ConsumePrefix(line, "  voice.atk ")) { voices_[vid].params.attackTime = stoi(line); }
-					else if (ConsumePrefix(line, "  voice.dcy ")) { voices_[vid].params.decayTime = stoi(line); }
-					else if (ConsumePrefix(line, "  voice.tun ")) { voices_[vid].params.tuningInNotes = stoi(line); }
-					else if (ConsumePrefix(line, "  voice.fin ")) { voices_[vid].params.tuningInCents = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.flt ")) { effects_[vid].d_lowpassFreq = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.rez ")) { effects_[vid].d_lowpassQ = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.dly ")) { effects_[vid].d_delaySend = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.dtm ")) { effects_[vid].d_delayTime = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.dfb ")) { effects_[vid].d_delayFeedback = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.red ")) { effects_[vid].d_reduce = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.eqf ")) { effects_[vid].d_eqCenter = stoi(line); }
-					else if (ConsumePrefix(line, "  effect.eqg ")) { effects_[vid].d_eqGain = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.dis ")) { mixer_[vid].d_distortion = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.vol ")) { mixer_[vid].d_gain = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.pan ")) { mixer_[vid].d_pan = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.dly ")) { mixer_[vid].d_send1 = stoi(line); }
-					else if (ConsumePrefix(line, "  mix.rev ")) { mixer_[vid].d_send2 = stoi(line); }
+							voices_[vid].params_.waveId = 0; }}
+					else if (ConsumePrefix(line, "  voice.atk ")) { voices_[vid].params_.attackTime = stoi(line); }
+					else if (ConsumePrefix(line, "  voice.dcy ")) { voices_[vid].params_.decayTime = stoi(line); }
+					else if (ConsumePrefix(line, "  voice.tun ")) { voices_[vid].params_.tuningInNotes = stoi(line); }
+					else if (ConsumePrefix(line, "  voice.fin ")) { voices_[vid].params_.tuningInCents = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.flt ")) { effects_[vid].params_.lowpassFreq = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.rez ")) { effects_[vid].params_.lowpassQ = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.dly ")) { effects_[vid].params_.delaySend = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.dtm ")) { effects_[vid].params_.delayTime = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.dfb ")) { effects_[vid].params_.delayFeedback = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.red ")) { effects_[vid].params_.reduce = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.eqf ")) { effects_[vid].params_.eqCenter = stoi(line); }
+					else if (ConsumePrefix(line, "  effect.eqg ")) { effects_[vid].params_.eqGain = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.dis ")) { mixer_[vid].params_.distortion = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.vol ")) { mixer_[vid].params_.gain = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.pan ")) { mixer_[vid].params_.pan = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.dly ")) { mixer_[vid].params_.send1 = stoi(line); }
+					else if (ConsumePrefix(line, "  mix.rev ")) { mixer_[vid].params_.send2 = stoi(line); }
 					else {
 						auto msg = fmt::sprintf("unknown kit line \"%s\"", line);
 						throw std::runtime_error(msg); }}
@@ -300,21 +300,21 @@ public:
 	int GetVoiceParameterValue(int ti, int pi) const {
 		// XXX track index is for future use
 		switch (pi) {
-		case 0: return voices_[ti].params.waveId;
-		case 1: return voices_[ti].params.attackTime;
-		case 2: return voices_[ti].params.decayTime;
+		case 0: return voices_[ti].params_.waveId;
+		case 1: return voices_[ti].params_.attackTime;
+		case 2: return voices_[ti].params_.decayTime;
 
-		case 4: return voices_[ti].params.tuningInNotes;
-		case 5: return voices_[ti].params.tuningInCents;
+		case 4: return voices_[ti].params_.tuningInNotes;
+		case 5: return voices_[ti].params_.tuningInCents;
 		default: return 0; }}
 	void AdjustVoiceParameter(int ti, int pi, int offset) {
 		switch (pi) {
-		case 0: Adjust2(ti, voices_[ti].params.waveId,          0, 1000, offset); break;
-		case 1: Adjust2(ti, voices_[ti].params.attackTime,      0,  127, offset); break;
-		case 2: Adjust2(ti, voices_[ti].params.decayTime,       0,  127, offset); break;
+		case 0: Adjust2(ti, voices_[ti].params_.waveId,          0, 1000, offset); break;
+		case 1: Adjust2(ti, voices_[ti].params_.attackTime,      0,  127, offset); break;
+		case 2: Adjust2(ti, voices_[ti].params_.decayTime,       0,  127, offset); break;
 
-		case 4: Adjust2(ti, voices_[ti].params.tuningInNotes, -64,   63, offset); break;
-		case 5: Adjust2(ti, voices_[ti].params.tuningInCents,-100,  100, offset); break;
+		case 4: Adjust2(ti, voices_[ti].params_.tuningInNotes, -64,   63, offset); break;
+		case 5: Adjust2(ti, voices_[ti].params_.tuningInCents,-100,  100, offset); break;
 		default: break; }}
 
 	std::string_view GetEffectParameterName(int ti, int pi) const {
@@ -333,25 +333,25 @@ public:
 	int GetEffectParameterValue(int ti, int pi) const {
 		// XXX track index is for future use
 		switch (pi) {
-		case 0: return effects_[ti].d_lowpassFreq;
-		case 1: return effects_[ti].d_lowpassQ;
-		case 2: return effects_[ti].d_eqCenter;
-		case 3: return effects_[ti].d_eqGain;
-		case 4: return effects_[ti].d_delaySend;
-		case 5: return effects_[ti].d_delayTime;
-		case 6: return effects_[ti].d_delayFeedback;
-		case 7: return effects_[ti].d_reduce;
+		case 0: return effects_[ti].params_.lowpassFreq;
+		case 1: return effects_[ti].params_.lowpassQ;
+		case 2: return effects_[ti].params_.eqCenter;
+		case 3: return effects_[ti].params_.eqGain;
+		case 4: return effects_[ti].params_.delaySend;
+		case 5: return effects_[ti].params_.delayTime;
+		case 6: return effects_[ti].params_.delayFeedback;
+		case 7: return effects_[ti].params_.reduce;
 		default: return 0; }}
 	void AdjustEffectParameter(int ti, int pi, int offset) {
 		switch (pi) {
-		case 0: Adjust2(ti, effects_[ti].d_lowpassFreq,   0,  127, offset); break;
-		case 1: Adjust2(ti, effects_[ti].d_lowpassQ,      0,  127, offset); break;
-		case 2: Adjust2(ti, effects_[ti].d_eqCenter,      0,  127, offset); break;
-		case 3: Adjust2(ti, effects_[ti].d_eqGain,      -64,   64, offset); break;
-		case 4: Adjust2(ti, effects_[ti].d_delaySend,     0,  127, offset); break;
-		case 5: Adjust2(ti, effects_[ti].d_delayTime,     0,  127, offset); break;
-		case 6: Adjust2(ti, effects_[ti].d_delayFeedback, 0,  127, offset); break;
-		case 7: Adjust2(ti, effects_[ti].d_reduce,        0,  127, offset); break;
+		case 0: Adjust2(ti, effects_[ti].params_.lowpassFreq,   0,  127, offset); break;
+		case 1: Adjust2(ti, effects_[ti].params_.lowpassQ,      0,  127, offset); break;
+		case 2: Adjust2(ti, effects_[ti].params_.eqCenter,      0,  127, offset); break;
+		case 3: Adjust2(ti, effects_[ti].params_.eqGain,      -64,   64, offset); break;
+		case 4: Adjust2(ti, effects_[ti].params_.delaySend,     0,  127, offset); break;
+		case 5: Adjust2(ti, effects_[ti].params_.delayTime,     0,  127, offset); break;
+		case 6: Adjust2(ti, effects_[ti].params_.delayFeedback, 0,  127, offset); break;
+		case 7: Adjust2(ti, effects_[ti].params_.reduce,        0,  127, offset); break;
 		default: break; }}
 
 	std::string_view GetMixParameterName(int ti, int pi) const {
@@ -364,19 +364,19 @@ public:
 		default: return ""; }}
 	int GetMixParameterValue(int ti, int pi) const {
 		switch (pi) {
-		case 0: return mixer_[ti].d_distortion;
-		case 1: return mixer_[ti].d_gain;
-		case 2: return mixer_[ti].d_pan;
-		case 3: return mixer_[ti].d_send1;
-		case 4: return mixer_[ti].d_send2;
+		case 0: return mixer_[ti].params_.distortion;
+		case 1: return mixer_[ti].params_.gain;
+		case 2: return mixer_[ti].params_.pan;
+		case 3: return mixer_[ti].params_.send1;
+		case 4: return mixer_[ti].params_.send2;
 		default: return 0; }}
 	void AdjustMixParameter(int ti, int pi, int offset) {
 		switch (pi) {
-		case 0: Adjust2(ti, mixer_[ti].d_distortion, 0, 127, offset); break;
-		case 1: Adjust2(ti, mixer_[ti].d_gain, 0, 127, offset); break;
-		case 2: Adjust2(ti, mixer_[ti].d_pan, -64, 63, offset); break;
-		case 3: Adjust2(ti, mixer_[ti].d_send1, 0, 127, offset); break;
-		case 4: Adjust2(ti, mixer_[ti].d_send2, 0, 127, offset); break;
+		case 0: Adjust2(ti, mixer_[ti].params_.distortion, 0, 127, offset); break;
+		case 1: Adjust2(ti, mixer_[ti].params_.gain, 0, 127, offset); break;
+		case 2: Adjust2(ti, mixer_[ti].params_.pan, -64, 63, offset); break;
+		case 3: Adjust2(ti, mixer_[ti].params_.send1, 0, 127, offset); break;
+		case 4: Adjust2(ti, mixer_[ti].params_.send2, 0, 127, offset); break;
 		default: break; }}
 
 	std::string_view GetWaveName(int waveId) const {
@@ -431,68 +431,67 @@ public:
 	rclmt::Signal<void(int)> patternDataChanged_;
 	rclmt::Signal<void(bool)> playbackStateChanged_;
 	rclmt::Signal<void(int)> playbackPositionChanged_;
-	rclmt::Signal<void()> d_currentPatternChanged;
 
 	// BEGIN wave-table loader
 private:
-	bool d_loading{false};
-	int d_nextFileId{0};
-	int d_nextWaveId{1};
-	std::vector<std::string> d_filesToLoad;
+	bool loading_{false};
+	int nextFileId_{0};
+	int nextWaveId_{1};
+	std::vector<std::string> filesToLoad_;
 public:
-	rclmt::Signal<void()> d_loaderStateChanged;
+	rclmt::Signal<void()> loaderStateChanged_;
 	float GetLoadingProgress() const {
-		float total = d_filesToLoad.size();
-		float done = d_nextFileId;
+		float total = filesToLoad_.size();
+		float done = nextFileId_;
 		return done / total; }
 	std::string_view GetLoadingName() const {
-		if (d_nextFileId < d_filesToLoad.size()) {
-			return d_filesToLoad[d_nextFileId]; }
+		if (nextFileId_ < filesToLoad_.size()) {
+			return filesToLoad_[nextFileId_]; }
 		return "";}
 	bool IsLoading() const {
-        return d_loading; }
+        return loading_; }
 private:
 	void BeginLoadingWaves() {
-		d_loading = true;
-		d_filesToLoad = rcls::FindGlob(rcls::JoinPath(config::sampleDir, R"(*.wav)"));
-		sort(begin(d_filesToLoad), end(d_filesToLoad));
-		d_nextFileId = 0;
-		d_nextWaveId = 1;
-		d_loaderStateChanged.Emit();
+		loading_ = true;
+		filesToLoad_ = rcls::FindGlob(rcls::JoinPath(config::sampleDir, R"(*.wav)"));
+		sort(begin(filesToLoad_), end(filesToLoad_));
+		nextFileId_ = 0;
+		nextWaveId_ = 1;
+		loaderStateChanged_.Emit();
 		MakeProgressLoadingWaves(); }
 
 	void MakeProgressLoadingWaves() {
-		if (d_nextFileId >= d_filesToLoad.size()) {
+		if (nextFileId_ >= filesToLoad_.size()) {
 			return; }
-		const auto wavPath = rcls::JoinPath(config::sampleDir, d_filesToLoad[d_nextFileId]);
+		const auto wavPath = rcls::JoinPath(config::sampleDir, filesToLoad_[nextFileId_]);
 		auto& lfd = rclmt::LoadFile(wavPath);
 		lfd.AddCallbacks([&](std::vector<uint8_t>& data) { this->onWaveIOComplete(data); },
 						 [&](uint32_t err) { this->onWaveIOError(err); }); }
 
 	void onWaveIOComplete(const std::vector<uint8_t>& data) {
-		const int fileId = d_nextFileId++;
-		const int waveId = d_nextWaveId++;
+		const int fileId = nextFileId_++;
+		const int waveId = nextWaveId_++;
 		MakeProgressLoadingWaves();
 
-		auto& fileName = d_filesToLoad[fileId];
+		auto& fileName = filesToLoad_[fileId];
 		auto baseName = fileName.substr(0, fileName.size() - 4);
 		waveTable_.Get(waveId) = ralw::MPCWave::Load(data, baseName);
-		// Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", d_nextWaveId, baseName));
-		d_loaderStateChanged.Emit();
+		// Log::GetInstance().info(fmt::sprintf("loaded wave %d \"%s\"", nextWaveId_, baseName));
+		loaderStateChanged_.Emit();
 
-		if (d_nextFileId >= d_filesToLoad.size()) {
+		if (nextFileId_ >= filesToLoad_.size()) {
 			onLoadingComplete(); }}
 
 	void onWaveIOError(int error) {
         auto& log = Log::GetInstance();
 		auto msg = fmt::sprintf("onWaveIOError %d", error);
         log.info(msg);
-		d_nextFileId++;
+		nextFileId_++;
 		MakeProgressLoadingWaves(); }
 
 	void onLoadingComplete() {
-		d_loading = false;
-		d_loaderStateChanged.Emit();
+		loading_ = false;
+		loaderStateChanged_.Emit();
 		SwitchPattern(0); }
 	//  END  wave-table loader
 
@@ -545,13 +544,13 @@ int CXLUnit::ConnectPlaybackPositionChanged(std::function<void(int)> fn) {
 int CXLUnit::ConnectPlaybackStateChanged(std::function<void(bool)> fn) {
 	return impl_->playbackStateChanged_.Connect(std::move(fn)); }
 int CXLUnit::ConnectLoaderStateChanged(std::function<void()> fn) {
-	return impl_->d_loaderStateChanged.Connect(std::move(fn)); }
+	return impl_->loaderStateChanged_.Connect(std::move(fn)); }
 void CXLUnit::DisconnectPlaybackPositionChanged(int id) {
 	impl_->playbackPositionChanged_.Disconnect(id); }
 void CXLUnit::DisconnectPlaybackStateChanged(int id) {
 	impl_->playbackStateChanged_.Disconnect(id); }
 void CXLUnit::DisconnectLoaderStateChanged(int id) {
-	impl_->d_loaderStateChanged.Disconnect(id); }
+	impl_->loaderStateChanged_.Disconnect(id); }
 
 std::string_view CXLUnit::GetVoiceParameterName(int ti, int pi) const {
 	return impl_->GetVoiceParameterName(ti, pi); }

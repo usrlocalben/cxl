@@ -12,20 +12,20 @@ namespace cxl {
 using ScanCode = rcls::ScanCode;
 
 PatternLengthEditController::PatternLengthEditController(int value)
-	:d_value(value), d_view{MakePatternLengthEditView(d_value)} {}
+	:value_(value), view_{MakePatternLengthEditView(value_)} {}
 
 
 bool PatternLengthEditController::HandleKeyEvent(TextKit::KeyEvent e) {
 	if (e.down && e.control==0) {
 		if (e.scanCode == ScanCode::Comma || e.scanCode == ScanCode::Period) {
 			int offset = (e.scanCode == ScanCode::Comma ? -16 : 16);
-			int newValue = std::clamp(d_value+offset, 16, 64);
-			if (newValue != d_value) {
-				d_value = newValue; }
+			int newValue = std::clamp(value_+offset, 16, 64);
+			if (newValue != value_) {
+				value_ = newValue; }
 			return true; }
 		if (e.scanCode == ScanCode::Enter) {
 			if (onSuccess) {
-				onSuccess(d_value);}
+				onSuccess(value_);}
 			return true; }
 		if (e.scanCode == ScanCode::Esc) {
 			if (onCancel) {

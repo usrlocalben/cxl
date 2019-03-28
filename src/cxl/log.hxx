@@ -18,7 +18,7 @@ public:
 	void info(const std::string& msg);
 
 	int GetHeadIdx() {
-		return d_head; }
+		return head_; }
 
 	const std::string& GetEntry(int relIdx, int from = 0x3f3f3f3f) {
 		if (from == 0x3f3f3f3f) {
@@ -26,14 +26,14 @@ public:
 		int ri = from - 1 - relIdx;
 		if (ri < 0) {
 			ri += 1024; }
-		return d_buf[ri]; }
+		return buf_[ri]; }
 
 public:
-	rclmt::Signal<void()> d_updated;
+	rclmt::Signal<void()> updated_;
 
 private:
-	int d_head = 0;
-	std::vector<std::string> d_buf; };
+	int head_ = 0;
+	std::vector<std::string> buf_; };
 
 
 }  // namespace cxl

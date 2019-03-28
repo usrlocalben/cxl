@@ -12,7 +12,7 @@
 namespace rqdq {
 namespace cxl {
 
-LoadingView::LoadingView(const CXLUnit& unit) :d_unit(unit) {}
+LoadingView::LoadingView(const CXLUnit& unit) :unit_(unit) {}
 
 
 std::pair<int, int> LoadingView::Pack(int w, int h) {
@@ -25,10 +25,10 @@ int LoadingView::GetType() {
 
 bool LoadingView::Refresh() {
 	bool updated = false;
-	float pct = d_unit.GetLoadingProgress();
-	if (pct != d_pct) {
+	float pct = unit_.GetLoadingProgress();
+	if (pct != pct_) {
 		updated = true;
-		d_pct = pct; }
+		pct_ = pct; }
 	return updated; }
 
 
@@ -37,17 +37,17 @@ const rcls::TextCanvas& LoadingView::Draw(int width, int height) {
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	bool updated = Refresh();
-	if (d_first || updated) {
-		d_first = false;
+	if (first_ || updated) {
+		first_ = false;
 		out.Resize(width, height);
 		out.Clear();
 		auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::White);
 		Fill(out, lo);
 		WriteXY(out, 0, 0, fmt::sprintf("Loading...", width, height));
-		WriteXY(out, 0, 1, d_unit.GetLoadingName());
-		DrawPercentageBar(out, 0, 2, 60, d_pct); }
+		WriteXY(out, 0, 1, unit_.GetLoadingName());
+		DrawPercentageBar(out, 0, 2, 60, pct_); }
 	return out; }
 
 

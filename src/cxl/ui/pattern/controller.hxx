@@ -38,24 +38,24 @@ private:
 	void PasteTrackPage();
 
 private:
-	CXLUnit& d_unit;
-	TextKit::MainLoop& d_loop;
-	EditorState d_state{};
-    std::optional<PatternLengthEditController> d_patternLengthEditController;
+	CXLUnit& unit_;
+	TextKit::MainLoop& loop_;
+	EditorState state_{};
+    std::optional<PatternLengthEditController> patternLengthEditController_;
 public:
-	PatternView d_view;
+	PatternView view_;
 
 private:
-	TapTempo d_tapTempo{};
-	int d_taps{0};
-	int d_nudgeDir{0};
-	int d_nudgeOldTempo{0};
+	TapTempo tapTempo_{};
+	int taps_{0};
+	int nudgeDir_{0};
+	int nudgeOldTempo_{0};
 
-	int d_timerId{-1};
-	rclmt::Event d_playbackPositionChangedEvent{rclmt::Event::MakeEvent()};
-	TextKit::KeyEvent d_prevKey{};
-	std::array<int, 16> d_clipboard;
-	int d_signalId{-1}; };
+	int timerId_{-1};
+	rclmt::Event playbackPositionChangedEvent_{rclmt::Event::MakeEvent()};
+	TextKit::KeyEvent prevKey_{};
+	std::array<int, 16> clipboard_;
+	int signalId_{-1}; };
 
 
 }  // namespace cxl

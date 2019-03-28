@@ -21,9 +21,9 @@ public:
 
 private:
 	bool Refresh();
-	std::string d_text;
-	rcls::TextCanvas d_canvas;
-	bool d_first{true}; };
+	std::string text_;
+	rcls::TextCanvas canvas_;
+	bool first_{true}; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakeAlert(const std::string& text) {

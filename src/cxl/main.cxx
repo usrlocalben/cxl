@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
 	CXLASIOHost host{unit};
 
-	rclmt::Delay(1000, [&]() {
+	rclmt::Delay(0, [&]() {
 		if (host.SetDriver(config::asioDriverName)) {
 			const std::array chans = { config::masterLeftDest, config::masterRightDest };
 			for (int ci=0; ci<2; ci++) {

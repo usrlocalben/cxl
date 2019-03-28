@@ -42,7 +42,7 @@ namespace cxl {
 
 
 PatternView::PatternView(const CXLUnit& unit, const EditorState& state)
-	:d_unit(unit), d_state(state) {}
+	:unit_(unit), state_(state) {}
 
 
 std::pair<int, int> PatternView::Pack(int w, int h) {
@@ -54,7 +54,7 @@ int PatternView::GetType() {
 
 
 const rcls::TextCanvas& PatternView::Draw(int width, int height) {
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	out.Resize(width, height);
 	out.Clear();
 	WriteXY(out, 2, 4, DrawTrackSelection());
@@ -63,11 +63,11 @@ const rcls::TextCanvas& PatternView::Draw(int width, int height) {
 	WriteXY(out, 1, height-3, DrawGrid());
 	WriteXY(out, 68, height-2, DrawPageIndicator());
 
-	if (d_popup) {
+	if (popup_) {
 		auto attr = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 		Fill(out, attr);
-		auto [sx, sy] = d_popup->Pack(-1, -1);
-		const auto& overlay = d_popup->Draw(sx, sy);
+		auto [sx, sy] = popup_->Pack(-1, -1);
+		const auto& overlay = popup_->Draw(sx, sy);
 		int xc = (width - overlay.d_width) / 2;
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }
@@ -81,22 +81,22 @@ const rcls::TextCanvas& PatternView::DrawTrackSelection() {
 	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue);
 	for (int ti = 0; ti < 4; ti++) {
-		auto isMuted = d_unit.IsTrackMuted(ti);
+		auto isMuted = unit_.IsTrackMuted(ti);
 		WriteXY(out, (ti- 0)*3+1, 0, tolower(kTrackNames[ti]), isMuted?lo:hi); }
 	for (int ti = 4; ti < 8; ti++) {
-		auto isMuted = d_unit.IsTrackMuted(ti);
+		auto isMuted = unit_.IsTrackMuted(ti);
 		WriteXY(out, (ti- 4)*3+1, 1, tolower(kTrackNames[ti]), isMuted?lo:hi); }
 	for (int ti = 8; ti <12; ti++) {
-		auto isMuted = d_unit.IsTrackMuted(ti);
+		auto isMuted = unit_.IsTrackMuted(ti);
 		WriteXY(out, (ti- 8)*3+1, 2, tolower(kTrackNames[ti]), isMuted?lo:hi); }
 	for (int ti =12; ti <16; ti++) {
-		auto isMuted = d_unit.IsTrackMuted(ti);
+		auto isMuted = unit_.IsTrackMuted(ti);
 		WriteXY(out, (ti-12)*3+1, 3, tolower(kTrackNames[ti]), isMuted?lo:hi); }
 
-	int selY = d_state.curTrack / 4;
-	int selX = (d_state.curTrack % 4) * 3 + 1;
-	auto isMuted = d_unit.IsTrackMuted(d_state.curTrack);
-	WriteXY(out, selX-1, selY, fmt::sprintf("[%s]", kTrackNames[d_state.curTrack]), isMuted?lo:hi);
+	int selY = state_.curTrack / 4;
+	int selX = (state_.curTrack % 4) * 3 + 1;
+	auto isMuted = unit_.IsTrackMuted(state_.curTrack);
+	WriteXY(out, selX-1, selY, fmt::sprintf("[%s]", kTrackNames[state_.curTrack]), isMuted?lo:hi);
 	return out; }
 
 
@@ -111,32 +111,32 @@ const rcls::TextCanvas& PatternView::DrawParameters() {
 	auto inactive = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Cyan);
 	auto active = rcls::MakeAttribute(rcls::Color::Cyan, rcls::Color::Black);
 
-	WriteXY(out, 0, 0, "Voice", d_state.curVoicePage==0?hi:lo);
-	WriteXY(out, 7, 0, "Effect", d_state.curVoicePage==1?hi:lo);
-	WriteXY(out, 15, 0, "Mix", d_state.curVoicePage==2?hi:lo);
+	WriteXY(out, 0, 0, "Voice", state_.curVoicePage==0?hi:lo);
+	WriteXY(out, 7, 0, "Effect", state_.curVoicePage==1?hi:lo);
+	WriteXY(out, 15, 0, "Mix", state_.curVoicePage==2?hi:lo);
 
 	// row 1
-	int page = d_state.curVoicePage;
+	int page = state_.curVoicePage;
 
 	int row = 0;
 	for (int pi=0; pi<4; pi++) {
-		const auto paramName = GetPageParameterName(d_unit, page, d_state.curTrack, pi);
+		const auto paramName = GetPageParameterName(unit_, page, state_.curTrack, pi);
 		if (!paramName.empty()) {
-			int value = GetPageParameterValue(d_unit, page, d_state.curTrack, pi);
-			WriteXY(out, 7*pi+2, row*2+0+1, paramName, d_state.curParam.value_or(-1) == pi ? active : inactive);
+			int value = GetPageParameterValue(unit_, page, state_.curTrack, pi);
+			WriteXY(out, 7*pi+2, row*2+0+1, paramName, state_.curParam.value_or(-1) == pi ? active : inactive);
 			WriteXY(out, 7*pi+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
 
 	// row 2
 	row = 1;
 	for (int pi=4; pi<8; pi++) {
-		const auto paramName = GetPageParameterName(d_unit, page, d_state.curTrack, pi);
+		const auto paramName = GetPageParameterName(unit_, page, state_.curTrack, pi);
 		if (!paramName.empty()) {
-			int value = GetPageParameterValue(d_unit, page, d_state.curTrack, pi);
-			WriteXY(out, 7*(pi-4)+2, row*2+0+1, paramName, d_state.curParam.value_or(-1) == pi ? active : inactive);
+			int value = GetPageParameterValue(unit_, page, state_.curTrack, pi);
+			WriteXY(out, 7*(pi-4)+2, row*2+0+1, paramName, state_.curParam.value_or(-1) == pi ? active : inactive);
 			WriteXY(out, 7*(pi-4)+0, row*2+1+1, fmt::sprintf("% 3d", value));}}
 
-	int waveId = d_unit.GetVoiceParameterValue(d_state.curTrack, 0);
-	auto waveName = d_unit.GetWaveName(waveId);
+	int waveId = unit_.GetVoiceParameterValue(state_.curTrack, 0);
+	auto waveName = unit_.GetWaveName(waveId);
 	WriteXY(out, 0, 4+1, fmt::sprintf("Wave: %s", waveName));
 	return out; }
 
@@ -149,20 +149,20 @@ const rcls::TextCanvas& PatternView::DrawGrid() {
 	auto dark = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 	Fill(out, lo);
 	WriteXY(out, 0, 0, "| .   .   .   . | .   .   .   . | .   .   .   . | .   .   .   . | ");
-	const int curPos = d_unit.GetPlayingNoteIndex();
+	const int curPos = unit_.GetPlayingNoteIndex();
 	const int curPage = curPos/16;
 	const int curPagePos = curPos%16;
 
-	if (curPage == d_state.curGridPage) {
+	if (curPage == state_.curGridPage) {
 		WriteXY(out, 2+curPagePos*4, 0, "o", hi); }
 
 	WriteXY(out, 0, 1, "|");
 	for (int i = 0; i < 16; i++) {
-		auto value = d_unit.GetTrackGridNote(d_state.curTrack, d_state.curGridPage*16+i);
+		auto value = unit_.GetTrackGridNote(state_.curTrack, state_.curGridPage*16+i);
 		WriteXY(out, i*4+2, 1, value != 0 ? "X" : " ", red);
 		WriteXY(out, i*4+4, 1, "|", lo); }
 
-	if (d_state.isRecording) {
+	if (state_.isRecording) {
 		WriteXY(out, 0, 2, "REC", red); }
 	else {
 		WriteXY(out, 0, 2, "rec", dark); }
@@ -171,8 +171,8 @@ const rcls::TextCanvas& PatternView::DrawGrid() {
 
 const rcls::TextCanvas& PatternView::DrawPageIndicator() {
 	static rcls::TextCanvas out{ 9, 1 };
-	int curPage = d_state.curGridPage;
-	int playingPage = d_unit.GetPlayingNoteIndex() / 16;
+	int curPage = state_.curGridPage;
+	int playingPage = unit_.GetPlayingNoteIndex() / 16;
 
 	auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Brown);
 	auto hi = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);
@@ -181,7 +181,7 @@ const rcls::TextCanvas& PatternView::DrawPageIndicator() {
 	WriteXY(out, 0, 0, "[. . . .]", lo);
 
 	for (int n=0; n<4; n++) {
-		if (d_unit.IsPlaying() && playingPage == n) {
+		if (unit_.IsPlaying() && playingPage == n) {
 			WriteXY(out, n*2+1, 0, "o", red); }
 		else if (curPage == n) {
 			WriteXY(out, n*2+1, 0, "o", hi); }

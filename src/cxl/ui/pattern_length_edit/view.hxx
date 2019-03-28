@@ -19,10 +19,10 @@ public:
 
 private:
 	bool Refresh();
-	const int& d_valueSrc;
+	const int& valueSrc_;
 
-	int d_value{0};
-	rcls::TextCanvas d_canvas; };
+	int value_{0};
+	rcls::TextCanvas canvas_; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakePatternLengthEditView(const int& value) {

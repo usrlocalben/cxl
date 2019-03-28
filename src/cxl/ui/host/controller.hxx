@@ -21,11 +21,11 @@ private:
 	void onHostUpdated();
 
 private:
-	CXLASIOHost& d_host;
-	TextKit::MainLoop& d_loop;
-	int d_signalId{-1};
+	CXLASIOHost& host_;
+	TextKit::MainLoop& loop_;
+	int signalId_{-1};
 public:
-	HostView d_view;};
+	HostView view_;};
 
 
 }  // namespace cxl

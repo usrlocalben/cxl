@@ -18,10 +18,10 @@ public:
 
 private:
 	bool Refresh();
-	const CXLUnit& d_unit;
-	float d_pct{0};
-	bool d_first{true};
-	rcls::TextCanvas d_canvas; };
+	const CXLUnit& unit_;
+	float pct_{0};
+	bool first_{true};
+	rcls::TextCanvas canvas_; };
 
 
 inline std::shared_ptr<TextKit::Widget> MakeLoadingView(const CXLUnit& unit) {

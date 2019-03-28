@@ -17,7 +17,7 @@ public:
 	int GetType() override;
 
 private:
-	rcls::TextCanvas d_canvas; };
+	rcls::TextCanvas canvas_; };
 
 
 }  // namespace cxl

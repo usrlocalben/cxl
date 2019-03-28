@@ -9,7 +9,7 @@
 namespace rqdq {
 namespace cxl {
 
-HostView::HostView(CXLASIOHost& host) :d_host(host) {}
+HostView::HostView(CXLASIOHost& host) :host_(host) {}
 
 
 std::pair<int, int> HostView::Pack(int w, int h) {
@@ -21,15 +21,15 @@ int HostView::GetType() {
 
 
 const rcls::TextCanvas& HostView::Draw(int width, int height) {
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	out.Resize(width, height);
 	out.Clear();
 
 	Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack));
 
-	auto driverName = d_host.GetRunningDriverName();
-	auto sampleRate = d_host.GetRunningSampleRate();
-	auto bufferSize = d_host.GetRunningBufferSize();
+	auto driverName = host_.GetRunningDriverName();
+	auto sampleRate = host_.GetRunningSampleRate();
+	auto bufferSize = host_.GetRunningBufferSize();
 
 	int xpos = 4;
 	int y = 4;

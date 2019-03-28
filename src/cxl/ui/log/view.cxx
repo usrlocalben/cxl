@@ -19,7 +19,7 @@ int LogView::GetType() {
 
 const rcls::TextCanvas& LogView::Draw(int width, int height) {
 	auto& log = Log::GetInstance();
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	out.Resize(width, height);
 	out.Clear();
 

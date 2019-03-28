@@ -73,41 +73,41 @@ constexpr auto kMuteKey{SC::M};
 namespace cxl {
 
 PatternController::PatternController(CXLUnit& unit, TextKit::MainLoop& loop)
-	:d_unit(unit), d_loop(loop), d_view(d_unit, d_state) {
+	:unit_(unit), loop_(loop), view_(unit_, state_) {
 	auto& reactor = rclmt::Reactor::GetInstance();
 
 	// XXX dtor should stop listening to these!
-	d_signalId = d_unit.ConnectPlaybackPositionChanged([&](int pos) {
+	signalId_ = unit_.ConnectPlaybackPositionChanged([&](int pos) {
 		// this is called from the ASIO thread.
 		// use a Reactor event to bounce to main
-		d_playbackPositionChangedEvent.Signal(); });
-	reactor.ListenMany(d_playbackPositionChangedEvent, [&]() {
-		d_loop.DrawScreenEventually(); }); }
+		playbackPositionChangedEvent_.Signal(); });
+	reactor.ListenMany(playbackPositionChangedEvent_, [&]() {
+		loop_.DrawScreenEventually(); }); }
 
 
 bool PatternController::HandleKeyEvent(const TextKit::KeyEvent e) {
 	auto result = HandleKeyEvent2(e);
-	d_prevKey = e;
+	prevKey_ = e;
 	return result; }
 
 
 void PatternController::KeyboardTick() {
-	const auto offset = d_state.knobDir;
+	const auto offset = state_.knobDir;
 	if (offset != 0) {
-		if (d_state.curParam) {
-			AdjustPageParameter(d_unit, d_state.curVoicePage, d_state.curTrack, d_state.curParam.value(), offset); }
-		else if (d_loop.IsKeyDown(kTempoKey)) {
-			d_unit.SetTempo(std::max(10, d_unit.GetTempo() + offset)); }
-		else if (d_loop.IsKeyDown(kSwingKey)) {
-			d_unit.SetSwing(std::clamp(d_unit.GetSwing() + offset, 50, 75)); }
+		if (state_.curParam) {
+			AdjustPageParameter(unit_, state_.curVoicePage, state_.curTrack, state_.curParam.value(), offset); }
+		else if (loop_.IsKeyDown(kTempoKey)) {
+			unit_.SetTempo(std::max(10, unit_.GetTempo() + offset)); }
+		else if (loop_.IsKeyDown(kSwingKey)) {
+			unit_.SetSwing(std::clamp(unit_.GetSwing() + offset, 50, 75)); }
 		else {
 			return; }
-		d_loop.DrawScreenEventually(); }}
+		loop_.DrawScreenEventually(); }}
 
 
 bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
-	if (d_patternLengthEditController) {
-		auto handled = d_patternLengthEditController->HandleKeyEvent(e);
+	if (patternLengthEditController_) {
+		auto handled = patternLengthEditController_->HandleKeyEvent(e);
 		if (handled) {
 			return true; }}
 
@@ -117,9 +117,9 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 	using SC = rcls::ScanCode;
 
 	if (up && key == kFnKey) {
-		if (d_state.subMode == SM_TAP_TEMPO) {
-			d_view.d_popup.reset();
-			d_state.subMode = SM_NONE; }
+		if (state_.subMode == SM_TAP_TEMPO) {
+			view_.popup_.reset();
+			state_.subMode = SM_NONE; }
 		return true; }
 
 	if (up && (key == kLeftKey || key == kRightKey)) {
@@ -132,21 +132,21 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 	if (paramSearch != cend(kParamScanLUT)) {
 		const auto paramIdx = std::distance(cbegin(kParamScanLUT), paramSearch);
 		if (down) {
-			d_state.curParam = paramIdx; }
+			state_.curParam = paramIdx; }
 		else {
-			if (d_state.curParam.value_or(-1) == paramIdx) {
-				d_state.curParam.reset(); }}
+			if (state_.curParam.value_or(-1) == paramIdx) {
+				state_.curParam.reset(); }}
 		return true; }
 
 
 	if (key == kDecKnob || key == kIncKnob) {
 		const int dir = key == kDecKnob ? -1 : 1;
 		if (down) {
-			d_state.knobDir = dir;
+			state_.knobDir = dir;
 			StartTick(); }
 		else {
-			if (d_state.knobDir == dir) {
-				d_state.knobDir = 0;
+			if (state_.knobDir == dir) {
+				state_.knobDir = 0;
 				StopTick(); }}
 		return true; }
 
@@ -170,113 +170,113 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 		// pattern length
 		if (fn) {
 			// open pattern length edit dialog
-			d_patternLengthEditController.emplace(d_unit.GetPatternLength());
-			d_view.d_popup = d_patternLengthEditController->d_view;
-			d_patternLengthEditController->onSuccess = [&](int newValue) {
-				d_view.d_popup.reset();
-				d_unit.SetPatternLength(newValue);
-				d_patternLengthEditController.reset(); };
-			d_patternLengthEditController->onCancel = [&]() {
-				d_view.d_popup.reset();
-				d_patternLengthEditController.reset(); }; }
+			patternLengthEditController_.emplace(unit_.GetPatternLength());
+			view_.popup_ = patternLengthEditController_->view_;
+			patternLengthEditController_->onSuccess = [&](int newValue) {
+				view_.popup_.reset();
+				unit_.SetPatternLength(newValue);
+				patternLengthEditController_.reset(); };
+			patternLengthEditController_->onCancel = [&]() {
+				view_.popup_.reset();
+				patternLengthEditController_.reset(); }; }
 		else {
 			// select next page
-			d_state.curGridPage++;
-			if (d_state.curGridPage >= d_unit.GetPatternLength()/16) {
-				d_state.curGridPage = 0; }}
+			state_.curGridPage++;
+			if (state_.curGridPage >= unit_.GetPatternLength()/16) {
+				state_.curGridPage = 0; }}
 		return true; }
 
 	if (key == kTempoKey) {
 		if (fn) {
 			// tap tempo
-			if (d_state.subMode == SM_NONE) {
-				if (!d_view.d_popup) {
-					d_state.subMode = SM_TAP_TEMPO;
-					d_tapTempo.Reset();
-					d_taps = 1;
-					d_view.d_popup = MakeTapTempoView(d_taps);
-					d_tapTempo.Tap(); }}
-			else if (d_state.subMode == SM_TAP_TEMPO) {
-				d_tapTempo.Tap();
-				d_taps++;
-				if (d_tapTempo.GetNumTaps() >= 4) {
-					Log::GetInstance().info(fmt::sprintf("tapTempo: %.4f", d_tapTempo.GetTempo()));
-					auto newTempo = static_cast<int>(d_tapTempo.GetTempo() * 10);
-					d_unit.SetTempo(newTempo); }}}
+			if (state_.subMode == SM_NONE) {
+				if (!view_.popup_) {
+					state_.subMode = SM_TAP_TEMPO;
+					tapTempo_.Reset();
+					taps_ = 1;
+					view_.popup_ = MakeTapTempoView(taps_);
+					tapTempo_.Tap(); }}
+			else if (state_.subMode == SM_TAP_TEMPO) {
+				tapTempo_.Tap();
+				taps_++;
+				if (tapTempo_.GetNumTaps() >= 4) {
+					Log::GetInstance().info(fmt::sprintf("tapTempo: %.4f", tapTempo_.GetTempo()));
+					auto newTempo = static_cast<int>(tapTempo_.GetTempo() * 10);
+					unit_.SetTempo(newTempo); }}}
 		return true; }
 
 	if (key == kRecordKey) {
 		// rec, copy
 		if (!fn) {
 			// toggle record
-			d_state.isRecording = !d_state.isRecording;
-			d_unit.CommitPattern(); }
+			state_.isRecording = !state_.isRecording;
+			unit_.CommitPattern(); }
 		else if (fn) {
 			// copy page if recording
-			if (d_state.isRecording) {
+			if (state_.isRecording) {
 				CopyTrackPage();  // copy page
-				d_view.d_popup = MakeAlert("copy page");
+				view_.popup_ = MakeAlert("copy page");
 				rclmt::Delay(kAlertDurationInMillis, [&]() {
-					d_view.d_popup.reset();
-					d_loop.DrawScreenEventually(); }); }}
+					view_.popup_.reset();
+					loop_.DrawScreenEventually(); }); }}
 		return true; }
 
 	if (key == kPlayKey) {
 		// play, clear
 		if (!fn) {
-			d_unit.Play(); }
+			unit_.Play(); }
 		else {
-			if (d_state.isRecording) {
+			if (state_.isRecording) {
 				ClearTrackPage();  // clear page
-				d_view.d_popup = MakeAlert("clear page");
+				view_.popup_ = MakeAlert("clear page");
 				rclmt::Delay(kAlertDurationInMillis, [&]() {
-					d_view.d_popup.reset();
-					d_loop.DrawScreenEventually(); }); }}
+					view_.popup_.reset();
+					loop_.DrawScreenEventually(); }); }}
 		return true; }
 
 	if (key == kStopKey) {
 		// stop, paste
 		if (!fn) {
-			d_unit.Stop(); }
+			unit_.Stop(); }
 		else {
-			if (d_state.isRecording) {
+			if (state_.isRecording) {
 				PasteTrackPage();  // paste page
-				d_view.d_popup = MakeAlert("paste page");
+				view_.popup_ = MakeAlert("paste page");
 				rclmt::Delay(kAlertDurationInMillis, [&]() {
-					d_view.d_popup.reset();
-					d_loop.DrawScreenEventually(); }); }}
+					view_.popup_.reset();
+					loop_.DrawScreenEventually(); }); }}
 		return true; }
 
 	if (key == kParamPageKey) {
-		d_state.curVoicePage = (d_state.curVoicePage+1)%3;
+		state_.curVoicePage = (state_.curVoicePage+1)%3;
 		return true; }
 
 	// kit load/save/change
 	if (key == kSaveKitKey) {
-		d_unit.SaveKit();
+		unit_.SaveKit();
 		return true; }
 	if (key == kLoadKitKey) {
-		d_unit.LoadKit();
+		unit_.LoadKit();
 		return true; }
 	if (key == kDecKitKey) {
-		d_unit.DecrementKit();
+		unit_.DecrementKit();
 		return true; }
 	if (key == kIncKitKey) {
-		d_unit.IncrementKit();
+		unit_.IncrementKit();
 		return true; }
 
 	// grid/track matrix keys 1-16
 	if (gridIdx > -1) {
 		if (fn) {
-			d_state.curTrack = gridIdx; }
-		else if (d_loop.IsKeyDown(kPatternLoadKey)) {
-			d_unit.SwitchPattern(gridIdx); }
-		else if (d_loop.IsKeyDown(kMuteKey)) {
-			d_unit.ToggleTrackMute(gridIdx); }
-		else if (d_state.isRecording) {
-			d_unit.ToggleTrackGridNote(d_state.curTrack, d_state.curGridPage*16+gridIdx); }
+			state_.curTrack = gridIdx; }
+		else if (loop_.IsKeyDown(kPatternLoadKey)) {
+			unit_.SwitchPattern(gridIdx); }
+		else if (loop_.IsKeyDown(kMuteKey)) {
+			unit_.ToggleTrackMute(gridIdx); }
+		else if (state_.isRecording) {
+			unit_.ToggleTrackGridNote(state_.curTrack, state_.curGridPage*16+gridIdx); }
 		else {
-			d_unit.Trigger(gridIdx); }
+			unit_.Trigger(gridIdx); }
 		return true; }
 
 	return false; }
@@ -284,53 +284,53 @@ bool PatternController::HandleKeyEvent2(const TextKit::KeyEvent e) {
 
 void PatternController::CopyTrackPage() {
 	for (int i=0; i<16; i++) {
-		auto note = d_unit.GetTrackGridNote(d_state.curTrack, d_state.curGridPage*16+i);
-		d_clipboard[i] = note; }}
+		auto note = unit_.GetTrackGridNote(state_.curTrack, state_.curGridPage*16+i);
+		clipboard_[i] = note; }}
 
 
 void PatternController::ClearTrackPage() {
 	for (int i=0; i<16; i++) {
-		d_unit.SetTrackGridNote(d_state.curTrack, d_state.curGridPage*16+i, 0); }}
+		unit_.SetTrackGridNote(state_.curTrack, state_.curGridPage*16+i, 0); }}
 
 
 void PatternController::PasteTrackPage() {
 	for (int i=0; i<16; i++) {
-		d_unit.SetTrackGridNote(d_state.curTrack, d_state.curGridPage*16+i, d_clipboard[i]); }}
+		unit_.SetTrackGridNote(state_.curTrack, state_.curGridPage*16+i, clipboard_[i]); }}
 
 
 void PatternController::StartTick() {
-	if (d_timerId == -1) {
-		d_timerId = rclmt::Repeat(1000.0/kKeyRateInHz, [&]() { KeyboardTick(); }); }}
+	if (timerId_ == -1) {
+		timerId_ = rclmt::Repeat(1000.0/kKeyRateInHz, [&]() { KeyboardTick(); }); }}
 
 
 void PatternController::StopTick() {
-	if (d_timerId != -1) {
-		rclmt::CancelRepeat(d_timerId);
-		d_timerId = -1; }}
+	if (timerId_ != -1) {
+		rclmt::CancelRepeat(timerId_);
+		timerId_ = -1; }}
 
 
 void PatternController::StartNudge(const int dir) {
 	assert(dir == -1 || dir == 1);
-	if (d_nudgeDir == dir) {
+	if (nudgeDir_ == dir) {
 		/* should be impossible. do nothing */ }
 	else {
-		if (d_nudgeDir == 0) {
-			d_nudgeOldTempo = d_unit.GetTempo(); }
-		auto offset = d_nudgeOldTempo * kNudgePct * dir;
-		auto newTempo = static_cast<int>(d_nudgeOldTempo + offset);
-		d_nudgeDir = dir;
-		d_unit.SetTempo(newTempo); }}
+		if (nudgeDir_ == 0) {
+			nudgeOldTempo_ = unit_.GetTempo(); }
+		auto offset = nudgeOldTempo_ * kNudgePct * dir;
+		auto newTempo = static_cast<int>(nudgeOldTempo_ + offset);
+		nudgeDir_ = dir;
+		unit_.SetTempo(newTempo); }}
 
 
 void PatternController::StopNudge(const int dir) {
 	assert(dir == -1 || dir == 1);
-	if (d_nudgeDir == dir) {
-		d_nudgeDir = 0;
-		d_unit.SetTempo(d_nudgeOldTempo); }}
+	if (nudgeDir_ == dir) {
+		nudgeDir_ = 0;
+		unit_.SetTempo(nudgeOldTempo_); }}
 
 
 PatternController::~PatternController() {
-	d_unit.DisconnectPlaybackPositionChanged(d_signalId);
+	unit_.DisconnectPlaybackPositionChanged(signalId_);
 	StopTick(); }
 
 

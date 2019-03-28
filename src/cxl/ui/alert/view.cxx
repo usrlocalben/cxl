@@ -11,11 +11,11 @@
 namespace rqdq {
 namespace cxl {
 
-Alert::Alert(std::string text) :d_text(std::move(text)) {}
+Alert::Alert(std::string text) :text_(std::move(text)) {}
 
 
 std::pair<int, int> Alert::Pack(int w, int h) {
-	return {d_text.length() + 2, 1 }; }
+	return {text_.length() + 2, 1 }; }
 
 
 int Alert::GetType() {
@@ -27,8 +27,8 @@ bool Alert::HandleKeyEvent(TextKit::KeyEvent e) {
 
 
 bool Alert::Refresh() {
-	if (d_first) {
-		d_first = false;
+	if (first_) {
+		first_ = false;
 		return true; }
 	return false; }
 
@@ -38,14 +38,14 @@ const rcls::TextCanvas& Alert::Draw(int width, int height) {
 	if (width != mySize.first || height != mySize.second) {
 		throw std::runtime_error("invalid dimensions given for fixed-size widget"); }
 
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	bool updated = Refresh();
 	if (updated) {
 		out.Resize(width, height);
 		out.Clear();
 		auto lo = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBrown);
 		Fill(out, lo);
-		WriteXY(out, 1, 0, d_text);}
+		WriteXY(out, 1, 0, text_);}
 
 	return out; }
 

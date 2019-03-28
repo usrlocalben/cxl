@@ -18,53 +18,53 @@ namespace cxl {
 
 using namespace std;
 
-CXLASIOHost::CXLASIOHost(CXLUnit& unit) :d_unit(unit) {}
+CXLASIOHost::CXLASIOHost(CXLUnit& unit) :unit_(unit) {}
 
 
 ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long index, ralio::ASIOBool processNow) {
 	using namespace rqdq::ralio;
 	static long processedSamples = 0;
 
-	long buffSize = d_bufPreferredSize;  // buffer size in samples
-	d_dl.resize(buffSize);
-	d_dr.resize(buffSize);
-	d_unit.Render(d_dl.data(), d_dr.data(), buffSize);
+	long buffSize = bufPreferredSize_*2;  // buffer size in samples
+	dl_.resize(buffSize);
+	dr_.resize(buffSize);
+	unit_.Render(dl_.data(), dr_.data(), buffSize);
 
 	// perform the processing
-	for (int i=0; i<d_numInputChannels+d_numOutputChannels; i++) {
+	for (int i=0; i<numInputChannels_+numOutputChannels_; i++) {
 
-		if (!static_cast<bool>(d_bufferInfos[i].isInput)) {
+		if (!static_cast<bool>(bufferInfos_[i].isInput)) {
 			float* srcPtr = nullptr;
-			if (i == d_leftIdx) {
-				srcPtr = d_dl.data(); }
-			else if (i == d_rightIdx) {
-				srcPtr = d_dr.data(); }
+			if (i == leftIdx_) {
+				srcPtr = dl_.data(); }
+			else if (i == rightIdx_) {
+				srcPtr = dr_.data(); }
 			else {
 				continue; }
 
-			switch (d_channelInfos[i].type) {
+			switch (channelInfos_[i].type) {
 			case ASIOSTInt16LSB: {
-				auto dst = static_cast<int16_t*>(d_bufferInfos[i].buffers[index]);
+				auto dst = static_cast<int16_t*>(bufferInfos_[i].buffers[index]);
 				for (int si=0; si<buffSize; si++) {
 					dst[si] = static_cast<int16_t>(srcPtr[si] * std::numeric_limits<int16_t>::max());}}
 				break;
 			// case ASIOSTInt24LSB:		// used for 20 bits as well
-			//	memset (d_bufferInfos[i].buffers[index], 0, buffSize * 3);
+			//	memset (bufferInfos_[i].buffers[index], 0, buffSize * 3);
 			//	break;
 			case ASIOSTInt32LSB: {
-				auto dst = static_cast<int32_t*>(d_bufferInfos[i].buffers[index]);
+				auto dst = static_cast<int32_t*>(bufferInfos_[i].buffers[index]);
 				for (int si=0; si<buffSize; si++) {
 					dst[si] = static_cast<int32_t>(srcPtr[si] * std::numeric_limits<int32_t>::max());}}
 				break;
 			case ASIOSTFloat32LSB: {
 				// IEEE 754 32 bit float, as found on Intel x86 architecture
-				auto dst = static_cast<float*>(d_bufferInfos[i].buffers[index]);
+				auto dst = static_cast<float*>(bufferInfos_[i].buffers[index]);
 				for (int si=0; si<buffSize; si++) {
 					dst[si] = srcPtr[si];}}
 				break;
 			case ASIOSTFloat64LSB: {
 				// IEEE 754 64 bit double float, as found on Intel x86 architecture
-				auto dst = static_cast<double*>(d_bufferInfos[i].buffers[index]);
+				auto dst = static_cast<double*>(bufferInfos_[i].buffers[index]);
 				for (int si=0; si<buffSize; si++) {
 					dst[si] = srcPtr[si];}}
 				break;
@@ -76,23 +76,23 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 			case ASIOSTInt32LSB18:		// 32 bit data with 18 bit alignment
 			case ASIOSTInt32LSB20:		// 32 bit data with 20 bit alignment
 			case ASIOSTInt32LSB24:		// 32 bit data with 24 bit alignment
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 4);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 4);
 				break;
 
 			case ASIOSTInt16MSB:
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 2);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 2);
 				break;
 			case ASIOSTInt24MSB:		// used for 20 bits as well
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 3);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 3);
 				break;
 			case ASIOSTInt32MSB:
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 4);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 4);
 				break;
 			case ASIOSTFloat32MSB:		// IEEE 754 32 bit float, as found on Intel x86 architecture
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 4);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 4);
 				break;
 			case ASIOSTFloat64MSB: 		// IEEE 754 64 bit double float, as found on Intel x86 architecture
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 8);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 8);
 				break;
 
 				// these are used for 32 bit data buffer, with different alignment of the data inside
@@ -101,15 +101,15 @@ ralio::ASIOTime* CXLASIOHost::onBufferReadyEx(ralio::ASIOTime* timeInfo, long in
 			case ASIOSTInt32MSB18:		// 32 bit data with 18 bit alignment
 			case ASIOSTInt32MSB20:		// 32 bit data with 20 bit alignment
 			case ASIOSTInt32MSB24:		// 32 bit data with 24 bit alignment
-				memset (d_bufferInfos[i].buffers[index], 0, buffSize * 4);
+				memset (bufferInfos_[i].buffers[index], 0, buffSize * 4);
 				break;
 */
 			default:
-				// wtf = d_channelInfos[i].type;
+				// wtf = channelInfos_[i].type;
 				break; }}}
 
 	// finally if the driver supports the ASIOOutputReady() optimization, do it here, all data are in place
-	//if (d_supportsOutputReadyOptimization) {
+	//if (supportsOutputReadyOptimization_) {
 	//	asio.SignalOutputReady(); }
 
 	processedSamples += buffSize;
@@ -192,38 +192,38 @@ bool CXLASIOHost::SetDriver(std::string_view name) {
 		log.info(msg);
 		return false; }
 
-	d_wantedDriver = name;
-	if (d_state == State::Running) {
+	wantedDriver_ = name;
+	if (state_ == State::Running) {
 		Restart(); }
 	return true; }
 
 
 void CXLASIOHost::SetChannel(const std::string& driverName, int num, std::string_view name) {
-	d_wantedChannels[driverName][num] = name;
-	if (driverName == d_driverName) {
+	wantedChannels_[driverName][num] = name;
+	if (driverName == driverName_) {
 		Restart(); }}
 
 
 void CXLASIOHost::Start() {
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	auto& log = Log::GetInstance();
-	if (d_state == State::Running) {
+	if (state_ == State::Running) {
 		return; }
 
-	int idx = asio.FindDriver(d_wantedDriver);
+	int idx = asio.FindDriver(wantedDriver_);
 	assert(idx > -1);
 
 	try {
 		asio.OpenDriver(idx); }
 	catch (const std::exception& err) {
-		d_driverName = "error";
+		driverName_ = "error";
 		auto msg = fmt::sprintf("ASIO OpenDriver error: %s", err.what());
 		log.info(msg);
-		d_updated.Emit();
-		d_state = State::Failed;
+		updated_.Emit();
+		state_ = State::Failed;
 		return; }
 
-    d_driverName = d_wantedDriver;
+    driverName_ = wantedDriver_;
 
 	const auto info = asio.Init(nullptr);
 
@@ -237,82 +237,81 @@ void CXLASIOHost::Start() {
 
 	//asio.ShowControlPanel();
 
-	std::tie(d_numInputChannels, d_numOutputChannels) = asio.GetChannels();
-	std::tie(d_bufMinSize, d_bufMaxSize, d_bufPreferredSize, d_bufGranularity) = asio.GetBufferSize();
+	std::tie(numInputChannels_, numOutputChannels_) = asio.GetChannels();
+	std::tie(bufMinSize_, bufMaxSize_, bufPreferredSize_, bufGranularity_) = asio.GetBufferSize();
 
 	asio.SetSampleRate(44100.0);
-	d_sampleRate = asio.GetSampleRate();
-	if (d_sampleRate < 0.0 || d_sampleRate > 96000.0) {
+	sampleRate_ = asio.GetSampleRate();
+	if (sampleRate_ < 0.0 || sampleRate_ > 96000.0) {
 		// sampleRate may not be set, try setting it...
 		asio.SetSampleRate(44100.0);
-		d_sampleRate = asio.GetSampleRate(); }
+		sampleRate_ = asio.GetSampleRate(); }
 
-	d_supportsOutputReadyOptimization = asio.SignalOutputReady();
+	supportsOutputReadyOptimization_ = asio.SignalOutputReady();
 
-	d_bufferInfos.resize(d_numInputChannels+d_numOutputChannels);
-	d_channelInfos.resize(d_numInputChannels+d_numOutputChannels);
+	bufferInfos_.resize(numInputChannels_+numOutputChannels_);
+	channelInfos_.resize(numInputChannels_+numOutputChannels_);
 	idx = 0;
-	for (int i=0; i<d_numInputChannels; i++) {
-		auto& info = d_bufferInfos[idx++];
+	for (int i=0; i<numInputChannels_; i++) {
+		auto& info = bufferInfos_[idx++];
 		info.isInput = ralio::ASIOTrue;
 		info.channelNum = i;
 		info.buffers[0] = info.buffers[1] = nullptr; }
-	for (int i=0; i<d_numOutputChannels; i++) {
-		auto& info = d_bufferInfos[idx++];
+	for (int i=0; i<numOutputChannels_; i++) {
+		auto& info = bufferInfos_[idx++];
 		info.isInput = ralio::ASIOFalse;
 		info.channelNum = i;
 		info.buffers[0] = info.buffers[1] = nullptr; }
 
-	asio.CreateBuffers(d_bufferInfos.data(),
-	                   d_numInputChannels + d_numOutputChannels,
-	                   d_bufPreferredSize,
+	asio.CreateBuffers(bufferInfos_.data(),
+	                   numInputChannels_ + numOutputChannels_,
+	                   bufPreferredSize_*2,
 	                   MakeASIOCallbacks());
 
-	for (int i=0; i<d_numInputChannels+d_numOutputChannels; i++) {
-		d_channelInfos[i] = asio.GetChannelInfo(d_bufferInfos[i].isInput != 0, d_bufferInfos[i].channelNum); }
+	for (int i=0; i<numInputChannels_+numOutputChannels_; i++) {
+		channelInfos_[i] = asio.GetChannelInfo(bufferInfos_[i].isInput != 0, bufferInfos_[i].channelNum); }
 
-	d_leftIdx = -1;
-	d_rightIdx = -1;
+	rightIdx_ = -1;
 	for (int ci=0; ci<2; ci++) {
-		auto& name = d_wantedChannels[d_driverName][ci];
+		auto& name = wantedChannels_[driverName_][ci];
 		LinkChannel(ci, name); }
 
 	asio.Start();
-	d_state = State::Running;
+	state_ = State::Running;
 	log.info("host: Running");
-	d_updated.Emit(); }
+	updated_.Emit(); }
 
 
 void CXLASIOHost::LinkChannel(const int num, std::string_view name) {
 	auto& log = Log::GetInstance();
 
 	int foundIdx = -1;
-	for (int i=0; i<d_numInputChannels+d_numOutputChannels; i++) {
-		const auto& info = d_channelInfos[i];
+	for (int i=0; i<numInputChannels_+numOutputChannels_; i++) {
+		const auto& info = channelInfos_[i];
 		if (!info.isInput) {
 			if (info.name == name) {
 				foundIdx = i; }}}
 
 	if (num == 0) {
 		log.info(fmt::sprintf("linked left output to %d", foundIdx));
-		d_leftIdx = foundIdx; }
+		leftIdx_ = foundIdx; }
 	else if (num == 1) {
 		log.info(fmt::sprintf("linked right output to %d", foundIdx));
-		d_rightIdx = foundIdx; }
+		rightIdx_ = foundIdx; }
 	else {
 		log.info(fmt::sprintf("refusing to attach host to channel %d", num)); }}
 
 
 void CXLASIOHost::Stop() {
-	if (d_state == State::Stopped) {
+	if (state_ == State::Stopped) {
 		return; }
 	auto& asio = ralio::ASIOSystem::GetInstance();
 	asio.Stop();
 	asio.DisposeBuffers();
-	d_state = State::Stopped;
+	state_ = State::Stopped;
 	auto& log = Log::GetInstance();
 	log.info("host: Stopped");
-	d_updated.Emit(); }
+	updated_.Emit(); }
 
 
 void CXLASIOHost::Restart() {
@@ -322,7 +321,7 @@ void CXLASIOHost::Restart() {
 
 CXLASIOHost::~CXLASIOHost() {
 	auto& asio = ralio::ASIOSystem::GetInstance();
-	if (d_state == State::Running) {
+	if (state_ == State::Running) {
 		Stop(); }
 	asio.Exit(); }
 

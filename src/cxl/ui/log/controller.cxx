@@ -6,18 +6,18 @@
 namespace rqdq {
 namespace cxl {
 
-LogController::LogController(TextKit::MainLoop& loop) :d_loop(loop) {
+LogController::LogController(TextKit::MainLoop& loop) :loop_(loop) {
 	auto& log = Log::GetInstance();
-	d_signalId = log.d_updated.Connect([&]() { onLogWrite(); }); }
+	signalId_ = log.updated_.Connect([&]() { onLogWrite(); }); }
 
 
 void LogController::onLogWrite() {
-	d_loop.DrawScreenEventually(); }
+	loop_.DrawScreenEventually(); }
 
 
 LogController::~LogController() {
 	auto& log = Log::GetInstance();
-	log.d_updated.Disconnect(d_signalId); }
+	log.updated_.Disconnect(signalId_); }
 
 
 }  // namespace cxl

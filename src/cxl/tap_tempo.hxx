@@ -19,12 +19,12 @@ public:
 	void Reset();
 	double GetTempo();
 	int GetNumSamples() const;
-	int GetNumTaps() const { return d_tapCnt; }
+	int GetNumTaps() const { return tapCnt_; }
 
 private:
-	rcls::Timer d_timer;
-	int d_tapCnt{0};
-	std::array<double, kMaxTapTempoSamples> d_samples; };
+	rcls::Timer timer_;
+	int tapCnt_{0};
+	std::array<double, kMaxTapTempoSamples> samples_; };
 
 
 }  // namespace cxl

@@ -23,41 +23,41 @@ namespace rqdq {
 namespace cxl {
 
 RootController::RootController(CXLUnit& unit, CXLASIOHost& host)
-	:d_unit(unit),
-	d_host(host),
-	d_patternController(unit, d_loop),
-	d_logController(d_loop),
-	d_hostController(d_host, d_loop),
-	d_splashController(d_loop),
-	d_view{d_unit, d_hostController.d_view, d_patternController.d_view, d_logController.d_view, d_mode} {
+	:unit_(unit),
+	host_(host),
+	patternController_(unit, loop_),
+	logController_(loop_),
+	hostController_(host_, loop_),
+	splashController_(loop_),
+	view_{unit_, hostController_.view_, patternController_.view_, logController_.view_, mode_} {
 
 	auto& reactor = rclmt::Reactor::GetInstance();
 
-	d_unitPlaybackStateChangedSignalId = d_unit.ConnectPlaybackStateChanged([&](int playing) {
-		d_playbackStateChangedEvent.Signal(); });
-	reactor.ListenMany(d_playbackStateChangedEvent, [&]() {
-		d_loop.DrawScreenEventually(); });
+	unitPlaybackStateChangedSignalId_ = unit_.ConnectPlaybackStateChanged([&](int playing) {
+		playbackStateChangedEvent_.Signal(); });
+	reactor.ListenMany(playbackStateChangedEvent_, [&]() {
+		loop_.DrawScreenEventually(); });
 
-	d_unitLoaderStateChangedSignalId = d_unit.ConnectLoaderStateChanged([&]() {
+	unitLoaderStateChangedSignalId_ = unit_.ConnectLoaderStateChanged([&]() {
 		onLoaderStateChange(); });
 
-	d_splashCompleteSignalId = d_splashController.onComplete.Connect([&]() {
+	splashCompleteSignalId_ = splashController_.onComplete.Connect([&]() {
 		// can't reset() the Splash ptr while onComplete is firing
 		// so queue this to run from the reactor
 		rclmt::Delay(0, [&]() {
-			d_view.d_splash.reset();
-			d_loop.DrawScreenEventually(); }); });
-	d_view.d_splash = d_splashController.d_view; }
+			view_.splash_.reset();
+			loop_.DrawScreenEventually(); }); });
+	view_.splash_ = splashController_.view_; }
 
 
 void RootController::Run() {
-	d_loop.DrawScreenEventually();
-	d_loop.d_widget = this;
-	d_loop.Run(); }
+	loop_.DrawScreenEventually();
+	loop_.d_widget = this;
+	loop_.Run(); }
 
 
 void RootController::IncrementMode() {
-	d_mode = (d_mode+1)%(UI_MODES.size()); }
+	mode_ = (mode_+1)%(UI_MODES.size()); }
 
 
 bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
@@ -72,26 +72,26 @@ bool RootController::HandleKeyEvent(const TextKit::KeyEvent e) {
 		IncrementMode();
 		return true; }
 
-	if (d_mode == UM_PATTERN) {
-		return d_patternController.HandleKeyEvent(e); }
+	if (mode_ == UM_PATTERN) {
+		return patternController_.HandleKeyEvent(e); }
 	return false; }
 
 
 void RootController::onLoaderStateChange() {
 	auto& log = Log::GetInstance();
-	if (d_unit.IsLoading()) {
-		if (!d_view.d_loading) {
-			d_view.d_loading = MakeLoadingView(d_unit); }}
+	if (unit_.IsLoading()) {
+		if (!view_.loading_) {
+			view_.loading_ = MakeLoadingView(unit_); }}
 	else {
-		if (d_view.d_loading) {
-			d_view.d_loading.reset(); }}
-	d_loop.DrawScreenEventually(); }
+		if (view_.loading_) {
+			view_.loading_.reset(); }}
+	loop_.DrawScreenEventually(); }
 
 
 RootController::~RootController() {
-	d_unit.DisconnectPlaybackStateChanged(d_unitPlaybackStateChangedSignalId);
-	d_unit.DisconnectLoaderStateChanged(d_unitLoaderStateChangedSignalId);
-	d_splashController.onComplete.Disconnect(d_splashCompleteSignalId); }
+	unit_.DisconnectPlaybackStateChanged(unitPlaybackStateChangedSignalId_);
+	unit_.DisconnectLoaderStateChanged(unitLoaderStateChangedSignalId_);
+	splashController_.onComplete.Disconnect(splashCompleteSignalId_); }
 
 
 }  // namespace cxl

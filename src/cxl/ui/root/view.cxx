@@ -22,11 +22,11 @@ RootView::RootView(const CXLUnit& unit,
 				   LogView& logView,
 				   const int& mode
 				   )
-	:d_unit(unit),
-	d_hostView(hostView),
-	d_patternView(patternView),
-	d_logView(logView),
-	d_mode(mode) {}
+	:unit_(unit),
+	hostView_(hostView),
+	patternView_(patternView),
+	logView_(logView),
+	mode_(mode) {}
 
 
 std::pair<int, int> RootView::Pack(int w, int h) {
@@ -38,35 +38,35 @@ int RootView::GetType() {
 
 
 const rcls::TextCanvas& RootView::Draw(int width, int height) {
-	auto& out = d_canvas;
+	auto& out = canvas_;
 	out.Resize(width, height);
 	out.Clear();
 	WriteXY(out, 0, 0, DrawHeader(width));
 
 	WriteXY(out, 0, height-1, DrawTransportIndicator(width));
 
-	if (d_mode == UM_PATTERN) {
-		const auto& overlay = d_patternView.Draw(width, height-2);
+	if (mode_ == UM_PATTERN) {
+		const auto& overlay = patternView_.Draw(width, height-2);
 		WriteXY(out, 0, 1, overlay); }
-	else if (d_mode == UM_LOG) {
-		const auto& overlay = d_logView.Draw(width, height-2);
+	else if (mode_ == UM_LOG) {
+		const auto& overlay = logView_.Draw(width, height-2);
 		WriteXY(out, 0, 1, overlay); }
-	else if (d_mode == UM_HOST) {
-		const auto& overlay = d_hostView.Draw(width, height-2);
+	else if (mode_ == UM_HOST) {
+		const auto& overlay = hostView_.Draw(width, height-2);
 		WriteXY(out, 0, 1, overlay); }
 
-	if (d_loading) {
+	if (loading_) {
 		auto attr = rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlack);
 		Fill(out, attr);
-		auto [sx, sy] = d_loading->Pack(-1, -1);
-		const auto& overlay = d_loading->Draw(sx, sy);
+		auto [sx, sy] = loading_->Pack(-1, -1);
+		const auto& overlay = loading_->Draw(sx, sy);
 		int xc = (width - overlay.d_width) / 2;
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }
 
-	if (d_splash) {
-		auto [sx, sy] = d_splash->Pack(-1, -1);
-		const auto& overlay = d_splash->Draw(sx, sy);
+	if (splash_) {
+		auto [sx, sy] = splash_->Pack(-1, -1);
+		const auto& overlay = splash_->Draw(sx, sy);
 		int xc = (width - overlay.d_width) / 2;
 		int yc = (height - overlay.d_height) / 2;
 		WriteXY(out, xc, yc, overlay); }
@@ -84,19 +84,6 @@ const rcls::TextCanvas& RootView::DrawHeader(int width) {
 	return out; }
 
 
-/*
-XXX
-const rcls::TextCanvas& RootView::DrawKeyHistory() {
-	static rcls::TextCanvas out{ 10, 8 };
-	out.Clear();
-	Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::Blue));
-	int row = 0;
-	for (const auto& item : d_keyHistory) {
-		WriteXY(out, 0, row++, item); }
-	return out; }
-*/
-
-
 const rcls::TextCanvas& RootView::DrawTransportIndicator(int width) {
 	static rcls::TextCanvas out{ width, 1 };
 	out.Clear();
@@ -108,13 +95,13 @@ const rcls::TextCanvas& RootView::DrawTransportIndicator(int width) {
 	//Fill(out, rcls::MakeAttribute(rcls::Color::Black, rcls::Color::StrongBlue));
 	std::string s;
 	WriteXY(out, 1, 0, "Pattern: ", lo);
-	WriteXY(out, 10, 0, fmt::sprintf("A-%d", d_unit.GetCurrentPatternNumber()+1), hi);
+	WriteXY(out, 10, 0, fmt::sprintf("A-%d", unit_.GetCurrentPatternNumber()+1), hi);
 
 	WriteXY(out, 14, 0, "| Kit: ", lo);
-	WriteXY(out, 21, 0, fmt::sprintf("%d", d_unit.GetCurrentKitNumber()+1), hi);
+	WriteXY(out, 21, 0, fmt::sprintf("%d", unit_.GetCurrentKitNumber()+1), hi);
 
-	int swing = d_unit.GetSwing();
-	int tempo = d_unit.GetTempo();
+	int swing = unit_.GetSwing();
+	int tempo = unit_.GetTempo();
 	int whole = tempo/10;
 	int tenths = tempo%10;
 
@@ -123,7 +110,7 @@ const rcls::TextCanvas& RootView::DrawTransportIndicator(int width) {
 	WriteXY(out, width-30, 0, s, hi);
 	WriteXY(out, width-20, 0, fmt::sprintf("%d%%", swing), swing==50?lo:higreen);
 	WriteXY(out, width-16, 0, "|", lo);
-	WriteXY(out, width-14, 0, d_unit.IsPlaying() ? "PLAYING" : "STOPPED", d_unit.IsPlaying() ? higreen : lo);
+	WriteXY(out, width-14, 0, unit_.IsPlaying() ? "PLAYING" : "STOPPED", unit_.IsPlaying() ? higreen : lo);
 	WriteXY(out, width-6, 0, "|", lo);
 	// XXX WriteXY(out, width-4, 0, d_isRecording ? "REC" : "rec", d_isRecording ? hired : lo);
 	return out; }

@@ -17,7 +17,7 @@ namespace cxl {
 
 Log::Log() {
 	logPath = rcls::JoinPath(cxl::config::dataDir, "message.log");
-	d_buf.resize(1024); }
+	buf_.resize(1024); }
 
 
 Log& Log::GetInstance() {
@@ -33,11 +33,11 @@ void Log::info(const std::string& msg) {
 	// std::ofstream fd(logPath, std::ios_base::app);
 	// fd << msg << "\n";
 
-	d_buf[d_head].assign(msg);
-	d_head++;
-	if (d_head >= 1024) {
-		d_head = 0; }
-	d_updated.Emit(); }
+	buf_[head_].assign(msg);
+	head_++;
+	if (head_ >= 1024) {
+		head_ = 0; }
+	updated_.Emit(); }
 
 
 }  // namespace cxl
