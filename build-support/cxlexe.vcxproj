@@ -178,6 +178,7 @@
     <ClCompile Include="$(SolutionDir)\src\cxl\host.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\log.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\main.cxx" />
+    <ClCompile Include="$(SolutionDir)\src\cxl\sequencer.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\tap_tempo.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\alert\view.cxx" />
     <ClCompile Include="$(SolutionDir)\src\cxl\ui\host\controller.cxx" />
@@ -207,7 +208,6 @@
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_sampler.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\raldsp\raldsp_syncdelay.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\ralio\ralio_asio.cxx" />
-    <ClCompile Include="$(SolutionDir)\src\ral\ralm\ralm_grid_sequencer.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_mpcwave.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_wavetable.cxx" />
     <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_wavfile.cxx" />

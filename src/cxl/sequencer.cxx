@@ -1,8 +1,8 @@
-#include "src/ral/ralm/ralm_grid_sequencer.hxx"
+#include "sequencer.hxx"
 
 #include <algorithm>
 #include <cmath>
-#include <iostream>
+#include <optional>
 
 #include "src/ral/raldsp/raldsp_sampler.hxx"
 
@@ -35,76 +35,76 @@ double ComputeSamplesPerPoint(double bpm) {
 
 }  // namespace
 
-namespace ralm {
+namespace cxl {
 
 GridSequencer::GridSequencer() = default;
 
 
 void GridSequencer::SetTempo(const int bpm) {
-	d_tempoInBPM = bpm; }
+	tempoInBPM_ = bpm; }
 
 
 int GridSequencer::GetTempo() const {
-	return d_tempoInBPM; }
+	return tempoInBPM_; }
 
 
 void GridSequencer::SetSwing(int pct) {
-	d_swingPct = std::clamp(pct, 50, 75); }
+	swingPct_ = std::clamp(pct, 50, 75); }
 
 
 int GridSequencer::GetSwing() const {
-	return d_swingPct; }
+	return swingPct_; }
 
 
 void GridSequencer::AddTrack(raldsp::SingleSampler& voice, std::optional<int> muteGroupId) {
-	d_tracks.emplace_back(&voice, muteGroupId); }
+	tracks_.emplace_back(&voice, muteGroupId); }
 
 
 bool GridSequencer::Update() {
 	bool updated = false;
-	if (d_state==PlayerState::Stopped && d_nextState==PlayerState::Playing) {
+	if (state_==PlayerState::Stopped && wantedState_==PlayerState::Playing) {
 		updated = true;
-		d_state = PlayerState::Playing;
-		d_pointSamplesError = 0;
-		d_pointTimeRemainingInSamples = 0;
-		d_noteTimeRemainingInPoints = 0;
-		d_noteIdx = -1;
-		d_timeInPoints = 0; }
-	if (d_state==PlayerState::Playing && d_nextState==PlayerState::Stopped) {
+		state_ = PlayerState::Playing;
+		pointSamplesError_ = 0;
+		pointTimeRemainingInSamples_ = 0;
+		noteTimeRemainingInPoints_ = 0;
+		noteIdx_ = -1;
+		timeInPoints_ = 0; }
+	if (state_==PlayerState::Playing && wantedState_==PlayerState::Stopped) {
 		updated = true;
-		d_state = PlayerState::Stopped;
-		d_timeInPoints = 0; }
+		state_ = PlayerState::Stopped;
+		timeInPoints_ = 0; }
 	return updated; }
 
 
 bool GridSequencer::Process() {
 	bool updated = false;
-	if (d_state == PlayerState::Playing) {
-		if (--d_pointTimeRemainingInSamples <= 0) {
-			auto onePointInSamples = ComputeSamplesPerPoint(d_tempoInBPM/10.0);
-			auto needed = onePointInSamples + d_pointSamplesError;
-			d_pointTimeRemainingInSamples = static_cast<int>(needed);
-			d_pointSamplesError = needed - d_pointTimeRemainingInSamples;
-			d_timeInPoints++;
-			if (--d_noteTimeRemainingInPoints <= 0) {
-				d_noteIdx = (d_noteIdx + 1) % d_patternLength;
-				d_noteTimeRemainingInPoints = ComputeSwing(d_noteIdx, d_swingPct);
+	if (state_ == PlayerState::Playing) {
+		if (--pointTimeRemainingInSamples_ <= 0) {
+			auto onePointInSamples = ComputeSamplesPerPoint(tempoInBPM_/10.0);
+			auto needed = onePointInSamples + pointSamplesError_;
+			pointTimeRemainingInSamples_ = static_cast<int>(needed);
+			pointSamplesError_ = needed - pointTimeRemainingInSamples_;
+			timeInPoints_++;
+			if (--noteTimeRemainingInPoints_ <= 0) {
+				noteIdx_ = (noteIdx_ + 1) % patternLength_;
+				noteTimeRemainingInPoints_ = ComputeSwing(noteIdx_, swingPct_);
 				updated = true;
 				TriggerCurrentNote(); }}}
 	return updated; }
 
 
 void GridSequencer::TriggerCurrentNote() {
-	for (auto& track : d_tracks) {
-		if (track.grid[d_noteIdx] != 0 && !track.isMuted) {
+	for (auto& track : tracks_) {
+		if (track.grid[noteIdx_] != 0 && !track.isMuted) {
 			track.voice->Trigger(48, 1.0, 0);
 			if (track.muteGroupId) {
-				for (auto& other : d_tracks) {
+				for (auto& other : tracks_) {
 					if (&track != &other &&
 						other.muteGroupId &&
 						other.muteGroupId.value() == track.muteGroupId.value()) {
 						other.voice->Stop(); }}}}}}
 
 
-}  // namespace ralm
+}  // namespace cxl
 }  // namespace rqdq

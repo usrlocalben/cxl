@@ -90,8 +90,8 @@
     <ClCompile Include="$(SolutionDir)\src\ral\ralio\ralio_asio.cxx">
       <Filter>ral</Filter>
     </ClCompile>
-    <ClCompile Include="$(SolutionDir)\src\ral\ralm\ralm_grid_sequencer.cxx">
-      <Filter>ral</Filter>
+    <ClCompile Include="$(SolutionDir)\src\cxl\sequencer.cxx">
+      <Filter>cxl</Filter>
     </ClCompile>
     <ClCompile Include="$(SolutionDir)\src\ral\ralw\ralw_mpcwave.cxx">
       <Filter>ral</Filter>

@@ -8,7 +8,6 @@
       <AdditionalIncludeDirectories>
 	$(SolutionDir)\src\ral\ralio;
 	$(SolutionDir)\src\ral\raldsp;
-	$(SolutionDir)\src\ral\ralm;
 	$(SolutionDir)\src\ral\ralw;
 	$(SolutionDir)\src\rcl\rclma;
 	$(SolutionDir)\src\rcl\rclmt;
