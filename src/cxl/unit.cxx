@@ -61,7 +61,7 @@ public:
 		voices_.reserve(kNumVoices);
 		effects_.reserve(kNumVoices);
 		for (int i=0; i<kNumVoices; i++) {
-			voices_.emplace_back(waveTable_);
+			auto& voice = voices_.emplace_back(waveTable_);
 			effects_.emplace_back();
 			mixer_.AddChannel();
 
@@ -69,7 +69,7 @@ public:
 			if (i == 8 || i == 9) {
 				muteGroupId = 1; }  // CH & OH are in a fixed mute-group
 
-			sequencer_.AddTrack(voices_.back(), muteGroupId); }
+			sequencer_.AddTrack(voice, muteGroupId); }
 		BeginLoadingWaves(); }
 
 	// transport controls

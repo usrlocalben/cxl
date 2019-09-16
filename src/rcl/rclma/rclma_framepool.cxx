@@ -36,7 +36,7 @@ void Init() {
 	pools.clear();
 	for (int ti = 0; ti < rclmt::jobsys::thread_count; ti++) {
 		void * ptr = _aligned_malloc(100000 * 64, 64);
-		pools.push_back(reinterpret_cast<char*>(ptr));
+		pools.emplace_back(reinterpret_cast<char*>(ptr));
 		sps[ti] = 0; }}
 
 

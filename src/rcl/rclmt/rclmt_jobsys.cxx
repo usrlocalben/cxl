@@ -86,15 +86,15 @@ void init(const int numThreads) {
 	for (int ti=0; ti<numThreads; ti++) {
 		auto telemetry = std::vector<struct JobStat>(NUMBER_OF_JOBS);
 		auto timer = rcls::Timer();
-		telemetry_stores.push_back(telemetry);
-		telemetry_timers.push_back(timer);
+		telemetry_stores.emplace_back(telemetry);
+		telemetry_timers.emplace_back(timer);
 
 		void * ptr = _aligned_malloc(NUMBER_OF_JOBS * sizeof(Job), 64);
 		auto job_pool_ptr = static_cast<Job*>(ptr);
 		for (int pi = 0; pi < NUMBER_OF_JOBS; pi++) {
 			job_pool_ptr[pi].generation = 0; }
-		jobpools.push_back(job_pool_ptr);
-		jobqueues.push_back(std::make_unique<Queue>()); }
+		jobpools.emplace_back(job_pool_ptr);
+		jobqueues.emplace_back(std::make_unique<Queue>()); }
 
 	startBarrier = std::make_unique<Barrier>(numThreads);
 	endBarrier = std::make_unique<Barrier>(numThreads);
@@ -184,7 +184,7 @@ void execute(Job* job) {
 	double start_time = telemetry_timers[thread_id].GetElapsed();
 	(job->function)(job, thread_id, job->data);
 	double end_time = telemetry_timers[thread_id].GetElapsed();
-	telemetry_stores[thread_id].push_back({
+	telemetry_stores[thread_id].emplace_back({
 		start_time, end_time,
 		uint32_t(std::hash<void*>{}(reinterpret_cast<void*>(job->function)))
 	});
@@ -254,7 +254,7 @@ void mark_start() {
 
 void mark_end(const uint32_t bits) {
 	double mark_end_time = telemetry_timers[thread_id].GetElapsed();
-	telemetry_stores[thread_id].push_back({
+	telemetry_stores[thread_id].emplace_back({
 		mark_start_time, mark_end_time, bits }); }
 
 }  // namespace jobsys
