@@ -61,7 +61,7 @@ void Split(const std::string& str, char ch, std::vector<std::string>& out) {
 	std::vector<std::string> items;
 	std::string src(str);
 	auto nextmatch = src.find(ch);
-	int cnt{0};
+	std::size_t cnt{0};
 	while (true) {
 		auto item = src.substr(0, nextmatch);
 		if (cnt < out.size()) {
